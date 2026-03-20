@@ -234,7 +234,7 @@ const Features = () => {
 
 const FAQ = () => {
   return (
-    <section className="bg-white px-6">
+    <section className="bg-white px-6 pb-8">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-extrabold text-[#1A1A1A] tracking-tight">
