@@ -32,7 +32,7 @@ const PageNotFound = () => {
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-sm text-gray-500 md:text-base">
             The page you are trying to reach is not available right now. It
-            might have moved, been removed, or the link is incorrect.
+            might have moved, been removed, or the link is incorrect
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
