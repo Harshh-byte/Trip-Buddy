@@ -556,14 +556,44 @@ const CreateTrip = () => {
                   {BUDGET_OPTIONS.map((item) => (
                     <div
                       key={item.id}
-                      onClick={() => handleInputChange("budget", item.label)}
-                      className={`p-6 border-2 rounded-2xl cursor-pointer transition-all text-left ${formData.budget === item.label ? "border-indigo-600 bg-indigo-50 shadow-lg" : "border-gray-100 bg-white"}`}
+                      onClick={() =>
+                        !loading && handleInputChange("budget", item.label)
+                      }
+                      aria-disabled={loading}
+                      className={cn(
+                        "p-6 border-2 rounded-2xl transition-all duration-200 text-left",
+                        loading
+                          ? "cursor-not-allowed border-slate-200 bg-slate-50/90 shadow-none"
+                          : "cursor-pointer hover:-translate-y-0.5 hover:shadow-md",
+                        !loading && formData.budget === item.label
+                          ? "border-indigo-600 bg-indigo-50 shadow-lg"
+                          : !loading
+                            ? "border-gray-100 bg-white"
+                            : "",
+                      )}
                     >
-                      <div className="p-2 bg-white rounded-lg mb-3 inline-block shadow-sm text-2xl">
+                      <div
+                        className={cn(
+                          "p-2 rounded-lg mb-3 inline-block shadow-sm text-2xl transition-colors",
+                          loading ? "bg-slate-100 text-slate-400" : "bg-white",
+                        )}
+                      >
                         {item.icon}
                       </div>
-                      <h4 className="font-bold text-gray-800">{item.label}</h4>
-                      <p className="text-xs text-indigo-600 font-bold uppercase">
+                      <h4
+                        className={cn(
+                          "font-bold",
+                          loading ? "text-slate-500" : "text-gray-800",
+                        )}
+                      >
+                        {item.label}
+                      </h4>
+                      <p
+                        className={cn(
+                          "text-xs font-bold uppercase",
+                          loading ? "text-slate-400" : "text-indigo-600",
+                        )}
+                      >
                         {item.desc}
                       </p>
                     </div>
@@ -576,8 +606,9 @@ const CreateTrip = () => {
             <div className="flex justify-between items-center mt-auto pt-10 gap-4">
               {step > 1 && (
                 <button
+                  disabled={loading}
                   onClick={() => setStep(step - 1)}
-                  className="flex items-center gap-2 px-6 py-4 border border-gray-200 rounded-2xl font-bold text-gray-500 hover:bg-gray-50 transition-colors"
+                  className="flex items-center gap-2 px-6 py-4 border border-gray-200 rounded-2xl font-bold text-gray-500 hover:bg-gray-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 disabled:shadow-inner disabled:hover:bg-slate-100 transition-colors"
                 >
                   <ChevronLeft className="w-5 h-5" /> Back
                 </button>
