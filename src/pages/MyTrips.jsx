@@ -8,6 +8,7 @@ import {
   limit,
   orderBy,
   query,
+  writeBatch,
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import {
@@ -55,7 +56,7 @@ const MyTrips = () => {
   const [openLogin, setOpenLogin] = useState(false);
   const [deletingTripId, setDeletingTripId] = useState("");
 
-  const handleDeleteTrip = async (trip) => {
+  const performDeleteTrip = async (trip) => {
     const firebaseUser = auth.currentUser;
     const targetTripId = trip?.id || trip?.docId;
 
@@ -66,29 +67,15 @@ const MyTrips = () => {
       return;
     }
 
-    const shouldDelete = window.confirm(
-      "Delete this itinerary permanently? This action cannot be undone.",
-    );
-
-    if (!shouldDelete) return;
+    if (deletingTripId === targetTripId) return;
 
     setDeletingTripId(targetTripId);
 
     try {
-      await deleteDoc(
-        doc(db, "users", firebaseUser.uid, "trips", targetTripId),
-      );
-
-      let sharedDeleteBlocked = false;
-      try {
-        await deleteDoc(doc(db, "AI-Trips", targetTripId));
-      } catch (sharedDeleteError) {
-        if (sharedDeleteError?.code === "permission-denied") {
-          sharedDeleteBlocked = true;
-        } else {
-          throw sharedDeleteError;
-        }
-      }
+      const batch = writeBatch(db);
+      batch.delete(doc(db, "users", firebaseUser.uid, "trips", targetTripId));
+      batch.delete(doc(db, "AI-Trips", targetTripId));
+      await batch.commit();
 
       localStorage.removeItem(`local-trip-${targetTripId}`);
 
@@ -96,26 +83,58 @@ const MyTrips = () => {
         prev.filter((item) => (item?.id || item?.docId) !== targetTripId),
       );
 
-      if (sharedDeleteBlocked) {
-        toast.success("Trip removed", {
-          description: "Itinerary removed from your list.",
-        });
-      } else {
-        toast.success("Trip removed", {
-          description: "Your itinerary has been deleted.",
-        });
-      }
+      toast.success("Trip removed", {
+        description: "Your itinerary has been deleted from database.",
+      });
     } catch (error) {
       console.error("Delete trip error:", error);
       toast.error("Delete failed", {
         description:
           error?.code === "permission-denied"
-            ? "You don't have permission to remove this itinerary."
+            ? "Couldn't delete this itinerary from all database collections. Please check Firestore delete rules for AI-Trips."
             : "Something went wrong while deleting this itinerary.",
       });
     } finally {
       setDeletingTripId("");
     }
+  };
+
+  const handleDeleteTrip = (trip) => {
+    const targetTripId = trip?.id || trip?.docId;
+
+    if (!targetTripId) {
+      toast.error("Unable to delete trip", {
+        description: "Trip details are missing. Please refresh and try again.",
+      });
+      return;
+    }
+
+    if (deletingTripId === targetTripId) return;
+
+    toast.warning("Delete this itinerary?", {
+      description: "This action is permanent and cannot be undone.",
+      classNames: {
+        toast:
+          "border border-amber-200/80 bg-gradient-to-br from-white to-amber-50/60 text-slate-800",
+        title: "text-slate-900 font-semibold",
+        description: "text-slate-600",
+        actionButton:
+          "rounded-full bg-rose-600 px-4 text-white shadow-sm transition-colors hover:bg-rose-700 focus:ring-2 focus:ring-rose-300",
+        cancelButton:
+          "rounded-full border border-slate-200 bg-white px-4 text-slate-700 transition-colors hover:bg-slate-100 focus:ring-2 focus:ring-slate-200",
+      },
+      action: {
+        label: "Delete",
+        onClick: () => {
+          performDeleteTrip(trip);
+        },
+      },
+      cancel: {
+        label: "Cancel",
+        onClick: () => {},
+      },
+      duration: 7000,
+    });
   };
 
   useEffect(() => {
