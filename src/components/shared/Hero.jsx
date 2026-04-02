@@ -15,6 +15,7 @@ import {
   Plane,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import CountUp from "react-countup";
 import {
   Accordion,
   AccordionContent,
@@ -213,15 +214,28 @@ const Features = () => {
           ))}
         </div>
 
+        {/* --- STATS SECTION WITH COUNT UP --- */}
         <div className="mt-20 pt-12 border-t border-gray-100 flex flex-wrap justify-center gap-12 md:gap-24 text-gray-400">
           <div className="text-center">
-            <p className="text-3xl font-black text-[#1A1A1A]">10k+</p>
+            <p className="text-3xl font-black text-[#1A1A1A]">
+              <CountUp end={11} duration={2.5} enableScrollSpy scrollSpyOnce />
+              k+
+            </p>
             <p className="text-xs uppercase tracking-widest mt-1">
               Trips Planned
             </p>
           </div>
           <div className="text-center">
-            <p className="text-3xl font-black text-[#1A1A1A]">4.8/5</p>
+            <p className="text-3xl font-black text-[#1A1A1A]">
+              <CountUp
+                end={4.8}
+                decimals={1}
+                duration={3}
+                enableScrollSpy
+                scrollSpyOnce
+              />
+              /5
+            </p>
             <p className="text-xs uppercase tracking-widest mt-1">
               User Rating
             </p>
@@ -275,7 +289,6 @@ const Footer = () => {
     <footer className="bg-white border-t border-gray-100 pt-16 pb-8 px-6">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
-          {/* Brand Column */}
           <div className="col-span-1 md:col-span-1 space-y-4 text-left">
             <div className="flex items-center gap-2">
               <div className="bg-indigo-600 p-1.5 rounded-lg">
@@ -291,7 +304,6 @@ const Footer = () => {
             </p>
           </div>
 
-          {/* Quick Links */}
           <div className="text-left">
             <h4 className="font-bold text-[#1A1A1A] mb-4">Product</h4>
             <ul className="space-y-2 text-sm text-gray-500">
@@ -307,7 +319,6 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Support */}
           <div className="text-left">
             <h4 className="font-bold text-[#1A1A1A] mb-4">Support</h4>
             <ul className="space-y-2 text-sm text-gray-500">
@@ -323,7 +334,6 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Socials */}
           <div className="space-y-4 text-left">
             <h4 className="font-bold text-[#1A1A1A]">Stay Connected</h4>
             <div className="flex items-center gap-3">
@@ -332,7 +342,6 @@ const Footer = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Follow on X"
-                title="X"
                 className="group inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-50 text-gray-500 transition-all duration-200 hover:-translate-y-0.5 hover:bg-sky-50 hover:text-sky-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-400"
               >
                 <Twitter className="h-5 w-5" />
@@ -343,7 +352,6 @@ const Footer = () => {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="View GitHub profile"
-                title="GitHub"
                 className="group inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-50 text-gray-500 transition-all duration-200 hover:-translate-y-0.5 hover:bg-gray-900 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500"
               >
                 <Github className="h-5 w-5" />
@@ -352,7 +360,6 @@ const Footer = () => {
               <a
                 href="mailto:rockstarharsh7jan@example.com?subject=Trip%20Buddy%20Contact"
                 aria-label="Send an email"
-                title="Email"
                 className="group inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-50 text-gray-500 transition-all duration-200 hover:-translate-y-0.5 hover:bg-rose-50 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
               >
                 <Mail className="h-5 w-5" />
@@ -361,7 +368,6 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Bottom Bar */}
         <div className="pt-8 border-t border-gray-100 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-gray-400 text-xs">
             © {currentYear} Trip Buddy AI. Published for your next adventure.
