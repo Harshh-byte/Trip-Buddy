@@ -215,7 +215,7 @@ const CreateTrip = () => {
         doc(db, "users", firebaseUser.uid, "trips", docId),
         tripPayload,
       );
-      await setDoc(doc(db, "AI-Trips", docId), tripPayload);
+      await setDoc(doc(db, "Trips", docId), tripPayload);
 
       navigate(`/view-trip/${docId}`);
     } catch (error) {
