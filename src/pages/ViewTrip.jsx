@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../services/firebaseConfig";
+import { cn } from "../lib/utils";
 import {
   ArrowLeft,
   CalendarDays,
@@ -11,6 +12,7 @@ import {
   LocateFixed,
   MapPin,
   Navigation,
+  Route,
   Star,
   Ticket,
   Users,
@@ -37,7 +39,7 @@ const readLocalTrip = (tripId) => {
   }
 };
 
-const GetPhoto = ({ locationItem }) => {
+const GetPhoto = ({ locationItem, className = "", imageClassName = "" }) => {
   const [photoUrl, setPhotoUrl] = useState(/** @type {string | null} */ (null));
   const fallbackPhoto = useMemo(
     () => getStreetViewUrl(locationItem),
@@ -84,20 +86,23 @@ const GetPhoto = ({ locationItem }) => {
     }
   };
 
-  if (!photoUrl && !fallbackPhoto) {
-    return (
-      <div className="h-full w-full rounded-xl bg-gray-100 flex items-center justify-center">
-        <p className="text-xs text-gray-500">Image unavailable</p>
-      </div>
-    );
-  }
-
   return (
-    <img
-      src={photoUrl || fallbackPhoto}
-      className="h-full w-full object-cover rounded-xl transition-opacity duration-500"
-      alt="Location"
-    />
+    <div className={cn("relative overflow-hidden bg-gray-100", className)}>
+      {photoUrl || fallbackPhoto ? (
+        <img
+          src={photoUrl || fallbackPhoto}
+          className={cn(
+            "h-full w-full object-cover transition-opacity duration-500",
+            imageClassName,
+          )}
+          alt="Location"
+        />
+      ) : (
+        <div className="flex h-full w-full items-center justify-center">
+          <p className="text-xs text-gray-500">Image unavailable</p>
+        </div>
+      )}
+    </div>
   );
 };
 
@@ -300,10 +305,34 @@ const ViewTrip = () => {
     () => normalizeItineraryDays(trip?.tripData),
     [trip],
   );
+
+  const statCards = [
+    {
+      label: "Duration",
+      value: summary.duration,
+      icon: CalendarDays,
+    },
+    {
+      label: "Travelers",
+      value: summary.travelers,
+      icon: Users,
+    },
+    {
+      label: "Start Date",
+      value: summary.startDate,
+      icon: Clock3,
+    },
+    {
+      label: "Budget",
+      value: summary.budget,
+      icon: IndianRupee,
+    },
+  ];
+
   if (loading) {
     return (
-      <div className="min-h-screen pt-24 px-6 bg-[#FDF2E9] flex items-center justify-center">
-        <div className="rounded-3xl border border-indigo-100 bg-white/80 backdrop-blur-sm px-8 py-6 shadow-lg">
+      <div className="min-h-screen pt-24 px-6 bg-[radial-gradient(circle_at_top,#fff7ed,#f5f3ff_48%,#eff6ff)] flex items-center justify-center">
+        <div className="rounded-[2rem] border border-white/70 bg-white/85 backdrop-blur-sm px-8 py-6 shadow-xl shadow-indigo-100/40">
           <p className="text-base text-gray-600">Loading your trip...</p>
         </div>
       </div>
@@ -320,89 +349,89 @@ const ViewTrip = () => {
   };
 
   return (
-    <div className="min-h-screen pt-20 bg-[#FDF2E9] pb-14 px-4 md:px-6">
+    <div className="min-h-screen pt-20 pb-14 px-4 md:px-6 bg-[radial-gradient(circle_at_top,#fff7ed,#fdf2f8_34%,#eef2ff_68%,#f8fafc)]">
       <div className="max-w-7xl mx-auto space-y-8">
-        <section className="relative overflow-hidden rounded-[2rem] border border-indigo-100 bg-white shadow-xl">
-          <div className="h-64 md:h-80 w-full">
-            <GetPhoto locationItem={destinationLabel} />
-          </div>
-          <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/20 to-transparent" />
-          <div className="absolute inset-0 p-5 md:p-8 flex flex-col justify-between">
-            <button
-              onClick={() => navigate("/create-trip")}
-              className="w-fit inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/15 text-white px-4 py-2 text-sm font-semibold backdrop-blur-sm hover:bg-white/25 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Plan Another Trip
-            </button>
+        <section className="overflow-hidden rounded-[2.5rem] border border-white/70 bg-white shadow-2xl shadow-indigo-100/50">
+          <div className="grid lg:grid-cols-[1.1fr_0.9fr]">
+            <div className="relative min-h-104 lg:min-h-144 bg-slate-950">
+              <GetPhoto
+                locationItem={destinationLabel}
+                className="absolute inset-0 h-full w-full rounded-none"
+                imageClassName="h-full w-full object-cover"
+              />
+              <div className="absolute inset-0 bg-linear-to-t from-black/85 via-black/35 to-black/5" />
+              <div className="absolute inset-0 p-5 md:p-8 flex flex-col justify-between">
+                <div className="flex flex-wrap items-center gap-3">
+                  <button
+                    onClick={() => navigate("/create-trip")}
+                    className="w-fit inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/15 text-white px-4 py-2 text-sm font-semibold backdrop-blur-md hover:bg-white/25 transition-colors"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    Plan Another Trip
+                  </button>
+                </div>
 
-            <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-700">
-              <div className="inline-flex items-center gap-2 rounded-full bg-indigo-500/90 px-3 py-1 text-[11px] uppercase tracking-wider text-white font-semibold">
-                AI Generated Itinerary
+                <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-3xl">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-[11px] uppercase tracking-[0.28em] text-white font-semibold backdrop-blur-md border border-white/20">
+                    AI Generated Itinerary
+                  </div>
+                  <div className="space-y-3">
+                    <h1 className="text-4xl md:text-6xl font-extrabold text-white leading-[0.95]">
+                      {destinationLabel}
+                    </h1>
+                    <p className="max-w-2xl text-white/85 text-sm md:text-base leading-relaxed">
+                      {trip?.tripData?.tripNote?.split(".")[0] ||
+                        "A personalized plan built around your travel style, budget, and schedule."}
+                    </p>
+                  </div>
+                </div>
               </div>
-              <h1 className="text-3xl md:text-5xl font-extrabold text-white leading-tight max-w-3xl">
-                {destinationLabel}
-              </h1>
-              <p className="max-w-2xl text-indigo-50 text-sm md:text-base">
-                {trip?.tripData?.tripNote?.split(".")[0] ||
-                  "A personalized plan built around your travel style, budget, and schedule."}
-              </p>
             </div>
-          </div>
-        </section>
 
-        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="rounded-3xl border border-indigo-100 bg-white p-5 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
-              Duration
-            </p>
-            <div className="mt-2 flex items-center gap-2 text-gray-900">
-              <div className="bg-indigo-50 p-1.5 rounded-lg shrink-0 mt-0.5">
-                <CalendarDays className="w-4 h-4 text-indigo-600" />
+            <div className="p-5 md:p-8 bg-linear-to-br from-white via-indigo-50/40 to-amber-50/50">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {statCards.map((item) => {
+                  const Icon = item.icon;
+
+                  return (
+                    <div
+                      key={item.label}
+                      className="rounded-[1.75rem] border border-white/80 bg-white/90 p-5 shadow-sm backdrop-blur-sm"
+                    >
+                      <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl mb-4 bg-indigo-50/80 text-indigo-600 border border-indigo-100/80 shadow-sm backdrop-blur-sm">
+                        <Icon className="w-5 h-5" />
+                      </div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.24em] text-gray-400">
+                        {item.label}
+                      </p>
+                      <p className="mt-2 text-base font-bold text-gray-900 leading-snug wrap-break-word">
+                        {item.value}
+                      </p>
+                    </div>
+                  );
+                })}
               </div>
-              <span className="font-bold">{summary.duration}</span>
-            </div>
-          </div>
-          <div className="rounded-3xl border border-indigo-100 bg-white p-5 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
-              Travelers
-            </p>
-            <div className="mt-2 flex items-center gap-2 text-gray-900">
-              <div className="bg-indigo-50 p-1.5 rounded-lg shrink-0 mt-0.5">
-                <Users className="w-4 h-4 text-indigo-600" />
+
+              <div className="mt-4 rounded-[1.75rem] border border-indigo-100 bg-white/80 p-5 shadow-sm">
+                <div className="flex items-center gap-2 mb-3">
+                  <Route className="w-4 h-4 text-indigo-600" />
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-indigo-600">
+                    Trip Summary
+                  </p>
+                </div>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  Your plan combines hotels, daily activities, and travel pace
+                  into one clean trip overview, so you can scan everything at a
+                  glance.
+                </p>
               </div>
-              <span className="font-bold">{summary.travelers}</span>
-            </div>
-          </div>
-          <div className="rounded-3xl border border-indigo-100 bg-white p-5 shadow-sm">
-            <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
-              Start Date
-            </p>
-            <div className="mt-2 flex items-center gap-2 text-gray-900">
-              <div className="bg-indigo-50 p-1.5 rounded-lg shrink-0 mt-0.5">
-                <Clock3 className="w-4 h-4 text-indigo-600" />
-              </div>
-              <span className="font-bold">{summary.startDate}</span>
-            </div>
-          </div>
-          <div className="rounded-3xl border border-indigo-100 bg-white p-5 shadow-sm h-full">
-            <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
-              Budget
-            </p>
-            <div className="mt-2 flex items-start gap-2 text-gray-900">
-              <div className="bg-indigo-50 p-1.5 rounded-lg shrink-0 mt-0.5">
-                <IndianRupee className="w-4 h-4 text-indigo-600" />
-              </div>
-              <span className="font-bold wrap-break-word leading-tight pt-1">
-                {summary.budget}
-              </span>
             </div>
           </div>
         </section>
 
         {hotels.length > 0 && (
-          <section className="rounded-[2rem] border border-gray-100 bg-white p-5 md:p-7 shadow-sm">
-            <div className="flex items-center gap-2 mb-5">
+          <section className="rounded-[2.5rem] border border-white/70 bg-white/90 p-5 md:p-7 shadow-xl shadow-indigo-100/30">
+            <div className="flex items-center gap-2 mb-6">
               <Hotel className="w-5 h-5 text-indigo-600" />
               <h3 className="text-2xl font-extrabold text-gray-900">
                 Hotel Picks
@@ -416,25 +445,24 @@ const ViewTrip = () => {
                   href={getGoogleMapsUrl(hotel.name, hotel.address)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="block transition-transform hover:scale-[1.01]"
+                  className="block h-full transition-transform hover:scale-[1.01]"
                 >
-                  <article
-                    key={hotel.id}
-                    className="overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm hover:shadow-lg transition-shadow"
-                  >
-                    <div className="h-44 w-full">
+                  <article className="flex h-full flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm hover:shadow-lg transition-shadow">
+                    <div className="relative h-44 w-full">
                       <GetPhoto
                         locationItem={hotel.name + "," + hotel.address}
+                        className="h-full w-full"
+                        imageClassName="h-full w-full object-cover"
                       />
+                      <span className="absolute right-3 top-3 rounded-full bg-white/95 px-3 py-1 text-[11px] font-semibold text-indigo-700 shadow-sm">
+                        {formatPrice(hotel.price)} / night
+                      </span>
                     </div>
-                    <div className="p-4 space-y-3">
-                      <div className="flex items-start justify-between gap-2">
+                    <div className="flex flex-1 flex-col p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-3">
                         <h4 className="text-base font-bold text-gray-900">
                           {hotel.name}
                         </h4>
-                        <span className="text-xs font-semibold rounded-full bg-indigo-50 text-indigo-700 px-2 py-1 whitespace-nowrap">
-                          {formatPrice(hotel.price)} / night
-                        </span>
                       </div>
                       <p className="text-xs text-gray-500 flex items-center gap-1">
                         <MapPin className="w-3.5 h-3.5" />
@@ -459,104 +487,111 @@ const ViewTrip = () => {
           </section>
         )}
 
-        <section className="rounded-[2rem] border border-gray-100 bg-white p-5 md:p-7 shadow-sm">
-          <div className="flex items-center gap-2 mb-5">
-            <MapPinned className="w-5 h-5 text-indigo-600" />
-            <h3 className="text-2xl font-extrabold text-gray-900">
-              Trip Overview
-            </h3>
+        <section className="rounded-[2.5rem] border border-white/70 bg-white/90 p-5 md:p-7 shadow-xl shadow-indigo-100/30">
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
+            <div className="flex items-center gap-2">
+              <MapPinned className="w-5 h-5 text-indigo-600" />
+              <h3 className="text-2xl font-extrabold text-gray-900">
+                Trip Overview
+              </h3>
+            </div>
           </div>
 
           {itineraryDays.length === 0 ? (
-            <div className="rounded-2xl bg-indigo-50 border border-indigo-100 p-5">
+            <div className="rounded-[1.75rem] bg-indigo-50 border border-indigo-100 p-5">
               <p className="text-sm text-indigo-900">
                 Your itinerary details are still being prepared. Please generate
                 again for a richer plan.
               </p>
             </div>
           ) : (
-            <div className="space-y-7">
+            <div className="space-y-8">
               {itineraryDays.map((day) => (
                 <article
                   key={day.key}
-                  className="rounded-3xl border border-gray-100 bg-[#FDF2E9]/35 p-4 md:p-6"
+                  className="overflow-hidden rounded-[2rem] border border-gray-100 bg-linear-to-br from-[#fff8f0] via-white to-[#eef2ff]"
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-widest text-indigo-600">
-                        {day.label}
-                      </p>
-                      <h4 className="text-xl font-extrabold text-gray-900">
-                        {day.title}
-                      </h4>
+                  <div className="border-b border-white/80 p-5 md:p-6">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-indigo-600">
+                          {day.label}
+                        </p>
+                        <h4 className="text-xl font-extrabold text-gray-900 mt-1">
+                          {day.title}
+                        </h4>
+                      </div>
+                      <span className="inline-flex items-center gap-1 rounded-full bg-white border border-indigo-100 px-3 py-1 text-xs font-semibold text-gray-700 w-fit shadow-sm">
+                        <Clock3 className="w-3.5 h-3.5 text-indigo-600" />
+                        Best Time: {day.bestTime}
+                      </span>
                     </div>
-                    <span className="inline-flex items-center gap-1 rounded-full bg-white border border-indigo-100 px-3 py-1 text-xs font-semibold text-gray-700 w-fit">
-                      <Clock3 className="w-3.5 h-3.5 text-indigo-600" />
-                      Best Time: {day.bestTime}
-                    </span>
                   </div>
 
-                  <div className="space-y-4">
-                    {day.activities.map((activity) => (
-                      <div
-                        key={activity.id}
-                        className="grid grid-cols-1 md:grid-cols-[120px_1fr] gap-4 rounded-2xl bg-white border border-gray-100 p-4"
-                      >
-                        <div className="md:border-r md:border-gray-100 md:pr-4">
-                          <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold">
-                            Time
-                          </p>
-                          <p className="text-sm font-bold text-indigo-700 mt-1">
-                            {activity.time}
-                          </p>
-                        </div>
+                  <div className="p-5 md:p-6">
+                    <div className="flex flex-col gap-5">
+                      {day.activities.map((activity) => (
+                        <div
+                          key={activity.id}
+                          className="overflow-hidden rounded-[1.75rem] border border-white/80 bg-white shadow-sm"
+                        >
+                          <div className="grid grid-cols-1 md:grid-cols-[180px_1fr] gap-4 p-4">
+                            <div className="md:pr-2">
+                              <GetPhoto
+                                locationItem={
+                                  activity.title + "," + summary.location
+                                }
+                                className="aspect-square w-full rounded-2xl"
+                                imageClassName="h-full w-full object-cover"
+                              />
+                            </div>
 
-                        <div className="space-y-3">
-                          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                            <a
-                              href={getGoogleMapsUrl(
-                                activity.title,
-                                summary.location,
-                              )}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="group"
-                            >
-                              <h5 className="text-base font-bold text-gray-900 group-hover:text-indigo-600 transition-colors flex items-center gap-2">
-                                {activity.title}
-                                <Navigation className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity text-indigo-600" />
-                              </h5>
-                            </a>
-                            <div className="flex flex-wrap items-center gap-2 text-xs text-gray-600">
-                              <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1">
-                                <Ticket className="w-3.5 h-3.5" />
-                                Ticket: {formatPrice(activity.ticketPricing)}
-                              </span>
-                              {activity.travelTime !== null && (
-                                <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 text-indigo-700 px-2 py-1">
-                                  <LocateFixed className="w-3.5 h-3.5" />
-                                  {activity.travelTime} min travel
+                            <div className="space-y-3 md:pl-2 md:border-l md:border-gray-100">
+                              <p className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-gray-500 leading-none">
+                                <Clock3 className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                                <span className="leading-none">Time</span>
+                                <span className="text-indigo-700 tracking-normal leading-none">
+                                  {activity.time}
                                 </span>
+                              </p>
+                              <a
+                                href={getGoogleMapsUrl(
+                                  activity.title,
+                                  summary.location,
+                                )}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="group"
+                              >
+                                <h5 className="text-base font-bold text-gray-900 group-hover:text-indigo-600 transition-colors flex items-center gap-2">
+                                  {activity.title}
+                                  <Navigation className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity text-indigo-600" />
+                                </h5>
+                              </a>
+
+                              <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-gray-600">
+                                <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1">
+                                  <Ticket className="w-3.5 h-3.5" />
+                                  Ticket: {formatPrice(activity.ticketPricing)}
+                                </span>
+                                {activity.travelTime !== null && (
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 text-indigo-700 px-2 py-1">
+                                    <LocateFixed className="w-3.5 h-3.5" />
+                                    {activity.travelTime} min travel
+                                  </span>
+                                )}
+                              </div>
+
+                              {activity.description && (
+                                <p className="text-sm text-gray-600 leading-relaxed line-clamp-3 max-w-prose">
+                                  {activity.description}
+                                </p>
                               )}
                             </div>
                           </div>
-
-                          {activity.description && (
-                            <p className="text-sm text-gray-600 leading-relaxed">
-                              {activity.description}
-                            </p>
-                          )}
-
-                          <div className="w-full h-44">
-                            <GetPhoto
-                              locationItem={
-                                activity.title + "," + summary.location
-                              }
-                            />
-                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 </article>
               ))}

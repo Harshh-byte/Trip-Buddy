@@ -1,6 +1,7 @@
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { auth, db } from "./firebaseConfig";
+import { dispatchAuthUserChanged } from "../lib/authEvents";
 
 const saveUserProfile = async (firebaseUser) => {
   if (!firebaseUser?.uid) {
@@ -53,12 +54,14 @@ export const useGoogleAuth = ({ onSuccess, onError }) => {
       };
 
       localStorage.setItem("user", JSON.stringify(userData));
+      dispatchAuthUserChanged();
 
       if (onSuccess) {
         onSuccess(userData);
       }
     } catch (error) {
       localStorage.removeItem("user");
+      dispatchAuthUserChanged();
       if (onError) {
         onError(error);
       }

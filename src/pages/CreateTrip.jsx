@@ -527,18 +527,41 @@ const CreateTrip = () => {
                     Who's joining?
                   </h3>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   {TRAVELER_OPTIONS.map((item) => (
                     <div
                       key={item.id}
                       onClick={() =>
                         handleInputChange("travelers", item.people)
                       }
-                      className={`p-6 border-2 rounded-2xl cursor-pointer transition-all text-left ${formData.travelers === item.people ? "border-indigo-600 bg-indigo-50 shadow-md" : "border-gray-100 bg-white"}`}
+                      role="button"
+                      tabIndex={0}
+                      aria-pressed={formData.travelers === item.people}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          handleInputChange("travelers", item.people);
+                        }
+                      }}
+                      className={cn(
+                        "group p-6 border-2 rounded-2xl cursor-pointer transition-all duration-200 text-left hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:ring-4 focus-visible:ring-indigo-100",
+                        formData.travelers === item.people
+                          ? "border-indigo-600 bg-indigo-50 shadow-lg"
+                          : "border-gray-100 bg-white hover:border-indigo-200",
+                      )}
                     >
-                      <div className="mb-2 text-2xl">{item.icon}</div>
+                      <div
+                        className={cn(
+                          "mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl transition-colors",
+                          formData.travelers === item.people
+                            ? "bg-white text-indigo-600"
+                            : "bg-indigo-50 text-indigo-600 group-hover:bg-indigo-100",
+                        )}
+                      >
+                        {item.icon}
+                      </div>
                       <h4 className="font-bold text-gray-800">{item.title}</h4>
-                      <p className="text-sm text-gray-500">{item.desc}</p>
+                      <p className="mt-1 text-sm text-gray-500">{item.desc}</p>
                     </div>
                   ))}
                 </div>
