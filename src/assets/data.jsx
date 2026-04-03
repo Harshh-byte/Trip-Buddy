@@ -1,5 +1,5 @@
 import { IndianRupee } from "lucide-react";
-import { User, Users, Home, UsersRound } from "lucide-react";
+import { Heart, Home, User, Users, UsersRound } from "lucide-react";
 
 export const BUDGET_OPTIONS = [
   {
@@ -11,7 +11,7 @@ export const BUDGET_OPTIONS = [
   {
     id: "Moderate",
     label: "Medium",
-    desc: "₹3500 - ₹8000 per person/day",
+    desc: "₹3500 - ₹800x0 per person/day",
     icon: (
       <div className="flex -space-x-1">
         {" "}
@@ -51,9 +51,9 @@ export const FAQ_DATA = [
       "By taking into account your unique preferences, tastes, and requirements, ensuring that every aspect of your trip is tailored to meet your specific needs.",
   },
   {
-    question: "Can I access Trip Buddy offline?",
+    question: "How do I find my trips in My Trips?",
     answer:
-      "Yes, you can download your plans as a PDF, allowing for easy offline access whenever you need them.",
+      "Your generated itineraries are saved to your account and appear in My Trips, so you can revisit them anytime after signing in.",
   },
   {
     question: "How accurate are the travel suggestions?",
@@ -65,29 +65,29 @@ export const FAQ_DATA = [
 export const TRAVELER_OPTIONS = [
   {
     id: "Solo",
-    title: "Solo Traveler",
-    icon: <User className="w-8 h-8 text-indigo-600" />,
+    title: "Solo",
+    icon: <User className="w-6 h-6" />,
     desc: "Exploring at your own pace",
     people: "1 Person",
   },
   {
     id: "Couple",
     title: "Couple",
-    icon: <Users className="w-8 h-8 text-indigo-600" />,
-    desc: "Romantic getaways",
+    icon: <Heart className="w-6 h-6" />,
+    desc: "Romatic getaways",
     people: "2 People",
   },
   {
     id: "Family",
     title: "Family",
-    icon: <Home className="w-8 h-8 text-indigo-600" />,
+    icon: <Home className="w-6 h-6" />,
     desc: "Kid-friendly activities",
     people: "3 to 5 People",
   },
   {
     id: "Friends",
-    title: "Group/Friends",
-    icon: <UsersRound className="w-8 h-8 text-indigo-600" />,
+    title: "Friends",
+    icon: <UsersRound className="w-6 h-6" />,
     desc: "Thrill-seekers group",
     people: "5+ People",
   },

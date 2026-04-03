@@ -4,6 +4,7 @@ import { Plane, User, LogOut, Map, Sparkles } from "lucide-react";
 import { Button } from "../ui/button";
 import LoginDialog from "./LoginDialog";
 import { googleLogout } from "@react-oauth/google";
+import { AUTH_USER_CHANGED_EVENT } from "../../lib/authEvents";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,13 +37,18 @@ const Header = () => {
     };
 
     window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
+    window.addEventListener(AUTH_USER_CHANGED_EVENT, handleStorageChange);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener(AUTH_USER_CHANGED_EVENT, handleStorageChange);
+    };
   }, []);
 
   const handleLogout = () => {
     googleLogout();
     localStorage.removeItem("user");
     setUser(null);
+    window.dispatchEvent(new Event(AUTH_USER_CHANGED_EVENT));
     navigate("/");
   };
 
