@@ -243,7 +243,7 @@ const ViewTrip = () => {
       }
 
       try {
-        const docRef = doc(db, "AI-Trips", tripId);
+        const docRef = doc(db, "Trips", tripId);
         const docSnap = await getDoc(docRef);
 
         if (docSnap.exists()) {

@@ -74,7 +74,7 @@ const MyTrips = () => {
     try {
       const batch = writeBatch(db);
       batch.delete(doc(db, "users", firebaseUser.uid, "trips", targetTripId));
-      batch.delete(doc(db, "AI-Trips", targetTripId));
+      batch.delete(doc(db, "Trips", targetTripId));
       await batch.commit();
 
       localStorage.removeItem(`local-trip-${targetTripId}`);
@@ -91,7 +91,7 @@ const MyTrips = () => {
       toast.error("Delete failed", {
         description:
           error?.code === "permission-denied"
-            ? "Couldn't delete this itinerary from all database collections. Please check Firestore delete rules for AI-Trips."
+            ? "Couldn't delete this itinerary from all database collections. Please check Firestore delete rules for Trips."
             : "Something went wrong while deleting this itinerary.",
       });
     } finally {
