@@ -584,10 +584,10 @@ const CreateTrip = () => {
                       }
                       aria-disabled={loading}
                       className={cn(
-                        "p-6 border-2 rounded-2xl transition-all duration-200 text-left",
+                        "group p-6 border-2 rounded-2xl transition-all duration-200 text-left",
                         loading
                           ? "cursor-not-allowed border-slate-200 bg-slate-50/90 shadow-none"
-                          : "cursor-pointer hover:-translate-y-0.5 hover:shadow-md",
+                          : "cursor-pointer hover:-translate-y-0.5 hover:shadow-md hover:border-indigo-200",
                         !loading && formData.budget === item.label
                           ? "border-indigo-600 bg-indigo-50 shadow-lg"
                           : !loading
@@ -597,8 +597,12 @@ const CreateTrip = () => {
                     >
                       <div
                         className={cn(
-                          "p-2 rounded-lg mb-3 inline-block shadow-sm text-2xl transition-colors",
-                          loading ? "bg-slate-100 text-slate-400" : "bg-white",
+                          "mb-3 inline-flex h-12 min-w-12 px-2 items-center justify-center rounded-xl border text-2xl transition-colors",
+                          loading
+                            ? "border-slate-200 bg-slate-100 text-slate-400"
+                            : formData.budget === item.label
+                              ? "border-indigo-200 bg-white text-indigo-600 shadow-sm"
+                              : "border-indigo-100 bg-indigo-50 text-indigo-600 group-hover:border-indigo-200 group-hover:bg-indigo-100",
                         )}
                       >
                         {item.icon}
