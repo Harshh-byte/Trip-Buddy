@@ -364,7 +364,7 @@ const ViewTrip = () => {
                 <div className="flex flex-wrap items-center gap-3">
                   <button
                     onClick={() => navigate("/create-trip")}
-                    className="w-fit inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/15 text-white px-4 py-2 text-sm font-semibold backdrop-blur-md hover:bg-white/25 transition-colors"
+                    className="w-fit inline-flex items-center gap-2 rounded-full border border-white bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm hover:bg-gray-100 hover:text-indigo-700 hover:border-indigo-100 transition-colors"
                   >
                     <ArrowLeft className="w-4 h-4" />
                     Plan Another Trip
@@ -372,7 +372,7 @@ const ViewTrip = () => {
                 </div>
 
                 <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-3xl">
-                  <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-[11px] uppercase tracking-[0.28em] text-white font-semibold backdrop-blur-md border border-white/20">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-indigo-600 px-3 py-1 text-[11px] uppercase tracking-[0.28em] text-white font-semibold border border-indigo-600">
                     AI Generated Itinerary
                   </div>
                   <div className="space-y-3">

@@ -11,10 +11,9 @@ export const BUDGET_OPTIONS = [
   {
     id: "Moderate",
     label: "Medium",
-    desc: "₹3500 - ₹800x0 per person/day",
+    desc: "₹3500 - ₹8000 per person/day",
     icon: (
-      <div className="flex -space-x-1">
-        {" "}
+      <div className="flex items-center gap-0.5">
         <IndianRupee className="w-6 h-6" />
         <IndianRupee className="w-6 h-6" />
       </div>
@@ -25,7 +24,7 @@ export const BUDGET_OPTIONS = [
     label: "High",
     desc: "₹8000+ per person/day",
     icon: (
-      <div className="flex -space-x-1">
+      <div className="flex items-center gap-0.5">
         <IndianRupee className="w-6 h-6" />
         <IndianRupee className="w-6 h-6" />
         <IndianRupee className="w-6 h-6" />
