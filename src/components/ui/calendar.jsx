@@ -46,7 +46,7 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }) {
 
         day_button: cn(
           buttonVariants({ variant: "ghost" }),
-          "h-9 w-9 p-0 font-normal rounded-xl aria-selected:opacity-100 transition-colors",
+          "h-9 w-9 p-0 font-normal rounded-xl aria-selected:opacity-100 transition-colors aria-disabled:cursor-not-allowed aria-disabled:hover:bg-transparent",
         ),
 
         selected:
@@ -55,8 +55,7 @@ function Calendar({ className, classNames, showOutsideDays = true, ...props }) {
         today:
           "bg-orange-50 text-orange-600 font-bold border border-orange-100",
 
-        disabled:
-          "text-gray-300 opacity-40 cursor-not-allowed pointer-events-none",
+        disabled: "text-gray-500 opacity-70 cursor-not-allowed",
 
         outside: "text-gray-200 opacity-20",
         hidden: "invisible",

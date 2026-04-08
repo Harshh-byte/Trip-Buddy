@@ -14,10 +14,10 @@ const App = () => {
       <Header />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/create-trip" element={<CreateTrip />} />
-        <Route path="/view-trip" element={<ViewTrip />} />
-        <Route path="/view-trip/:tripId" element={<ViewTrip />} />
-        <Route path="/my-trips" element={<MyTrips />} />
+        <Route path="/v2/create-trip" element={<CreateTrip />} />
+        <Route path="/v2/view-trip" element={<ViewTrip />} />
+        <Route path="/v2/view-trip/:tripId" element={<ViewTrip />} />
+        <Route path="/v2/my-trips" element={<MyTrips />} />
         <Route path="*" element={<PageNotFound />} />
       </Routes>
     </>

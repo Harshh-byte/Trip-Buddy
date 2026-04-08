@@ -1,17 +1,17 @@
 import { IndianRupee } from "lucide-react";
-import { Heart, Home, User, Users, UsersRound } from "lucide-react";
+import { Heart, Home, User, UsersRound } from "lucide-react";
 
 export const BUDGET_OPTIONS = [
   {
     id: "Budget",
     label: "Low",
-    desc: "₹1500 - ₹3500 per person/day",
+    desc: "Keep it lean with budget stays, local eats, and low-cost sights.",
     icon: <IndianRupee className="w-6 h-6" />,
   },
   {
     id: "Moderate",
     label: "Medium",
-    desc: "₹3500 - ₹8000 per person/day",
+    desc: "A balanced mix of comfort and value with solid hotels and good dining.",
     icon: (
       <div className="flex items-center gap-0.5">
         <IndianRupee className="w-6 h-6" />
@@ -22,7 +22,7 @@ export const BUDGET_OPTIONS = [
   {
     id: "Luxury",
     label: "High",
-    desc: "₹8000+ per person/day",
+    desc: "Go all in with premium stays, fine dining, and exclusive experiences.",
     icon: (
       <div className="flex items-center gap-0.5">
         <IndianRupee className="w-6 h-6" />
@@ -73,7 +73,7 @@ export const TRAVELER_OPTIONS = [
     id: "Couple",
     title: "Couple",
     icon: <Heart className="w-6 h-6" />,
-    desc: "Romatic getaways",
+    desc: "Romantic getaways",
     people: "2 People",
   },
   {

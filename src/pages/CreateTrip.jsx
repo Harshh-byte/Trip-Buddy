@@ -32,14 +32,26 @@ import { cn } from "../lib/utils";
 
 Countries.registerLocale(enLocale);
 
+const TRIP_GENERATING_FLAG_KEY = "tripbuddy:generating-trip";
+
+const flagIconMap =
+  /** @type {Record<string, import("react").ComponentType<{ className?: string }>>} */ (
+    FlagIcons
+  );
+
 const CreateTrip = () => {
   const placesApiKey = import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
   const navigate = useNavigate();
   const [openDialog, setOpenDialog] = useState(false);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false);
-  const [startDateValue, setStartDateValue] = useState();
+  const [startDateValue, setStartDateValue] = /** @type {[
+    Date | undefined,
+    import("react").Dispatch<import("react").SetStateAction<Date | undefined>>
+  ]} */ (useState(undefined));
   const [formData, setFormData] = useState(
     /** @type {{
      * destination: { label: string; value: unknown } | null;
@@ -56,27 +68,33 @@ const CreateTrip = () => {
     }),
   );
 
-  const handleInputChange = (name, value) => {
+  const handleInputChange = (
+    /** @type {"destination" | "noOfDays" | "startDate" | "travelers" | "budget"} */ name,
+    /** @type {unknown} */ value,
+  ) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const getFlagComponent = (locationLabel) => {
+  const getFlagComponent = (/** @type {string} */ locationLabel) => {
     if (!locationLabel) return null;
 
     const parts = locationLabel.split(",");
     const countryName = parts[parts.length - 1].trim();
     const countryCode = Countries.getAlpha2Code(countryName, "en");
 
-    if (countryCode && FlagIcons[countryCode]) {
-      const Flag = FlagIcons[countryCode];
+    if (countryCode && flagIconMap[countryCode]) {
+      const Flag = flagIconMap[countryCode];
       return <Flag className="w-6 h-4 shadow-sm object-cover" />;
     }
     return <MapPin className="w-4 h-4 text-gray-400" />;
   };
 
-  const getDestinationLabel = (destination) => {
+  const getDestinationLabel = (/** @type {unknown} */ destination) => {
     if (!destination || typeof destination !== "object") return "";
-    return typeof destination.label === "string" ? destination.label : "";
+    const destinationValue = /** @type {{ label?: unknown }} */ (destination);
+    return typeof destinationValue.label === "string"
+      ? destinationValue.label
+      : "";
   };
 
   const waitForFirebaseUser = async () => {
@@ -101,7 +119,10 @@ const CreateTrip = () => {
     });
   };
 
-  const saveTripLocally = (docId, tripPayload) => {
+  const saveTripLocally = (
+    /** @type {string} */ docId,
+    /** @type {unknown} */ tripPayload,
+  ) => {
     localStorage.setItem(`local-trip-${docId}`, JSON.stringify(tripPayload));
   };
 
@@ -139,6 +160,8 @@ const CreateTrip = () => {
     }
 
     setLoading(true);
+    sessionStorage.setItem(TRIP_GENERATING_FLAG_KEY, "1");
+    navigate("/v2/view-trip");
 
     const loadingToastId = toast.info("Generating your itinerary...", {
       description: `Crafting a ${formData.noOfDays}-day adventure to ${destinationLabel}`,
@@ -156,10 +179,15 @@ const CreateTrip = () => {
     1. Provide a 'trip_note' about ${destinationLabel} under 25 words.
   2. Provide a 'hotel_options' array. Each hotel must have: hotel_name, address, price_per_night,   image_url, rating, description, and geo_coordinates (lat/lng).
   3. Provide an 'itinerary' object. Each day (e.g., "day_1") must have: title, best_time_to_visit,  and a 'plan' array.
-  4. Each activity in the plan must have: title, item_desc, image_url, ticket_pricing,  travel_time_min, and geo_coordinates (lat/lng).
+  4. Each activity in the plan must have: title, item_desc, image_url, ticket_pricing, travel_time_min, est_duration_min, and geo_coordinates (lat/lng).
     5. Convert all monetary values to INR and include rounded INR values wherever possible.
     6. IMPORTANT: If an image URL is unavailable, return an empty string for 'image_url'.
-    7. Return the result strictly as a single JSON object using snake_case keys as defined above.
+    7. Timing realism rules:
+       - Keep a realistic day pace with proper time gaps between activities.
+       - Meals (breakfast/lunch/dinner) must have est_duration_min >= 45.
+       - Museums/major attractions usually need 60-180 minutes.
+       - travel_time_min should reflect practical city movement, not ideal no-traffic movement.
+    8. Return the result strictly as a single JSON object using snake_case keys as defined above.
   `.trim();
 
     try {
@@ -170,21 +198,27 @@ const CreateTrip = () => {
         description: "Your itinerary is ready.",
       });
     } catch (error) {
+      sessionStorage.removeItem(TRIP_GENERATING_FLAG_KEY);
+      const aiError = /** @type {{ message?: string; code?: string }} */ (
+        error
+      );
       console.error(error);
       toast.dismiss(loadingToastId);
       if (
-        error?.message !== "AUTH_REQUIRED" &&
-        error?.code !== "permission-denied"
+        aiError?.message !== "AUTH_REQUIRED" &&
+        aiError?.code !== "permission-denied"
       ) {
         toast.error("Generation Failed", {
           description: "AI encountered an error. Please try again.",
         });
       }
+      navigate("/v2/create-trip");
     } finally {
       setLoading(false);
     }
   };
 
+  /** @param {unknown} aiResult */
   const saveToDB = async (aiResult) => {
     try {
       const userRaw = localStorage.getItem("user");
@@ -217,10 +251,14 @@ const CreateTrip = () => {
       );
       await setDoc(doc(db, "Trips", docId), tripPayload);
 
-      navigate(`/view-trip/${docId}`);
+      sessionStorage.removeItem(TRIP_GENERATING_FLAG_KEY);
+      navigate(`/v2/view-trip/${docId}`);
     } catch (error) {
+      const dbError = /** @type {{ message?: string; code?: string }} */ (
+        error
+      );
       console.error("Firebase Error:", error);
-      if (error?.message === "AUTH_REQUIRED") {
+      if (dbError?.message === "AUTH_REQUIRED") {
         setOpenDialog(true);
         toast.error("Please sign in", {
           description: "Please sign in to continue.",
@@ -228,7 +266,7 @@ const CreateTrip = () => {
         return;
       }
 
-      if (error?.code === "permission-denied") {
+      if (dbError?.code === "permission-denied") {
         const userRaw = localStorage.getItem("user");
         const user = userRaw ? JSON.parse(userRaw) : null;
         const docId = Date.now().toString();
@@ -252,9 +290,11 @@ const CreateTrip = () => {
             "Trip opened from this device only until Firestore rules are updated.",
         });
 
+        sessionStorage.removeItem(TRIP_GENERATING_FLAG_KEY);
         navigate(`/view-trip/${docId}`);
         return;
       }
+      sessionStorage.removeItem(TRIP_GENERATING_FLAG_KEY);
       throw error;
     }
   };
@@ -312,7 +352,6 @@ const CreateTrip = () => {
           </div>
 
           <div className="flex-1 flex flex-col">
-            {/* 1. Destination Input */}
             {step === 1 && (
               <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="text-center">
@@ -433,7 +472,6 @@ const CreateTrip = () => {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    {/* 2. Date Input */}
                     <div className="flex flex-col gap-3">
                       <label className="font-bold text-gray-800 flex items-center gap-2 ml-1">
                         <CalendarDays className="w-4 h-4 text-indigo-600" />{" "}
@@ -475,24 +513,26 @@ const CreateTrip = () => {
                           <Calendar
                             mode="single"
                             selected={startDateValue}
-                            onSelect={(date) => {
-                              setStartDateValue(date);
-                              handleInputChange(
-                                "startDate",
-                                date ? format(date, "yyyy-MM-dd") : "",
-                              );
-                              if (date) {
-                                setIsDatePopoverOpen(false);
+                            onSelect={
+                              /** @param {Date | undefined} date */
+                              (date) => {
+                                setStartDateValue(date);
+                                handleInputChange(
+                                  "startDate",
+                                  date ? format(date, "yyyy-MM-dd") : "",
+                                );
+                                if (date) {
+                                  setIsDatePopoverOpen(false);
+                                }
                               }
-                            }}
-                            disabled={{ before: new Date() }}
+                            }
+                            disabled={{ before: today }}
                             initialFocus
                           />
                         </PopoverContent>
                       </Popover>
                     </div>
 
-                    {/* 3. Number of Days Input */}
                     <div className="flex flex-col gap-3">
                       <label className="font-bold text-gray-800 flex items-center gap-2 ml-1">
                         <TentTree className="w-4 h-4 text-indigo-600" /> No. of
@@ -617,7 +657,7 @@ const CreateTrip = () => {
                       </h4>
                       <p
                         className={cn(
-                          "text-xs font-bold uppercase",
+                          "text-xs font-medium leading-relaxed",
                           loading ? "text-slate-400" : "text-indigo-600",
                         )}
                       >
@@ -629,7 +669,6 @@ const CreateTrip = () => {
               </div>
             )}
 
-            {/* Navigation Buttons */}
             <div className="flex justify-between items-center mt-auto pt-10 gap-4">
               {step > 1 && (
                 <button

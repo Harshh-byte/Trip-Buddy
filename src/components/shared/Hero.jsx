@@ -13,6 +13,9 @@ import {
   Github,
   Mail,
   Plane,
+  Globe,
+  Tickets,
+  UserStar,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import CountUp from "react-countup";
@@ -29,10 +32,8 @@ const Hero = () => {
 
   return (
     <div className="flex flex-col">
-      {/* SECTION 1: HERO SPLIT LAYOUT */}
       <section className="min-h-screen bg-[#FDF2E9] pt-24 pb-12 px-6 flex items-center relative overflow-hidden">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
-          {/* Left Side: Content */}
           <div className="space-y-8 text-left animate-in fade-in slide-in-from-left-8 duration-700">
             <div className="inline-flex items-center space-x-2 bg-white/60 backdrop-blur-md rounded-full px-4 py-2 border border-white/50 shadow-sm">
               <span className="relative flex h-3 w-3">
@@ -56,7 +57,7 @@ const Hero = () => {
 
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
-                onClick={() => navigate("/create-trip")}
+                onClick={() => navigate("/v2/create-trip")}
                 className="px-8 py-7 text-lg font-bold rounded-2xl bg-[#1A1A1A] hover:bg-black text-white shadow-xl transition-all hover:scale-105"
               >
                 Start Planning
@@ -65,7 +66,6 @@ const Hero = () => {
             </div>
           </div>
 
-          {/* Right Side: Visual Mockup */}
           <div className="relative group animate-in fade-in slide-in-from-right-8 duration-1000 hidden lg:block">
             <div className="bg-white rounded-[2rem] shadow-2xl border border-white p-8 transform transition-transform group-hover:-rotate-1">
               <div className="flex items-center gap-2 mb-6 border-b border-gray-100 pb-4">
@@ -127,7 +127,6 @@ const Hero = () => {
               </div>
             </div>
 
-            {/* Floating AI Badge */}
             <div className="absolute -bottom-6 -left-6 bg-white p-4 rounded-2xl shadow-xl border border-gray-100 flex items-center gap-3">
               <div className="h-10 w-10 bg-indigo-50 rounded-full flex items-center justify-center">
                 <Sparkles className="text-indigo-600 w-5 h-5 fill-indigo-50" />
@@ -145,13 +144,8 @@ const Hero = () => {
         </div>
       </section>
 
-      {/* SECTION 2: FEATURES */}
       <Features />
-
-      {/* SECTION 3: FAQ */}
       <FAQ />
-
-      {/* SECTION 4: FOOTER */}
       <Footer />
     </div>
   );
@@ -183,7 +177,7 @@ const Features = () => {
   ];
 
   return (
-    <section className="py-24 bg-white px-6">
+    <section className="pt-8 sm:pt-10 md:pt-12 pb-0 bg-white px-6">
       <div className="max-w-7xl mx-auto text-center">
         <span className="text-indigo-600 font-bold tracking-widest uppercase text-sm">
           Seamless Experience
@@ -214,31 +208,54 @@ const Features = () => {
           ))}
         </div>
 
-        {/* --- STATS SECTION WITH COUNT UP --- */}
-        <div className="mt-20 pt-12 border-t border-gray-100 flex flex-wrap justify-center gap-12 md:gap-24 text-gray-400">
-          <div className="text-center">
-            <p className="text-3xl font-black text-[#1A1A1A]">
-              <CountUp end={11} duration={2.5} enableScrollSpy scrollSpyOnce />
-              k+
-            </p>
-            <p className="text-xs uppercase tracking-widest mt-1">
-              Trips Planned
-            </p>
-          </div>
-          <div className="text-center">
-            <p className="text-3xl font-black text-[#1A1A1A]">
-              <CountUp
-                end={4.8}
-                decimals={1}
-                duration={3}
-                enableScrollSpy
-                scrollSpyOnce
-              />
-              /5
-            </p>
-            <p className="text-xs uppercase tracking-widest mt-1">
-              User Rating
-            </p>
+        <div className="max-w-5xl mx-auto px-6 relative z-20 mt-14 mb-0">
+          <div className="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/30 p-8 flex flex-col sm:flex-row justify-around items-center gap-8 divide-y sm:divide-y-0 sm:divide-x divide-slate-100">
+            <div className="text-center px-8 w-full">
+              <p className="text-4xl font-black text-slate-900 flex items-center justify-center gap-1">
+                <Tickets className="w-6 h-6 text-indigo-500" />
+                <CountUp
+                  end={11}
+                  duration={2.5}
+                  enableScrollSpy
+                  scrollSpyOnce
+                />
+                k+
+              </p>
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-2">
+                Happy Travelers
+              </p>
+            </div>
+            <div className="text-center px-8 w-full pt-8 sm:pt-0">
+              <p className="text-4xl font-black text-slate-900 flex items-center justify-center gap-1">
+                <UserStar className="w-6 h-6 text-amber-500" />
+                <CountUp
+                  end={4.8}
+                  decimals={1}
+                  duration={3}
+                  enableScrollSpy
+                  scrollSpyOnce
+                />
+                <span className="text-2xl text-slate-300">/5</span>
+              </p>
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-2">
+                User Rating
+              </p>
+            </div>
+            <div className="text-center px-8 w-full pt-8 sm:pt-0">
+              <p className="text-4xl font-black text-slate-900 flex items-center justify-center gap-2">
+                <Globe className="w-6 h-6 text-green-600" />
+                <CountUp
+                  end={190}
+                  duration={3.2}
+                  enableScrollSpy
+                  scrollSpyOnce
+                />
+                +
+              </p>
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mt-2">
+                Countries Covered
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -248,7 +265,7 @@ const Features = () => {
 
 const FAQ = () => {
   return (
-    <section className="bg-white px-6 pb-8">
+    <section className="bg-white px-6 pt-8 sm:pt-10 md:pt-12 pb-8">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-extrabold text-[#1A1A1A] tracking-tight">
