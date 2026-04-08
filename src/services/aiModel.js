@@ -105,8 +105,7 @@ const chat = ai.chats.create({
   model: "gemini-2.5-flash-lite",
 });
 
-//* Main Function to generate the trip
-
+/** @param {string} input */
 function normalizeJsonLikeText(input) {
   if (!input) return "";
 
@@ -117,10 +116,12 @@ function normalizeJsonLikeText(input) {
     .trim();
 }
 
+/** @param {string} input */
 function removeTrailingCommas(input) {
   return input.replace(/,\s*([}\]])/g, "$1");
 }
 
+/** @param {string} input */
 function extractBalancedJsonObject(input) {
   const text = input || "";
   let start = -1;
@@ -166,6 +167,7 @@ function extractBalancedJsonObject(input) {
   return null;
 }
 
+/** @param {string | null} candidate */
 function parseCandidate(candidate) {
   if (!candidate) return null;
 
@@ -191,6 +193,7 @@ function parseCandidate(candidate) {
   return null;
 }
 
+/** @param {string} textResponse */
 function parseAIJsonResponse(textResponse) {
   if (!textResponse) return null;
 
@@ -207,6 +210,10 @@ function parseAIJsonResponse(textResponse) {
   ].filter(Boolean);
 
   for (const candidate of candidates) {
+    if (typeof candidate !== "string") {
+      continue;
+    }
+
     const parsed = parseCandidate(candidate);
     if (parsed && typeof parsed === "object") {
       return parsed;
@@ -216,6 +223,7 @@ function parseAIJsonResponse(textResponse) {
   return null;
 }
 
+/** @param {string} prompt */
 function extractRequestedLocation(prompt) {
   if (!prompt || typeof prompt !== "string") return "";
 
@@ -227,6 +235,7 @@ function extractRequestedLocation(prompt) {
   return "";
 }
 
+/** @param {string} value */
 function normalizeLocationTokens(value) {
   if (!value || typeof value !== "string") return [];
 
@@ -237,6 +246,7 @@ function normalizeLocationTokens(value) {
     .filter((part) => part.length >= 3);
 }
 
+/** @param {any} payload @param {string} requestedLocation */
 function isLocationAligned(payload, requestedLocation) {
   if (!requestedLocation) return true;
 
@@ -251,16 +261,20 @@ function isLocationAligned(payload, requestedLocation) {
   return requestedTokens.some((token) => generatedLower.includes(token));
 }
 
+/** @param {unknown} amount @param {string | null | undefined} currencyCode */
 function getRoundedInr(amount, currencyCode) {
   const numericAmount = Number(amount);
   if (!Number.isFinite(numericAmount)) return null;
 
   const code =
     typeof currencyCode === "string" ? currencyCode.toUpperCase() : null;
-  const rate = (code && FX_TO_INR[code]) || FX_TO_INR.USD;
+  const rate =
+    (code && FX_TO_INR[/** @type {keyof typeof FX_TO_INR} */ (code)]) ||
+    FX_TO_INR.USD;
   return Math.round(numericAmount * rate);
 }
 
+/** @param {unknown} value */
 function parsePriceLikeValue(value) {
   if (value === null || value === undefined) {
     return { amount: null, currency: null };
@@ -293,6 +307,7 @@ function parsePriceLikeValue(value) {
   return { amount, currency: null };
 }
 
+/** @param {any} hotel */
 function normalizeHotelPrice(hotel) {
   const explicitAmount =
     hotel?.price_per_night ??
@@ -315,6 +330,7 @@ function normalizeHotelPrice(hotel) {
   };
 }
 
+/** @param {any} item */
 function normalizeTicketPrice(item) {
   const explicitAmount = item?.ticket_pricing ?? item?.ticket_price ?? null;
   const explicitCurrency = item?.ticket_currency ?? null;
@@ -329,6 +345,7 @@ function normalizeTicketPrice(item) {
   };
 }
 
+/** @param {any} itinerary */
 function normalizeItineraryShape(itinerary) {
   if (!itinerary) return {};
 
@@ -348,6 +365,7 @@ function normalizeItineraryShape(itinerary) {
   return {};
 }
 
+/** @param {any} payload */
 function hasImageCoverage(payload) {
   const hotels = Array.isArray(payload?.hotel_options)
     ? payload.hotel_options
@@ -362,7 +380,7 @@ function hasImageCoverage(payload) {
   }
 
   const hotelsHaveImages = hotels.every(
-    (hotel) =>
+    /** @type {(hotel: any) => boolean} */ (hotel) =>
       typeof hotel?.image_url === "string" &&
       hotel.image_url.trim().startsWith("https://"),
   );
@@ -384,7 +402,7 @@ function hasImageCoverage(payload) {
     }
 
     const dayHasAllImages = plan.every(
-      (item) =>
+      /** @type {(item: any) => boolean} */ (item) =>
         typeof item?.image_url === "string" &&
         item.image_url.trim().startsWith("https://"),
     );
@@ -397,6 +415,7 @@ function hasImageCoverage(payload) {
   return true;
 }
 
+/** @param {any} trip */
 function normalizeTripPayload(trip) {
   const payload = trip && typeof trip === "object" ? { ...trip } : {};
   const summarySource = payload?.trip_summary || payload?.tripSummary || {};
@@ -457,7 +476,7 @@ function normalizeTripPayload(trip) {
           ? dayObject.activities
           : [];
 
-      const normalizedPlan = plan.map((item) => {
+      const normalizedPlan = plan.map((/** @type {any} */ item) => {
         const rawItem = item && typeof item === "object" ? item : {};
         const priceData = normalizeTicketPrice(item);
         return {
@@ -525,6 +544,7 @@ function normalizeTripPayload(trip) {
   };
 }
 
+/** @param {string} DYNAMIC_PROMPT */
 export async function generateTripWithAI(DYNAMIC_PROMPT) {
   try {
     const requestedLocation = extractRequestedLocation(DYNAMIC_PROMPT);
