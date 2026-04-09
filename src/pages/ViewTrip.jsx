@@ -20,6 +20,7 @@ import {
   Globe,
   Compass,
   Sparkles,
+  Hourglass,
 } from "lucide-react";
 import {
   GetPlaceDetails,
@@ -664,6 +665,7 @@ const ViewTrip = () => {
 
                             {activity.estDuration && (
                               <span className="w-fit inline-flex items-center gap-1.5 rounded-lg bg-indigo-50/80 text-indigo-700 px-2.5 py-1.5 text-xs font-bold">
+                                <Hourglass className="w-3.5 h-3.5" />
                                 {activity.estDuration} min duration
                               </span>
                             )}

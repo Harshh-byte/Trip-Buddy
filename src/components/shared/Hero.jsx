@@ -169,9 +169,9 @@ const Features = () => {
     },
     {
       icon: <Map className="w-8 h-8 text-green-600" />,
-      title: "Customizable Maps",
+      title: "Seamless Navigation",
       description:
-        "Not happy with a stop? Swap it out or move it around. Your itinerary is 100% flexible.",
+        "Get one-click direct access to Google Maps for every hand-picked stop and stay on your itinerary.",
       bgColor: "bg-green-50",
     },
   ];
@@ -375,7 +375,7 @@ const Footer = () => {
               </a>
 
               <a
-                href="mailto:rockstarharsh7jan@example.com?subject=Trip%20Buddy%20Contact"
+                href="mailto:rockstarharsh7jan@gmail.com?subject=Trip%20Buddy%20Contact"
                 aria-label="Send an email"
                 className="group inline-flex h-10 w-10 items-center justify-center rounded-full bg-gray-50 text-gray-500 transition-all duration-200 hover:-translate-y-0.5 hover:bg-rose-50 hover:text-rose-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
               >

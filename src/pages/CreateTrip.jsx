@@ -159,6 +159,13 @@ const CreateTrip = () => {
       return;
     }
 
+    if (Number(formData.noOfDays) > 7) {
+      toast.error("Too many days", {
+        description: "For optimal itineraries, trips are currently limited to 7 days.",
+      });
+      return;
+    }
+
     setLoading(true);
     sessionStorage.setItem(TRIP_GENERATING_FLAG_KEY, "1");
     navigate("/v2/view-trip");
@@ -541,7 +548,7 @@ const CreateTrip = () => {
                       <input
                         type="number"
                         min="1"
-                        max="30"
+                        max="7"
                         placeholder="Ex: 3"
                         value={formData.noOfDays}
                         className={cn(
