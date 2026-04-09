@@ -64,7 +64,7 @@ const GetPhoto = (
     imageClassName = "",
   },
 ) => {
-  const [photoUrl, setPhotoUrl] = useState(/** @type {string | null} */ (null));
+  const [photoUrl, setPhotoUrl] = useState(/** @type {string | null} */(null));
   const fallbackPhoto = useMemo(
     () => getStreetViewUrl(locationItem),
     [locationItem],
@@ -126,7 +126,7 @@ const GetPhoto = (
 
 const MyTrips = () => {
   const navigate = useNavigate();
-  const [trips, setTrips] = useState(/** @type {any[]} */ ([]));
+  const [trips, setTrips] = useState(/** @type {any[]} */([]));
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [openLogin, setOpenLogin] = useState(false);
@@ -160,7 +160,7 @@ const MyTrips = () => {
       );
 
       toast.success("Trip removed", {
-        description: "Your itinerary has been deleted permanently",
+        description: "Your itinerary has been deleted permanently.",
       });
     } catch (error) {
       console.error("Delete trip error:", error);
@@ -168,7 +168,7 @@ const MyTrips = () => {
       toast.error("Delete failed", {
         description:
           errorObj?.code === "permission-denied"
-            ? "Couldn't delete this itinerary from all database collections. Please check Firestore delete rules for Trips."
+            ? "Unable to completely remove this itinerary due to syncing issues. Please try again later."
             : "Something went wrong while deleting this itinerary.",
       });
     } finally {
@@ -203,10 +203,10 @@ const MyTrips = () => {
           "rounded-full border border-slate-200 bg-white px-4 text-slate-700 transition-colors hover:bg-slate-100 focus:ring-2 focus:ring-slate-200",
       },
       action: {
-        label: "Delete",
+        label: "Yes, delete it.",
         onClick: () => performDeleteTrip(trip),
       },
-      cancel: { label: "Cancel", onClick: () => {} },
+      cancel: { label: "Keep it.", onClick: () => { } },
       duration: 7000,
     });
   };
