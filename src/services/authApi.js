@@ -3,6 +3,10 @@ import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { auth, db } from "./firebaseConfig";
 import { dispatchAuthUserChanged } from "../lib/authEvents";
 
+/**
+ * @param {import("firebase/auth").User | null | undefined} firebaseUser
+ * @returns {Promise<boolean>}
+ */
 const saveUserProfile = async (firebaseUser) => {
   if (!firebaseUser?.uid) {
     return false;
@@ -23,7 +27,8 @@ const saveUserProfile = async (firebaseUser) => {
     );
     return true;
   } catch (error) {
-    if (error?.code === "permission-denied") {
+    const firebaseError = /** @type {{ code?: string }} */ (error);
+    if (firebaseError?.code === "permission-denied") {
       console.warn("Profile sync skipped due to Firestore rules.");
       return false;
     }
@@ -31,6 +36,19 @@ const saveUserProfile = async (firebaseUser) => {
   }
 };
 
+/**
+ * @param {{
+ *  onSuccess?: (user: {
+ *    email: string,
+ *    name: string,
+ *    picture: string,
+ *    uid: string,
+ *    firebaseSynced: boolean,
+ *    profileSynced: boolean
+ *  }) => void,
+ *  onError?: (error: unknown) => void
+ * }} params
+ */
 export const useGoogleAuth = ({ onSuccess, onError }) => {
   return async () => {
     try {
