@@ -143,7 +143,7 @@ const Header = () => {
           ) : (
             <Button
               variant="default"
-              className="px-6 rounded-full bg-indigo-600 hover:bg-indigo-700 flex gap-2 font-semibold shadow-md shadow-indigo-100"
+              className="px-6 rounded-full bg-indigo-600 hover:bg-indigo-700 flex gap-2 font-semibold shadow-md shadow-indigo-100 text-white"
               onClick={() => setOpenDialog(true)}
             >
               <User className="w-4 h-4" />
