@@ -6,11 +6,13 @@ import { Toaster } from "./components/ui/sonner";
 import ViewTrip from "./pages/ViewTrip";
 import MyTrips from "./pages/MyTrips";
 import PageNotFound from "./pages/PageNotFound";
+import Cursor from "./components/shared/Cursor";
 
 const App = () => {
   return (
     <>
       <Toaster position="top-center" richColors />
+      <Cursor />
       <Header />
       <Routes>
         <Route path="/" element={<Home />} />
