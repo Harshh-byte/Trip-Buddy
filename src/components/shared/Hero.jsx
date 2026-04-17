@@ -4,6 +4,7 @@ import {
   MousePointerClick,
   Sparkles,
   Map,
+  MapPin,
   Star,
   TentTree,
   Bus,
@@ -15,9 +16,8 @@ import {
   Globe,
   Tickets,
   UserStar,
-  Compass,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import CountUp from "react-countup";
 import {
   Accordion,
@@ -28,6 +28,8 @@ import {
 import { FAQ_DATA } from "../../assets/data";
 
 const Hero = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="flex flex-col">
       <section className="min-h-screen bg-[#FDF2E9] pt-24 pb-12 px-6 flex items-center relative overflow-hidden">
@@ -55,17 +57,11 @@ const Hero = () => {
 
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
-                asChild
-                className="group relative overflow-hidden px-8 py-7 text-lg font-bold rounded-2xl text-white bg-linear-to-r from-[#1A1A1A] via-[#232323] to-[#121212] border border-white/15 shadow-[0_14px_34px_-14px_rgba(17,24,39,0.65)] transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_20px_42px_-16px_rgba(17,24,39,0.72)] active:scale-[0.99] focus-visible:ring-4 focus-visible:ring-indigo-300/40"
+                onClick={() => navigate("/v2/create-trip")}
+                className="px-8 py-7 text-lg font-bold rounded-2xl bg-[#1A1A1A] hover:bg-black text-white shadow-xl transition-all hover:scale-105"
               >
-                <Link
-                  to="/v2/create-trip"
-                  aria-label="Start planning your trip"
-                  className="inline-flex items-center justify-center gap-3"
-                >
-                  Start Planning
-                  <FaArrowRightLong className="w-5 h-5 shrink-0 transition-transform duration-300 group-hover:translate-x-1.5" />
-                </Link>
+                Start Planning
+                <FaArrowRightLong className="ml-3 w-5 h-5" />
               </Button>
             </div>
           </div>
@@ -74,7 +70,7 @@ const Hero = () => {
             <div className="bg-white rounded-[2rem] shadow-2xl border border-white p-8 transform transition-transform group-hover:-rotate-1">
               <div className="flex items-center gap-2 mb-6 border-b border-gray-100 pb-4">
                 <div className="bg-indigo-50 p-2 rounded-lg">
-                  <Compass className="w-5 h-5 text-indigo-600 animate-[spin_10s_linear_infinite]" />
+                  <MapPin className="w-5 h-5 text-indigo-600" />
                 </div>
                 <div>
                   <h4 className="font-bold text-gray-900">Day 1</h4>
@@ -159,21 +155,21 @@ const Features = () => {
   const features = [
     {
       icon: <MousePointerClick className="w-8 h-8 text-orange-500" />,
-      title: "Plan in Seconds",
+      title: "Pick Your Preferences",
       description:
         "Tell us your destination, budget, and who you're traveling with. We handle the rest.",
       bgColor: "bg-orange-50",
     },
     {
       icon: <Sparkles className="w-8 h-8 text-indigo-600" />,
-      title: "AI Itineraries",
+      title: "AI Generation",
       description:
         "Our advanced algorithms curate the best spots, hidden gems, and efficient routes just for you.",
       bgColor: "bg-indigo-50",
     },
     {
       icon: <Map className="w-8 h-8 text-green-600" />,
-      title: "Smart Navigation",
+      title: "Seamless Navigation",
       description:
         "Get one-click direct access to Google Maps for every hand-picked stop and stay on your itinerary.",
       bgColor: "bg-green-50",
@@ -329,13 +325,13 @@ const Footer = () => {
             <h4 className="font-bold text-[#1A1A1A] mb-4">Product</h4>
             <ul className="space-y-2 text-sm text-gray-500">
               <li className="hover:text-indigo-600 cursor-pointer transition-colors">
-                Trip Builder
+                AI Planner
               </li>
               <li className="hover:text-indigo-600 cursor-pointer transition-colors">
-                Explore Places
+                Destinations
               </li>
               <li className="hover:text-indigo-600 cursor-pointer transition-colors">
-                Plans & Pricing
+                Pricing
               </li>
             </ul>
           </div>
