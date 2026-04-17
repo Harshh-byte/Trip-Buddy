@@ -66,7 +66,7 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white/80 backdrop-blur-md border-b border-gray-200 px-6 py-3 flex items-center justify-between fixed top-0 left-0 right-0 w-full z-50">
+    <header className="glass px-6 py-3 flex items-center justify-between fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300">
       <Link to={"/"} className="flex items-center gap-x-2 cursor-pointer group">
         <div className="bg-indigo-600 p-1.5 rounded-lg group-hover:scale-110 transition-transform">
           <Plane className="w-6 h-6 text-white" />

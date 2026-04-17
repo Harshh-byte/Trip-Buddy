@@ -248,14 +248,14 @@ const MyTrips = () => {
   }, []);
 
   return (
-    <section className="max-padd-container pt-28 pb-20 min-h-screen bg-slate-50 px-4">
+    <section className="max-padd-container pt-28 pb-20 min-h-screen bg-mesh px-4">
       <div className="mx-auto max-w-7xl animate-in fade-in slide-in-from-bottom-8 duration-700">
-        <div className="rounded-[2.5rem] bg-white border border-slate-200/60 shadow-sm p-8 md:p-10 mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <div className="glass-card rounded-[2.5rem] p-8 md:p-10 mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-indigo-600 mb-2">
               Personal Planner History
             </p>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tight text-slate-900">
+            <h1 className="text-4xl md:text-5xl font-black tracking-tight text-gray-900">
               My Trips
             </h1>
             <p className="text-slate-500 font-medium mt-2">
@@ -264,7 +264,7 @@ const MyTrips = () => {
           </div>
           <Button
             onClick={() => navigate("/v2/create-trip")}
-            className="h-14 rounded-2xl bg-indigo-600 hover:bg-indigo-700 px-8 text-base font-bold shadow-lg shadow-indigo-200 transition-all hover:-translate-y-0.5"
+            className="h-14 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 px-8 text-base font-bold shadow-[0_8px_20px_-8px_rgba(79,70,229,0.5)] border-0 text-white transition-all hover:-translate-y-0.5"
           >
             <Sparkles className="w-5 h-5 mr-2" />
             Create New Trip
@@ -293,8 +293,8 @@ const MyTrips = () => {
         )}
 
         {!loading && !isAuthenticated && (
-          <div className="relative overflow-hidden rounded-[2.5rem] border border-slate-200/60 bg-white p-12 text-center shadow-sm">
-            <div className="absolute inset-0 bg-linear-to-br from-indigo-50/50 via-white to-orange-50/30" />
+          <div className="relative overflow-hidden rounded-[2.5rem] glass-card p-12 text-center">
+            <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 via-white to-orange-50/30" />
             <div className="relative z-10 flex flex-col items-center">
               <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 shadow-inner">
                 <Lock className="h-10 w-10" />
@@ -317,8 +317,8 @@ const MyTrips = () => {
         )}
 
         {!loading && isAuthenticated && trips.length === 0 && (
-          <div className="relative overflow-hidden rounded-[2.5rem] border border-slate-200/60 bg-white p-12 text-center shadow-sm">
-            <div className="absolute inset-0 bg-linear-to-br from-slate-50 via-white to-indigo-50/30" />
+          <div className="relative overflow-hidden rounded-[2.5rem] glass-card p-12 text-center">
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-indigo-50/30" />
             <div className="relative z-10 flex flex-col items-center">
               <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-slate-50 text-slate-400 shadow-inner border border-slate-100">
                 <Compass className="h-10 w-10" />
@@ -347,7 +347,7 @@ const MyTrips = () => {
               return (
                 <article
                   key={trip?.docId || trip?.id}
-                  className="group relative flex flex-col overflow-hidden rounded-[2rem] bg-white shadow-sm border border-slate-200/60 hover:shadow-xl hover:shadow-indigo-100/40 hover:-translate-y-1 transition-all duration-300"
+                  className="group relative flex flex-col overflow-hidden rounded-[2rem] glass-card hover:-translate-y-1"
                 >
                   <div className="relative h-52 w-full p-2 pb-0 overflow-hidden">
                     <GetPhoto
@@ -355,7 +355,7 @@ const MyTrips = () => {
                       className="h-full w-full rounded-3xl"
                       imageClassName="h-full w-full object-cover group-hover:scale-110"
                     />
-                    <div className="absolute inset-0 bg-linear-to-t from-slate-900/60 via-slate-900/10 to-transparent rounded-3xl m-2" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-slate-900/10 to-transparent rounded-3xl m-2" />
 
                     <div className="absolute top-5 right-5 z-20">
                       <button

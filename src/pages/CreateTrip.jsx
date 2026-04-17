@@ -171,7 +171,7 @@ const CreateTrip = () => {
     navigate("/v2/view-trip");
 
     const loadingToastId = toast.info("Generating your itinerary...", {
-      description: `Crafting a ${formData.noOfDays}-day adventure to ${destinationLabel}`,
+      description: `Crafting a ${formData.noOfDays}-day adventure to ${destinationLabel}.`,
       icon: <Loader2 className="animate-spin w-4 h-4" />,
     });
 
@@ -313,10 +313,10 @@ const CreateTrip = () => {
   ];
 
   return (
-    <div className="max-padd-container flex justify-center items-center pt-20 pb-10 min-h-screen bg-gray-50 px-4">
-      <div className="w-full max-w-3xl bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden flex flex-col min-h-[85vh]">
+    <div className="max-padd-container flex justify-center items-center pt-24 pb-10 min-h-screen bg-mesh px-4">
+      <div className="w-full max-w-3xl glass-card rounded-3xl overflow-hidden flex flex-col min-h-[85vh]">
         <div className="p-6 md:p-12 flex flex-col flex-1">
-          <div className="mb-8 rounded-2xl border border-indigo-100 bg-linear-to-r from-indigo-50 to-purple-50 p-4 md:p-5">
+          <div className="mb-8 rounded-2xl border border-indigo-100 bg-linear-to-r from-indigo-50 to-violet-50 p-4 md:p-5 shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <p className="text-xs md:text-sm font-semibold text-indigo-700">
                 Step {step} of 3
@@ -691,7 +691,7 @@ const CreateTrip = () => {
                 onClick={() =>
                   step < 3 ? setStep(step + 1) : onGenerateTrip()
                 }
-                className="flex-1 flex items-center justify-center gap-2 bg-indigo-600 text-white py-4 rounded-2xl font-bold hover:bg-indigo-700 disabled:bg-gray-300 transition-all shadow-md"
+                className="flex-1 flex items-center justify-center gap-2 bg-linear-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white py-4 rounded-2xl font-bold disabled:from-gray-300 disabled:to-gray-300 transition-all shadow-[0_8px_20px_-8px_rgba(79,70,229,0.5)] border-0"
               >
                 {loading ? (
                   <>
