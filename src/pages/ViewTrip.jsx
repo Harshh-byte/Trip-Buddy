@@ -396,9 +396,9 @@ const ViewTrip = () => {
   if (!trip) return null;
 
   return (
-    <div className="min-h-screen pt-20 pb-20 px-4 md:px-6 bg-slate-50">
+    <div className="min-h-screen pt-24 pb-20 px-4 md:px-6 bg-mesh">
       <div className="max-w-7xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
-        <section className="overflow-hidden rounded-[2.5rem] bg-white shadow-2xl shadow-slate-200/50 border border-slate-100">
+        <section className="overflow-hidden rounded-[2.5rem] glass-card">
           <div className="grid lg:grid-cols-[1.1fr_0.9fr]">
             <div className="relative min-h-112 lg:min-h-full bg-slate-900 overflow-hidden">
               <GetPhoto
@@ -446,12 +446,12 @@ const ViewTrip = () => {
               </div>
             </div>
 
-            <div className="p-5 md:p-8 bg-linear-to-br from-white via-indigo-50/30 to-slate-50 flex flex-col justify-center">
+            <div className="p-5 md:p-8 bg-white/50 backdrop-blur-md flex flex-col justify-center">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {statCards.map((item) => (
                   <div
                     key={item.label}
-                    className="flex flex-col h-full rounded-2xl border border-slate-100 bg-white p-4 shadow-sm hover:shadow-lg hover:shadow-indigo-100/40 hover:-translate-y-0.5 transition-all duration-300"
+                    className="flex flex-col h-full rounded-2xl glass-card p-4 hover:-translate-y-0.5"
                   >
                     <div className="space-y-2.5">
                       <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 group-hover:scale-105 transition-all duration-300">
@@ -506,7 +506,7 @@ const ViewTrip = () => {
                   rel="noopener noreferrer"
                   className="group block h-full"
                 >
-                  <article className="flex h-full flex-col overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm hover:shadow-xl hover:shadow-slate-200/50 hover:-translate-y-1 transition-all duration-300">
+                  <article className="flex h-full flex-col overflow-hidden rounded-[2rem] glass-card hover:-translate-y-1">
                     <div className="relative h-56 w-full overflow-hidden">
                       <GetPhoto
                         locationItem={`${hotel.name}, ${hotel.address}`}
@@ -576,7 +576,7 @@ const ViewTrip = () => {
                 <AccordionItem
                   key={day.key}
                   value={day.key}
-                  className="group overflow-hidden rounded-[2rem] border border-slate-200/70 bg-white transition-all duration-500 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-100/50 data-[state=open]:border-indigo-100 data-[state=open]:bg-linear-to-br data-[state=open]:from-[#fff8f0] data-[state=open]:via-white data-[state=open]:to-[#eef2ff] data-[state=open]:shadow-xl data-[state=open]:shadow-indigo-100/40 data-[state=open]:ring-1 data-[state=open]:ring-indigo-100"
+                  className="group overflow-hidden rounded-[2rem] glass-card data-[state=open]:ring-2 data-[state=open]:ring-indigo-100 data-[state=open]:bg-white/80"
                 >
                   <AccordionTrigger
                     showIcon={false}
@@ -629,7 +629,7 @@ const ViewTrip = () => {
                       {day.activities.map((activity) => (
                         <div
                           key={activity.id}
-                          className="group/card relative flex flex-col h-full overflow-hidden rounded-[2rem] bg-white shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-indigo-100/40 hover:-translate-y-1 transition-all duration-300"
+                          className="group/card relative flex flex-col h-full overflow-hidden rounded-[2rem] glass-card hover:-translate-y-1"
                         >
                           <div className="relative h-48 w-full overflow-hidden p-2 pb-0">
                             <GetPhoto

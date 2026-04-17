@@ -16,6 +16,8 @@ import {
   Globe,
   Tickets,
   UserStar,
+  Link,
+  Compass,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import CountUp from "react-countup";
@@ -32,9 +34,12 @@ const Hero = () => {
 
   return (
     <div className="flex flex-col">
-      <section className="min-h-screen bg-[#FDF2E9] pt-24 pb-12 px-6 flex items-center relative overflow-hidden">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center relative z-10">
-          <div className="space-y-8 text-left animate-in fade-in slide-in-from-left-8 duration-700">
+      <section className="min-h-screen bg-mesh pt-32 pb-12 px-6 flex items-center relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-indigo-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute bottom-0 left-0 w-1/2 h-1/2 bg-orange-500/10 rounded-full blur-3xl translate-y-1/3 -translate-x-1/3" />
+        
+        <div className="max-w-7xl mx-auto w-full grid lg:grid-cols-2 gap-12 lg:gap-8 items-center z-10">
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-1000">
             <div className="inline-flex items-center space-x-2 bg-white/60 backdrop-blur-md rounded-full px-4 py-2 border border-white/50 shadow-sm">
               <span className="relative flex h-3 w-3">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75" />
@@ -58,19 +63,20 @@ const Hero = () => {
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
                 onClick={() => navigate("/v2/create-trip")}
-                className="px-8 py-7 text-lg font-bold rounded-2xl bg-[#1A1A1A] hover:bg-black text-white shadow-xl transition-all hover:scale-105"
+                className="group px-8 py-7 text-lg font-bold rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-xl shadow-indigo-200 transition-all duration-300 hover:scale-105"
               >
                 Start Planning
-                <FaArrowRightLong className="ml-3 w-5 h-5" />
+                <FaArrowRightLong className="ml-3 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1.5" />
               </Button>
             </div>
           </div>
 
           <div className="relative group animate-in fade-in slide-in-from-right-8 duration-1000 hidden lg:block">
-            <div className="bg-white rounded-[2rem] shadow-2xl border border-white p-8 transform transition-transform group-hover:-rotate-1">
+            <div className="glass-card rounded-[2rem] p-8 transform transition-transform group-hover:-rotate-1 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl"></div>
               <div className="flex items-center gap-2 mb-6 border-b border-gray-100 pb-4">
                 <div className="bg-indigo-50 p-2 rounded-lg">
-                  <MapPin className="w-5 h-5 text-indigo-600" />
+                  <Compass className="w-5 h-5 text-indigo-600 animate-[spin_10s_linear_infinite]" />
                 </div>
                 <div>
                   <h4 className="font-bold text-gray-900">Day 1</h4>
@@ -155,21 +161,21 @@ const Features = () => {
   const features = [
     {
       icon: <MousePointerClick className="w-8 h-8 text-orange-500" />,
-      title: "Pick Your Preferences",
+      title: "Plan in Seconds",
       description:
         "Tell us your destination, budget, and who you're traveling with. We handle the rest.",
       bgColor: "bg-orange-50",
     },
     {
       icon: <Sparkles className="w-8 h-8 text-indigo-600" />,
-      title: "AI Generation",
+      title: "AI Itineraries",
       description:
         "Our advanced algorithms curate the best spots, hidden gems, and efficient routes just for you.",
       bgColor: "bg-indigo-50",
     },
     {
       icon: <Map className="w-8 h-8 text-green-600" />,
-      title: "Seamless Navigation",
+      title: "Smart Navigation",
       description:
         "Get one-click direct access to Google Maps for every hand-picked stop and stay on your itinerary.",
       bgColor: "bg-green-50",
@@ -177,7 +183,7 @@ const Features = () => {
   ];
 
   return (
-    <section className="pt-8 sm:pt-10 md:pt-12 pb-0 bg-white px-6">
+    <section className="pt-16 sm:pt-20 md:pt-24 pb-0 bg-transparent px-6 relative z-10 -mt-12">
       <div className="max-w-7xl mx-auto text-center">
         <span className="text-indigo-600 font-bold tracking-widest uppercase text-sm">
           Seamless Experience
@@ -191,7 +197,7 @@ const Features = () => {
           {features.map((feature, index) => (
             <div
               key={index}
-              className="group p-10 rounded-[2.5rem] bg-[#FDF2E9]/50 border border-transparent hover:border-indigo-100 hover:bg-white hover:shadow-2xl hover:shadow-indigo-100 transition-all duration-500 text-left"
+              className="group p-10 rounded-[2.5rem] glass-card text-left"
             >
               <div
                 className={`${feature.bgColor} w-16 h-16 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform`}
@@ -209,7 +215,7 @@ const Features = () => {
         </div>
 
         <div className="max-w-5xl mx-auto px-6 relative z-20 mt-14 mb-0">
-          <div className="bg-white/80 backdrop-blur-xl border border-slate-200/60 rounded-2xl shadow-lg shadow-slate-200/30 p-8 flex flex-col sm:flex-row justify-around items-center gap-8 divide-y sm:divide-y-0 sm:divide-x divide-slate-100">
+          <div className="glass rounded-3xl p-8 flex flex-col sm:flex-row justify-around items-center gap-8 divide-y sm:divide-y-0 sm:divide-x divide-gray-200/50">
             <div className="text-center px-8 w-full">
               <p className="text-4xl font-black text-slate-900 flex items-center justify-center gap-1">
                 <Tickets className="w-6 h-6 text-indigo-500" />
@@ -265,12 +271,12 @@ const Features = () => {
 
 const FAQ = () => {
   return (
-    <section className="bg-white px-6 pt-8 sm:pt-10 md:pt-12 pb-8">
+    <section className="bg-transparent px-6 pt-16 sm:pt-20 md:pt-24 pb-16">
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-extrabold text-[#1A1A1A] tracking-tight">
             Frequently <span className="text-gray-400">Asked</span>{" "}
-            <span className="text-indigo-600">Questions</span>
+            <span className="text-gradient">Questions</span>
           </h2>
           <div className="w-20 h-1.5 bg-rose-600 rounded-full mt-4 mx-auto" />
           <p className="text-gray-500 mt-4 text-lg">
@@ -283,7 +289,7 @@ const FAQ = () => {
             <AccordionItem
               key={index}
               value={`item-${index}`}
-              className="border border-gray-100 rounded-[1.5rem] px-6 py-2 bg-[#FDF2E9]/30 data-[state=open]:bg-white data-[state=open]:shadow-xl data-[state=open]:shadow-indigo-50 transition-all duration-300"
+              className="glass-card rounded-[1.5rem] px-6 py-2 data-[state=open]:border-indigo-100"
             >
               <AccordionTrigger className="text-left font-bold text-[#1A1A1A] text-lg hover:no-underline hover:text-indigo-600 transition-colors">
                 {faq.question}
