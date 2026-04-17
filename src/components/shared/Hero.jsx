@@ -72,7 +72,7 @@ const Hero = () => {
           </div>
 
           <div className="relative group animate-in fade-in slide-in-from-right-8 duration-1000 hidden lg:block">
-            <div className="glass-card rounded-[2rem] p-8 transform transition-transform group-hover:-rotate-1 relative overflow-hidden">
+            <div className="glass-card rounded-4xl p-8 transform transition-transform group-hover:-rotate-1 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl"></div>
               <div className="flex items-center gap-2 mb-6 border-b border-gray-100 pb-4">
                 <div className="bg-indigo-50 p-2 rounded-lg">
@@ -289,7 +289,7 @@ const FAQ = () => {
             <AccordionItem
               key={index}
               value={`item-${index}`}
-              className="glass-card rounded-[1.5rem] px-6 py-2 data-[state=open]:border-indigo-100"
+              className="glass-card rounded-3xl px-6 py-2 data-[state=open]:border-indigo-100"
             >
               <AccordionTrigger className="text-left font-bold text-[#1A1A1A] text-lg hover:no-underline hover:text-indigo-600 transition-colors">
                 {faq.question}
@@ -336,18 +336,12 @@ const Footer = () => {
               <li className="hover:text-indigo-600 cursor-pointer transition-colors">
                 Destinations
               </li>
-              <li className="hover:text-indigo-600 cursor-pointer transition-colors">
-                Pricing
-              </li>
             </ul>
           </div>
 
           <div className="text-left">
             <h4 className="font-bold text-[#1A1A1A] mb-4">Support</h4>
             <ul className="space-y-2 text-sm text-gray-500">
-              <li className="hover:text-indigo-600 cursor-pointer transition-colors">
-                Help Center
-              </li>
               <li className="hover:text-indigo-600 cursor-pointer transition-colors">
                 Privacy Policy
               </li>

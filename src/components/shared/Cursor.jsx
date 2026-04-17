@@ -62,10 +62,11 @@ const Cursor = () => {
         viewBox="0 0 32 32"
       >
         <path
-          d="M 2 2 L 2 24 L 8 18 L 20 16 Z"
+
+          d="M 2 2 L 2 24 L 10 18 L 20 16 Z"
           fill="white"
           stroke="black"
-          strokeWidth="2"
+          strokeWidth="3"
           strokeLinejoin="round"
         />
       </svg>
