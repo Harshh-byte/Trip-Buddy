@@ -321,7 +321,7 @@ const CreateTrip = () => {
         description="Plan your next adventure with our AI trip planner. Select your destination, budget, and travel style to get a personalized itinerary."
         keywords="AI Travel, Trip Planner, Itinerary Generator, Travel Agent, Vacation Planning"
         image="https://trip-buddy-n6b3.onrender.com/favicon.png"
-        url="https://trip-buddy-n6b3.onrender.com/create-trip"
+        url="https://trip-buddy-n6b3.onrender.com/v2/create-trip"
       />
       <div className="w-full max-w-3xl glass-card rounded-3xl overflow-hidden flex flex-col min-h-[85vh]">
         <div className="p-6 md:p-12 flex flex-col flex-1">

@@ -255,7 +255,7 @@ const MyTrips = () => {
         description="View all your AI-generated travel itineraries in one place. Access your personalized travel plans, hotel recommendations, and daily schedules."
         keywords="AI Travel, Trip Planner, Itinerary Generator, Travel Agent, Vacation Planning"
         image="https://trip-buddy-n6b3.onrender.com/favicon.png"
-        url="https://trip-buddy-n6b3.onrender.com/my-trips"
+        url="https://trip-buddy-n6b3.onrender.com/v2/my-trips"
       />
       <div className="mx-auto max-w-7xl animate-in fade-in slide-in-from-bottom-8 duration-700">
         <div className="glass-card rounded-[2.5rem] p-8 md:p-10 mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
