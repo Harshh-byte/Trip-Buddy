@@ -22,6 +22,7 @@ import {
   Sparkles,
   Hourglass,
 } from "lucide-react";
+import SEO from "../components/shared/SEO";
 import {
   GetPlaceDetails,
   PHOTO_REF_URL,
@@ -397,6 +398,13 @@ const ViewTrip = () => {
 
   return (
     <div className="min-h-screen pt-24 pb-20 px-4 md:px-6 bg-mesh">
+      <SEO
+        title={`Trip to ${destinationLabel}`}
+        description={`Explore our curated AI itinerary for ${destinationLabel}. Includes recommended hotels, daily activities, and travel tips.`}
+        keywords="AI Travel, Trip Planner, Itinerary Generator, Travel Agent, Vacation Planning"
+        image="https://trip-buddy-n6b3.onrender.com/favicon.png"
+        url={`https://trip-buddy-n6b3.onrender.com/view-trip/${tripId || ""}`}
+      />
       <div className="max-w-7xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
         <section className="overflow-hidden rounded-[2.5rem] glass-card">
           <div className="grid lg:grid-cols-[1.1fr_0.9fr]">
@@ -469,7 +477,7 @@ const ViewTrip = () => {
                 ))}
               </div>
 
-              <div className="mt-4 rounded-[1.5rem] border border-indigo-100/60 bg-indigo-50/50 p-5">
+              <div className="mt-4 rounded-3xl border border-indigo-100/60 bg-indigo-50/50 p-5">
                 <div className="flex items-center gap-2 mb-2">
                   <Route className="w-5 h-5 text-indigo-600" />
                   <p className="text-sm font-bold tracking-tight text-indigo-900">
@@ -506,7 +514,7 @@ const ViewTrip = () => {
                   rel="noopener noreferrer"
                   className="group block h-full"
                 >
-                  <article className="flex h-full flex-col overflow-hidden rounded-[2rem] glass-card hover:-translate-y-1">
+                  <article className="flex h-full flex-col overflow-hidden rounded-4xl glass-card hover:-translate-y-1">
                     <div className="relative h-56 w-full overflow-hidden">
                       <GetPhoto
                         locationItem={`${hotel.name}, ${hotel.address}`}
@@ -560,7 +568,7 @@ const ViewTrip = () => {
           </div>
 
           {itineraryDays.length === 0 ? (
-            <div className="rounded-[2rem] bg-indigo-50 border border-indigo-100 p-8 text-center">
+            <div className="rounded-4xl bg-indigo-50 border border-indigo-100 p-8 text-center">
               <p className="text-indigo-900 font-medium">
                 Your itinerary details are still being prepared. Check back
                 soon!
@@ -576,7 +584,7 @@ const ViewTrip = () => {
                 <AccordionItem
                   key={day.key}
                   value={day.key}
-                  className="group overflow-hidden rounded-[2rem] glass-card data-[state=open]:ring-2 data-[state=open]:ring-indigo-100 data-[state=open]:bg-white/80"
+                  className="group overflow-hidden rounded-4xl glass-card data-[state=open]:ring-2 data-[state=open]:ring-indigo-100 data-[state=open]:bg-white/80"
                 >
                   <AccordionTrigger
                     showIcon={false}
@@ -629,7 +637,7 @@ const ViewTrip = () => {
                       {day.activities.map((activity) => (
                         <div
                           key={activity.id}
-                          className="group/card relative flex flex-col h-full overflow-hidden rounded-[2rem] glass-card hover:-translate-y-1"
+                          className="group/card relative flex flex-col h-full overflow-hidden rounded-4xl glass-card hover:-translate-y-1"
                         >
                           <div className="relative h-48 w-full overflow-hidden p-2 pb-0">
                             <GetPhoto

@@ -26,6 +26,7 @@ import LoginDialog from "../components/shared/LoginDialog";
 import { Button } from "../components/ui/button";
 import { toast } from "sonner";
 import { cn } from "../lib/utils";
+import SEO from "../components/shared/SEO";
 import {
   GetPlaceDetails,
   PHOTO_REF_URL,
@@ -64,7 +65,7 @@ const GetPhoto = (
     imageClassName = "",
   },
 ) => {
-  const [photoUrl, setPhotoUrl] = useState(/** @type {string | null} */(null));
+  const [photoUrl, setPhotoUrl] = useState(/** @type {string | null} */ (null));
   const fallbackPhoto = useMemo(
     () => getStreetViewUrl(locationItem),
     [locationItem],
@@ -126,7 +127,7 @@ const GetPhoto = (
 
 const MyTrips = () => {
   const navigate = useNavigate();
-  const [trips, setTrips] = useState(/** @type {any[]} */([]));
+  const [trips, setTrips] = useState(/** @type {any[]} */ ([]));
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [openLogin, setOpenLogin] = useState(false);
@@ -206,7 +207,7 @@ const MyTrips = () => {
         label: "Yes, delete it.",
         onClick: () => performDeleteTrip(trip),
       },
-      cancel: { label: "Keep it.", onClick: () => { } },
+      cancel: { label: "Keep it.", onClick: () => {} },
       duration: 7000,
     });
   };
@@ -249,6 +250,13 @@ const MyTrips = () => {
 
   return (
     <section className="max-padd-container pt-28 pb-20 min-h-screen bg-mesh px-4">
+      <SEO
+        title="My Trips"
+        description="View all your AI-generated travel itineraries in one place. Access your personalized travel plans, hotel recommendations, and daily schedules."
+        keywords="AI Travel, Trip Planner, Itinerary Generator, Travel Agent, Vacation Planning"
+        image="https://trip-buddy-n6b3.onrender.com/favicon.png"
+        url="https://trip-buddy-n6b3.onrender.com/my-trips"
+      />
       <div className="mx-auto max-w-7xl animate-in fade-in slide-in-from-bottom-8 duration-700">
         <div className="glass-card rounded-[2.5rem] p-8 md:p-10 mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div>
@@ -264,7 +272,7 @@ const MyTrips = () => {
           </div>
           <Button
             onClick={() => navigate("/v2/create-trip")}
-            className="h-14 rounded-2xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 px-8 text-base font-bold shadow-[0_8px_20px_-8px_rgba(79,70,229,0.5)] border-0 text-white transition-all hover:-translate-y-0.5"
+            className="h-14 rounded-2xl bg-linear-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 px-8 text-base font-bold shadow-[0_8px_20px_-8px_rgba(79,70,229,0.5)] border-0 text-white transition-all hover:-translate-y-0.5"
           >
             <Sparkles className="w-5 h-5 mr-2" />
             Create New Trip
@@ -276,7 +284,7 @@ const MyTrips = () => {
             {Array.from({ length: 6 }).map((_, idx) => (
               <div
                 key={idx}
-                className="flex flex-col h-100 rounded-[2rem] border border-slate-200/60 bg-white p-2 shadow-sm"
+                className="flex flex-col h-100 rounded-4xl border border-slate-200/60 bg-white p-2 shadow-sm"
               >
                 <div className="h-48 w-full rounded-3xl bg-slate-100 animate-pulse" />
                 <div className="p-5 space-y-4">
@@ -294,7 +302,7 @@ const MyTrips = () => {
 
         {!loading && !isAuthenticated && (
           <div className="relative overflow-hidden rounded-[2.5rem] glass-card p-12 text-center">
-            <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 via-white to-orange-50/30" />
+            <div className="absolute inset-0 bg-linear-to-br from-indigo-50/50 via-white to-orange-50/30" />
             <div className="relative z-10 flex flex-col items-center">
               <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 shadow-inner">
                 <Lock className="h-10 w-10" />
@@ -318,7 +326,7 @@ const MyTrips = () => {
 
         {!loading && isAuthenticated && trips.length === 0 && (
           <div className="relative overflow-hidden rounded-[2.5rem] glass-card p-12 text-center">
-            <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-white to-indigo-50/30" />
+            <div className="absolute inset-0 bg-linear-to-br from-slate-50 via-white to-indigo-50/30" />
             <div className="relative z-10 flex flex-col items-center">
               <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-full bg-slate-50 text-slate-400 shadow-inner border border-slate-100">
                 <Compass className="h-10 w-10" />
@@ -347,7 +355,7 @@ const MyTrips = () => {
               return (
                 <article
                   key={trip?.docId || trip?.id}
-                  className="group relative flex flex-col overflow-hidden rounded-[2rem] glass-card hover:-translate-y-1"
+                  className="group relative flex flex-col overflow-hidden rounded-4xl glass-card hover:-translate-y-1"
                 >
                   <div className="relative h-52 w-full p-2 pb-0 overflow-hidden">
                     <GetPhoto
@@ -355,7 +363,7 @@ const MyTrips = () => {
                       className="h-full w-full rounded-3xl"
                       imageClassName="h-full w-full object-cover group-hover:scale-110"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-slate-900/10 to-transparent rounded-3xl m-2" />
+                    <div className="absolute inset-0 bg-linear-to-t from-slate-900/60 via-slate-900/10 to-transparent rounded-3xl m-2" />
 
                     <div className="absolute top-5 right-5 z-20">
                       <button
