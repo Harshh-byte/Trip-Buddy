@@ -403,7 +403,7 @@ const ViewTrip = () => {
         description={`Explore our curated AI itinerary for ${destinationLabel}. Includes recommended hotels, daily activities, and travel tips.`}
         keywords="AI Travel, Trip Planner, Itinerary Generator, Travel Agent, Vacation Planning"
         image="https://trip-buddy-n6b3.onrender.com/favicon.png"
-        url={`https://trip-buddy-n6b3.onrender.com/view-trip/${tripId || ""}`}
+        url={`https://trip-buddy-n6b3.onrender.com/v2/view-trip/${tripId || ""}`}
       />
       <div className="max-w-7xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
         <section className="overflow-hidden rounded-[2.5rem] glass-card">
