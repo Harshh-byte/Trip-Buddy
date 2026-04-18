@@ -29,6 +29,7 @@ import { doc, setDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "../services/firebaseConfig";
 import { cn } from "../lib/utils";
+import SEO from "../components/shared/SEO";
 
 Countries.registerLocale(enLocale);
 
@@ -161,7 +162,8 @@ const CreateTrip = () => {
 
     if (Number(formData.noOfDays) > 7) {
       toast.error("Too many days", {
-        description: "For optimal itineraries, trips are currently limited to 7 days.",
+        description:
+          "For optimal itineraries, trips are currently limited to 7 days.",
       });
       return;
     }
@@ -314,6 +316,13 @@ const CreateTrip = () => {
 
   return (
     <div className="max-padd-container flex justify-center items-center pt-24 pb-10 min-h-screen bg-mesh px-4">
+      <SEO
+        title="Create Your Trip"
+        description="Plan your next adventure with our AI trip planner. Select your destination, budget, and travel style to get a personalized itinerary."
+        keywords="AI Travel, Trip Planner, Itinerary Generator, Travel Agent, Vacation Planning"
+        image="https://trip-buddy-n6b3.onrender.com/favicon.png"
+        url="https://trip-buddy-n6b3.onrender.com/create-trip"
+      />
       <div className="w-full max-w-3xl glass-card rounded-3xl overflow-hidden flex flex-col min-h-[85vh]">
         <div className="p-6 md:p-12 flex flex-col flex-1">
           <div className="mb-8 rounded-2xl border border-indigo-100 bg-linear-to-r from-indigo-50 to-violet-50 p-4 md:p-5 shadow-sm">
