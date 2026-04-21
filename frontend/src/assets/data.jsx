@@ -15,7 +15,6 @@ export const BUDGET_OPTIONS = [
     icon: (
       <div className="flex items-center gap-0.5">
         <IndianRupee className="w-6 h-6" />
-        <IndianRupee className="w-6 h-6" />
       </div>
     ),
   },
@@ -25,8 +24,6 @@ export const BUDGET_OPTIONS = [
     desc: "Go all in with premium stays, fine dining, and exclusive experiences.",
     icon: (
       <div className="flex items-center gap-0.5">
-        <IndianRupee className="w-6 h-6" />
-        <IndianRupee className="w-6 h-6" />
         <IndianRupee className="w-6 h-6" />
       </div>
     ),

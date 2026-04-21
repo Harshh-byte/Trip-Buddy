@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, onSnapshot } from "firebase/firestore";
+import { useSearchParams } from "react-router-dom";
 import { auth, db } from "../services/firebaseConfig";
 import { cn } from "../lib/utils";
 import {
@@ -225,6 +226,8 @@ const ViewTrip = () => {
   const [trip, setTrip] = useState(/** @type {any} */ (null));
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [searchParams] = useSearchParams();
+  const requestId = searchParams.get("requestId");
 
   const [loadingStep, setLoadingStep] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -252,9 +255,7 @@ const ViewTrip = () => {
   useEffect(() => {
     const fetchTrip = async () => {
       if (!tripId) {
-        const isGenerating =
-          sessionStorage.getItem(TRIP_GENERATING_FLAG_KEY) === "1";
-        if (isGenerating) {
+        if (requestId) {
           setLoading(true);
           return;
         }
@@ -290,7 +291,28 @@ const ViewTrip = () => {
     };
 
     fetchTrip();
-  }, [tripId, navigate]);
+  }, [tripId, requestId, navigate]);
+
+  useEffect(() => {
+    if (!requestId || tripId) return;
+
+    const unsubscribe = onSnapshot(
+      doc(db, "Trip_requests", requestId),
+      (snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.data();
+          if (data.status === "completed" && data.tripId) {
+            navigate(`/v2/view-trip/${data.tripId}`, { replace: true });
+          } else if (data.status === "error") {
+            setLoading(false);
+            navigate("/v2/create-trip");
+          }
+        }
+      },
+    );
+
+    return () => unsubscribe();
+  }, [requestId, tripId, navigate]);
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -335,7 +357,7 @@ const ViewTrip = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen pt-20 px-6 flex items-center justify-center bg-[radial-gradient(ellipse_at_top,var(--tw-gradient-stops))] from-indigo-50 via-slate-50 to-white">
+      <div className="min-h-screen pt-32 px-6 flex items-center justify-center bg-[radial-gradient(ellipse_at_top,var(--tw-gradient-stops))] from-indigo-50 via-slate-50 to-white">
         <div className="w-full max-w-sm md:max-w-md p-8 md:p-12 bg-white/75 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/80 flex flex-col items-center text-center relative overflow-hidden">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-72 w-72 rounded-full bg-linear-to-br from-indigo-500/15 via-violet-400/10 to-transparent blur-3xl animate-pulse" />
 
@@ -397,7 +419,7 @@ const ViewTrip = () => {
   if (!trip) return null;
 
   return (
-    <div className="min-h-screen pt-24 pb-20 px-4 md:px-6 bg-mesh">
+    <div className="min-h-screen pt-32 pb-20 px-4 md:px-6 bg-mesh">
       <SEO
         title={`Trip to ${destinationLabel}`}
         description={`Explore our curated AI itinerary for ${destinationLabel}. Includes recommended hotels, daily activities, and travel tips.`}
@@ -405,7 +427,7 @@ const ViewTrip = () => {
         image="https://trip-buddy-n6b3.onrender.com/favicon.png"
         url={`https://trip-buddy-n6b3.onrender.com/v2/view-trip/${tripId || ""}`}
       />
-      <div className="max-w-7xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
+      <div className="max-w-screen-2xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
         <section className="overflow-hidden rounded-[2.5rem] glass-card">
           <div className="grid lg:grid-cols-[1.1fr_0.9fr]">
             <div className="relative min-h-112 lg:min-h-full bg-slate-900 overflow-hidden">
@@ -439,14 +461,15 @@ const ViewTrip = () => {
                   </button>
                 </div>
 
-                <div className="space-y-4 max-w-3xl">
-                  <div className="inline-flex items-center gap-2 rounded-full bg-indigo-500/20 backdrop-blur-md px-3.5 py-1.5 text-[11px] uppercase tracking-widest text-indigo-100 font-bold border border-indigo-400/30">
-                    AI Curated Itinerary
+                <div className="space-y-6 max-w-4xl">
+                  <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-xl px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-white font-black border border-white/20 shadow-lg">
+                    <Sparkles className="w-3.5 h-3.5 text-indigo-300" />
+                    AI Curated Adventure
                   </div>
-                  <h1 className="text-5xl md:text-7xl font-black tracking-tight text-white leading-[1.05]">
-                    {destinationLabel}
+                  <h1 className="text-5xl md:text-8xl font-black tracking-tighter text-white leading-none drop-shadow-2xl">
+                    {destinationLabel.split(",")[0]}
                   </h1>
-                  <p className="max-w-xl text-slate-200 text-base md:text-lg leading-relaxed font-medium">
+                  <p className="max-w-xl text-white/80 text-lg md:text-xl leading-relaxed font-bold drop-shadow-md">
                     {trip?.tripData?.tripNote?.split(".")[0] ||
                       "A personalized plan built around your travel style, budget, and schedule."}
                   </p>
@@ -455,22 +478,22 @@ const ViewTrip = () => {
             </div>
 
             <div className="p-5 md:p-8 bg-white/50 backdrop-blur-md flex flex-col justify-center">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {statCards.map((item) => (
                   <div
                     key={item.label}
-                    className="flex flex-col h-full rounded-2xl glass-card p-4 hover:-translate-y-0.5"
+                    className="flex flex-col h-full rounded-[1.8rem] glass-card p-6 border border-white/60 bg-white/40 backdrop-blur-xl hover:shadow-xl hover:-translate-y-1 transition-all group"
                   >
-                    <div className="space-y-2.5">
-                      <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 group-hover:scale-105 transition-all duration-300">
-                        <item.icon className="w-5 h-5" />
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-slate-100 text-indigo-600 shadow-sm group-hover:scale-110 transition-transform">
+                        <item.icon className="w-6 h-6" />
                       </div>
-                      <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                      <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-400">
                         {item.label}
                       </p>
                     </div>
 
-                    <p className="mt-2 min-h-11 text-sm md:text-base font-bold text-slate-900 leading-snug line-clamp-3 wrap-break-word">
+                    <p className="text-lg font-black text-slate-900 leading-tight wrap-break-word">
                       {item.value}
                     </p>
                   </div>
