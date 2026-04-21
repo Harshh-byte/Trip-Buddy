@@ -56,11 +56,7 @@
     border-color: var(--color-border);
     outline-color: color-mix(in srgb, var(--color-ring) 50%, transparent);
   }
-  @media (min-width: 769px) {
-    * {
-      cursor: none !important;
-    }
-  }
+
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
@@ -203,4 +199,48 @@
     font-size: 1rem;
     color: #6b7280;
   }
+
+  .bg-mesh {
+    background-color: #ffffff;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.05) 0px, transparent 50%),
+      radial-gradient(at 50% 0%, rgba(124, 58, 237, 0.05) 0px, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(236, 72, 153, 0.05) 0px, transparent 50%),
+      radial-gradient(at 50% 50%, rgba(79, 70, 229, 0.02) 0px, transparent 50%);
+  }
+
+  .text-gradient {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #ec4899 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.04);
+  }
+}
+
+[data-sonner-toaster] {
+  --lift-amount: 0px !important;
+  --gap: 0px !important;
+  --offset: 0px !important;
+}
+
+[data-sonner-toaster] [data-sonner-toast],
+[data-sonner-toaster]:hover [data-sonner-toast] {
+  --y: 0px !important;
+  --scale: 1 !important;
+  --lift: 0px !important;
+  --lift-amount: 0px !important;
+  transform: translate3d(0, 0, 0) scale(1) !important;
+  transition: none !important;
+}
+
+[data-sonner-toast] {
+  transition: opacity 400ms !important;
 }
