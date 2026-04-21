@@ -134,7 +134,7 @@ export const onTripRequestCreated = onDocumentCreated(
 
       await snapshot.ref.update({ status: "completed", tripId: requestId });
 
-      const resend = new Resend(process.env.VITERESEND_API_KEY);
+      const resend = new Resend(process.env.VITE_RESEND_API_KEY);
       const viewUrl = `https://trip-buddy-n6b3.onrender.com/v2/view-trip/${requestId}`;
 
       await resend.emails.send({
