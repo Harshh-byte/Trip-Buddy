@@ -151,7 +151,7 @@ const Header = () => {
             ) : (
               <Button
                 variant="default"
-                className="h-10 px-6 rounded-2xl bg-slate-900 hover:bg-indigo-600 flex items-center gap-2 font-black shadow-lg text-white transition-all hover:scale-105"
+                className="h-10 px-6 rounded-2xl bg-slate-900 flex items-center gap-2 font-black shadow-lg text-white transition-all hover:scale-105"
                 onClick={() => setOpenDialog(true)}
               >
                 <User className="w-4 h-4" />
