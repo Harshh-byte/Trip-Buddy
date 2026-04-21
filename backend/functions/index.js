@@ -85,7 +85,7 @@ export const onTripRequestCreated = onDocumentCreated(
 
     const requestData = snapshot.data();
     const { requestId } = event.params;
-    const { formData, userEmail, userName, userId } = requestData;
+    const { formData, userEmail, userName, userId, userPhoto } = requestData;
 
     console.log(`Processing trip request ${requestId} for ${userEmail}`);
 
@@ -118,6 +118,7 @@ export const onTripRequestCreated = onDocumentCreated(
         tripData: tripData,
         userEmail: userEmail,
         userName: userName,
+        userPhoto: userPhoto || "",
         userId: userId,
         id: requestId,
         createdAt: new Date().toISOString(),
@@ -132,16 +133,17 @@ export const onTripRequestCreated = onDocumentCreated(
         .doc(requestId)
         .set(tripPayload);
 
-      await snapshot.ref.update({ status: "completed", tripId: requestId });
-
-      const resend = new Resend(process.env.VITE_RESEND_API_KEY);
+      const resendApiKey = process.env.VITE_RESEND_API_KEY;
       const viewUrl = `https://trip-buddy-n6b3.onrender.com/v2/view-trip/${requestId}`;
 
-      await resend.emails.send({
-        from: "TripBuddy <onboarding@resend.dev>",
-        to: [userEmail],
-        subject: `Your trip to ${formData.destinationLabel} is ready!`,
-        html: `
+      if (userEmail && resendApiKey) {
+        try {
+          const resend = new Resend(resendApiKey);
+          await resend.emails.send({
+          from: "TripBuddy <onboarding@resend.dev>",
+          to: [userEmail],
+          subject: `Your trip to ${formData.destinationLabel} is ready!`,
+          html: `
 <!doctype html>
 <html>
    <head>
@@ -428,16 +430,20 @@ export const onTripRequestCreated = onDocumentCreated(
                <p>
                   © ${new Date().getFullYear()} Trip Buddy Inc. All rights reserved.
                </p>
-               <p>Designed with passion for effortless exploration.</p>
-            </div>
-         </div>
-      </div>
-   </body>
-</html>
-`,
-      });
+                <p>Designed with passion for effortless exploration.</p>
+             </div>
+          </div>
+       </div>
+    </body>
+ </html>
+ `,
+          });
+        } catch (emailError) {
+          console.error("Failed to send confirmation email:", emailError);
+        }
+      }
 
-      console.log(`Successfully processed trip ${requestId}`);
+      await snapshot.ref.update({ status: "completed", tripId: requestId });
     } catch (error) {
       console.error("Error in onTripRequestCreated:", error);
       const errorMessage =
