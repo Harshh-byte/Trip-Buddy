@@ -171,126 +171,45 @@ const CreateTrip = () => {
 
     setLoading(true);
 
+    const loadingToastId = toast.info("Initializing itinerary...", {
+      description: `Sending your request for a ${formData.noOfDays}-day adventure to ${destinationLabel}.`,
+      icon: <Loader2 className="animate-spin w-4 h-4" />,
+    });
+
     try {
-      const requestId = Date.now().toString();
-      const requestPayload = {
-        id: requestId,
-        userEmail: user?.email || firebaseUser?.email || "",
-        userName: user?.name || firebaseUser?.displayName || "",
-        userId: firebaseUser.uid,
-        formData: {
-          ...formData,
-          destinationLabel,
-        },
-        status: "pending",
-        createdAt: new Date().toISOString(),
-      };
-
-      await setDoc(doc(db, "Trip_requests", requestId), requestPayload);
-
-      toast("Preparing your Adventure", {
-        description:
-          "Your personalized travel plan is being crafted by our AI. We'll show it to you in a moment!",
-        icon: <Loader2 className="h-5 w-5 animate-spin text-white" />,
-        duration: 8000,
-        unstyled: true,
-        classNames: {
-          toast:
-            "bg-indigo-600 border-indigo-500 shadow-2xl shadow-indigo-200 rounded-[2rem] p-6 flex items-center gap-4 animate-in fade-in zoom-in-95 duration-300",
-          title: "text-white font-black tracking-tight",
-          description: "text-indigo-100 font-medium",
-        },
-      });
-
-      navigate(`/v2/view-trip?requestId=${requestId}`);
-    } catch (error) {
-      console.error("Error submitting trip request:", error);
-      toast.error("Submission Failed", {
-        description: "Please try again later.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  /** @param {unknown} aiResult */
-  const saveToDB = async (aiResult) => {
-    try {
-      const userRaw = localStorage.getItem("user");
-      const user = userRaw ? JSON.parse(userRaw) : null;
-
-      const firebaseUser = auth.currentUser;
-      if (!firebaseUser?.uid) {
-        throw new Error("AUTH_REQUIRED");
-      }
-
       const docId = Date.now().toString();
 
-      const parsedData =
-        typeof aiResult === "string" ? JSON.parse(aiResult) : aiResult;
-
-      const tripPayload = {
-        userSelection: formData,
-        tripData: parsedData,
+      const requestPayload = {
+        formData: {
+          ...formData,
+          destinationLabel: destinationLabel,
+        },
         userEmail: user?.email || firebaseUser?.email || "",
         userName: user?.name || firebaseUser?.displayName || "",
         userPhoto: user?.picture || firebaseUser?.photoURL || "",
         userId: firebaseUser.uid,
-        id: docId,
+        status: "pending",
         createdAt: new Date().toISOString(),
       };
 
-      await setDoc(
-        doc(db, "users", firebaseUser.uid, "trips", docId),
-        tripPayload,
-      );
-      await setDoc(doc(db, "Trips", docId), tripPayload);
+      await setDoc(doc(db, "Trip_requests", docId), requestPayload);
+
+      toast.dismiss(loadingToastId);
+      toast.success("Request received", {
+        description: "Our AI is crafting your dream trip.",
+      });
 
       sessionStorage.removeItem(TRIP_GENERATING_FLAG_KEY);
-      navigate(`/v2/view-trip/${docId}`);
+      navigate(`/v2/view-trip?requestId=${docId}`);
     } catch (error) {
-      const dbError = /** @type {{ message?: string; code?: string }} */ (
-        error
-      );
-      console.error("Firebase Error:", error);
-      if (dbError?.message === "AUTH_REQUIRED") {
-        setOpenDialog(true);
-        toast.error("Please sign in", {
-          description: "Please sign in to continue.",
-        });
-        return;
-      }
-
-      if (dbError?.code === "permission-denied") {
-        const userRaw = localStorage.getItem("user");
-        const user = userRaw ? JSON.parse(userRaw) : null;
-        const docId = Date.now().toString();
-        const parsedData =
-          typeof aiResult === "string" ? JSON.parse(aiResult) : aiResult;
-        const fallbackTripPayload = {
-          userSelection: formData,
-          tripData: parsedData,
-          userEmail: user?.email || "",
-          userName: user?.name || "",
-          userPhoto: user?.picture || "",
-          userId: auth.currentUser?.uid || "",
-          id: docId,
-          createdAt: new Date().toISOString(),
-        };
-
-        saveTripLocally(docId, fallbackTripPayload);
-
-        toast.warning("Cloud save unavailable", {
-          description:
-            "Trip opened from this device only until Firestore rules are updated.",
-        });
-
-        sessionStorage.removeItem(TRIP_GENERATING_FLAG_KEY);
-        navigate(`/view-trip/${docId}`);
-        return;
-      }
       sessionStorage.removeItem(TRIP_GENERATING_FLAG_KEY);
-      throw error;
+      console.error(error);
+      toast.dismiss(loadingToastId);
+      toast.error("Request Failed", {
+        description: "Unable to start generation. Please try again.",
+      });
+    } finally {
+      setLoading(false);
     }
   };
 

@@ -8,7 +8,6 @@ import {
   ArrowLeft,
   CalendarDays,
   Clock3,
-  IndianRupee,
   Hotel,
   MapPin,
   Navigation,
@@ -22,6 +21,7 @@ import {
   Compass,
   Sparkles,
   Hourglass,
+  Wallet,
 } from "lucide-react";
 import SEO from "../components/shared/SEO";
 import {
@@ -220,6 +220,20 @@ const formatPrice = (value) =>
 const getGoogleMapsUrl = (name, address) =>
   `https://google.com/maps/search/?api=1&query=${encodeURIComponent(`${name} ${address || ""}`)}`;
 
+/**
+ * @param {string | number | Date | null | undefined} value
+ */
+const formatFullDate = (value) => {
+  if (!value) return "Flexible Date";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+};
+
 const ViewTrip = () => {
   const { tripId } = useParams();
   const navigate = useNavigate();
@@ -338,7 +352,7 @@ const ViewTrip = () => {
           : "Custom Duration"),
       budget: base?.budget_note || "Budget flexible",
       travelers: trip?.userSelection?.travelers || "Solo/Group",
-      startDate: trip?.userSelection?.startDate || "Flexible Date",
+      startDate: formatFullDate(trip?.userSelection?.startDate || ""),
     };
   }, [trip, destinationLabel]);
 
@@ -352,7 +366,7 @@ const ViewTrip = () => {
     { label: "Duration", value: summary.duration, icon: CalendarDays },
     { label: "Travelers", value: summary.travelers, icon: Users },
     { label: "Start Date", value: summary.startDate, icon: Clock3 },
-    { label: "Budget", value: summary.budget, icon: IndianRupee },
+    { label: "Budget", value: summary.budget, icon: Wallet },
   ];
 
   if (loading) {

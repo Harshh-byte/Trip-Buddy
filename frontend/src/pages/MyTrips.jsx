@@ -195,50 +195,18 @@ const MyTrips = () => {
 
     if (deletingTripId === targetTripId) return;
 
-    toast.custom(
-      (t) => (
-        <div className="flex items-start gap-6 w-full">
-          <div className="shrink-0 h-14 w-14 rounded-2xl bg-rose-50 flex items-center justify-center">
-            <Trash2 className="h-7 w-7 text-rose-500" />
-          </div>
-          <div className="flex-1">
-            <h3 className="text-xl font-black text-slate-900 tracking-tight mb-2">
-              Remove this Itinerary?
-            </h3>
-            <p className="text-slate-500 font-medium leading-relaxed mb-8 text-sm">
-              This will permanently delete your travel plan. This action cannot
-              be undone.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  performDeleteTrip(trip);
-                  toast.dismiss(t);
-                }}
-                className="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-black rounded-2xl h-14 transition-all active:scale-95 shadow-xl shadow-rose-100 text-sm"
-              >
-                Delete Trip
-              </button>
-              <button
-                onClick={() => toast.dismiss(t)}
-                className="flex-1 bg-slate-50 hover:bg-slate-100 text-slate-600 font-black rounded-2xl h-14 border border-slate-200 transition-all active:scale-95 text-sm"
-              >
-                Keep it
-              </button>
-            </div>
-          </div>
-        </div>
-      ),
-      {
-        duration: 10000,
-        position: "top-center",
-        unstyled: true,
-        classNames: {
-          toast:
-            "bg-white border-2 border-rose-50 shadow-2xl rounded-[2.5rem] p-8 min-w-[320px] sm:min-w-[500px] flex items-center justify-center animate-in fade-in zoom-in-95 duration-300",
-        },
+    toast.warning("Remove this Itinerary?", {
+      description: "This will permanently delete your travel plan. This action cannot be undone.",
+      action: {
+        label: "Delete Trip",
+        onClick: () => performDeleteTrip(trip),
       },
-    );
+      cancel: {
+        label: "Keep it",
+        onClick: () => {},
+      },
+      duration: 10000,
+    });
   };
 
   useEffect(() => {
