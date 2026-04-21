@@ -90,7 +90,7 @@ export const onTripRequestCreated = onDocumentCreated(
     console.log(`Processing trip request ${requestId} for ${userEmail}`);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const ai = new GoogleGenAI({ apiKey: process.env.VITE_GEMINI_API_KEY });
       const chat = ai.chats.create({
         model: "gemini-2.5-flash-lite",
       });
@@ -134,7 +134,7 @@ export const onTripRequestCreated = onDocumentCreated(
 
       await snapshot.ref.update({ status: "completed", tripId: requestId });
 
-      const resend = new Resend(process.env.RESEND_API_KEY);
+      const resend = new Resend(process.env.VITERESEND_API_KEY);
       const viewUrl = `https://trip-buddy-n6b3.onrender.com/v2/view-trip/${requestId}`;
 
       await resend.emails.send({
