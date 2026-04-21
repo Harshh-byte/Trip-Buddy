@@ -195,13 +195,6 @@ export const onTripRequestCreated = onDocumentCreated(
          0 20px 25px -5px rgba(0, 0, 0, 0.1),
          0 10px 10px -5px rgba(0, 0, 0, 0.04);
          }
-         .header {
-         background-image: url("/public/banner.png");
-         background-size: cover;
-         background-position: center;
-         height: 240px;
-         width: 100%;
-         }
          .content-header {
          margin-bottom: 30px;
          }
@@ -339,7 +332,6 @@ export const onTripRequestCreated = onDocumentCreated(
    <body>
       <div class="wrapper">
          <div class="container">
-            <div class="header"></div>
             <div class="content">
                <div class="content-header">
                   <div class="logo-row-content">
