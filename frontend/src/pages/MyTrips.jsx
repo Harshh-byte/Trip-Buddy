@@ -168,7 +168,6 @@ const MyTrips = () => {
         description: "Your itinerary has been deleted permanently.",
       });
     } catch (error) {
-      console.error("Delete trip error:", error);
       const errorObj = /** @type {{ code?: string }} */ (error);
       toast.error("Delete failed", {
         description:
@@ -251,7 +250,6 @@ const MyTrips = () => {
 
         setPendingRequests(requestData);
       } catch (error) {
-        console.error("Unable to fetch trips or requests:", error);
         setTrips([]);
         setPendingRequests([]);
       } finally {

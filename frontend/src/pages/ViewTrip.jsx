@@ -290,7 +290,6 @@ const ViewTrip = () => {
             if (userTripSnap.exists()) foundTrip = userTripSnap.data();
           }
         } catch (e) {
-          console.error("Error fetching trip:", e);
         }
       }
 

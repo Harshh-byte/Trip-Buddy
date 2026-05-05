@@ -6,7 +6,6 @@ import { Toaster } from "./components/ui/sonner";
 import ViewTrip from "./pages/ViewTrip";
 import MyTrips from "./pages/MyTrips";
 import PageNotFound from "./pages/PageNotFound";
-
 import Footer from "./components/shared/Footer";
 
 const App = () => {

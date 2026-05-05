@@ -203,7 +203,6 @@ const CreateTrip = () => {
       navigate(`/v2/view-trip?requestId=${docId}`);
     } catch (error) {
       sessionStorage.removeItem(TRIP_GENERATING_FLAG_KEY);
-      console.error(error);
       toast.dismiss(loadingToastId);
       toast.error("Request Failed", {
         description: "Unable to start generation. Please try again.",
