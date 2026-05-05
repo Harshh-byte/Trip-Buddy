@@ -29,7 +29,6 @@ const saveUserProfile = async (firebaseUser) => {
   } catch (error) {
     const firebaseError = /** @type {{ code?: string }} */ (error);
     if (firebaseError?.code === "permission-denied") {
-      console.warn("Profile sync skipped due to Firestore rules.");
       return false;
     }
     throw error;
@@ -53,11 +52,11 @@ export const useGoogleAuth = ({ onSuccess, onError }) => {
   return async () => {
     try {
       const provider = new GoogleAuthProvider();
-      const authResult = await signInWithPopup(auth, provider);
-      const firebaseUser = authResult?.user;
+      const result = await signInWithPopup(auth, provider);
+      const firebaseUser = result.user;
 
       if (!firebaseUser?.uid) {
-        throw new Error("FIREBASE_AUTH_SYNC_FAILED");
+        throw new Error("FIREBASE_AUTH_FAILED");
       }
 
       const profileSynced = await saveUserProfile(firebaseUser);
@@ -78,12 +77,12 @@ export const useGoogleAuth = ({ onSuccess, onError }) => {
         onSuccess(userData);
       }
     } catch (error) {
-      localStorage.removeItem("user");
-      dispatchAuthUserChanged();
       if (onError) {
         onError(error);
       }
-      console.error("Google sign-in error:", error);
     }
   };
 };
+
+
+

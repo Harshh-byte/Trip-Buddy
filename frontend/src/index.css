@@ -57,7 +57,20 @@
     outline-color: color-mix(in srgb, var(--color-ring) 50%, transparent);
   }
 
+html {
+  width: 100vw;
+  overflow-x: hidden;
+}
+
+body[data-scroll-locked] {
+  padding-right: 0 !important;
+  width: 100vw !important;
+  overflow-x: hidden !important;
+}
+
   body {
+    width: 100vw;
+    overflow-x: hidden;
     background-color: var(--color-background);
     color: var(--color-foreground);
     -webkit-font-smoothing: antialiased;

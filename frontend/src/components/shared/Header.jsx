@@ -66,7 +66,7 @@ const Header = () => {
   };
 
   return (
-    <header className="fixed top-10 left-1/2 -translate-x-1/2 w-[92%] max-w-5xl bg-white/10 backdrop-blur-3xl rounded-[2.5rem] px-8 py-4 z-50 shadow-2xl shadow-black/5 border border-slate-900/10 transition-all duration-500">
+    <header className="fixed top-10 inset-x-0 mx-auto w-[92%] max-w-5xl bg-white/10 backdrop-blur-3xl rounded-[2.5rem] px-8 py-4 z-50 shadow-2xl shadow-black/5 border border-slate-900/10">
       <div className="flex items-center justify-between w-full">
         {/* Left: Logo */}
         <div className="flex items-center">

@@ -47,7 +47,7 @@ const LoginDialog = ({ open, onClose, onLoginSuccess = () => {} }) => {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-100 rounded-4xl p-0 overflow-hidden bg-white border border-zinc-200 shadow-xl shadow-zinc-200/50">
+      <DialogContent className="sm:max-w-100 rounded-4xl p-0 overflow-hidden bg-white border  shadow-xl shadow-zinc-200/50">
         <div className="p-8 pb-10 flex flex-col items-center">
           <div className="w-12 h-12 bg-indigo-50 rounded-[14px] flex items-center justify-center mb-6 shadow-sm border border-indigo-100">
             <Compass className="w-6 h-6 text-indigo-600" />
@@ -65,7 +65,7 @@ const LoginDialog = ({ open, onClose, onLoginSuccess = () => {} }) => {
           <div className="w-full mt-8">
             <button
               onClick={() => handleLogin()}
-              className="flex items-center justify-center w-full h-13 bg-white border border-zinc-200 rounded-xl hover:bg-indigo-50/50 hover:border-indigo-200 transition-all duration-300 group focus:outline-none shadow-sm hover:shadow-md hover:shadow-indigo-100/50"
+              className="flex items-center justify-center w-full h-13 bg-white border border-zinc-200 rounded-xl hover:bg-indigo-50/50 hover:border-indigo-200 transition-all duration-300 group focus:outline-none shadow-sm hover:shadow-md hover:shadow-indigo-100/50 cursor-pointer"
             >
               <div className="flex items-center gap-3">
                 <div className="w-4.5 h-4.5 group-hover:scale-110 transition-transform duration-300">

@@ -87,8 +87,6 @@ export const onTripRequestCreated = onDocumentCreated(
     const { requestId } = event.params;
     const { formData, userEmail, userName, userId, userPhoto } = requestData;
 
-    console.log(`Processing trip request ${requestId} for ${userEmail}`);
-
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.VITE_GEMINI_API_KEY });
       const chat = ai.chats.create({
@@ -431,13 +429,11 @@ export const onTripRequestCreated = onDocumentCreated(
  `,
           });
         } catch (emailError) {
-          console.error("Failed to send confirmation email:", emailError);
         }
       }
 
       await snapshot.ref.update({ status: "completed", tripId: requestId });
     } catch (error) {
-      console.error("Error in onTripRequestCreated:", error);
       const errorMessage =
         typeof error === "object" && error && "message" in error
           ? error.message

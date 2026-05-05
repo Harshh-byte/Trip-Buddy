@@ -586,7 +586,6 @@ export async function generateTripWithAI(DYNAMIC_PROMPT) {
 
     return normalizedTrip;
   } catch (error) {
-    console.log("Error generating trip:", error);
     throw error;
   }
 }
