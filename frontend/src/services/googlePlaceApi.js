@@ -12,10 +12,16 @@ const config = {
   },
 };
 
+/**
+ * @param {any} data
+ */
 export const GetPlaceDetails = (data) => axios.post(BASE_URL, data, config);
 
 export const PHOTO_REF_URL = `https://places.googleapis.com/v1/{NAME}/media?maxHeightPx=1000&maxWidthPx=1000&key=${GOOGLE_PLACES_API_KEY}`;
 
+/**
+ * @param {string} locationText
+ */
 export const getStreetViewUrl = (locationText) => {
   if (!GOOGLE_PLACES_API_KEY || !locationText) return "";
 
