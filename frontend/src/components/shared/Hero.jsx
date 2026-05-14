@@ -59,13 +59,7 @@ const Hero = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Button
-                onClick={() => navigate("/v2/create-trip")}
-                className="group px-8 py-6 text-lg font-bold rounded-sm bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/30 hover:shadow-indigo-600/50 transition-all duration-300 hover:-translate-y-1 ring-1 ring-indigo-500/50 hover:ring-indigo-400"
-              >
-                Start Planning
-                <FaArrowRightLong className="ml-3 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1.5" />
-              </Button>
+              {/* Button removed as per request */}
             </div>
           </div>
 

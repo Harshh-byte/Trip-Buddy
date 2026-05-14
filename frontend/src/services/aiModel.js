@@ -1,4 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "./firebaseConfig";
 
 const FX_TO_INR = {
   USD: 83,
@@ -546,9 +548,10 @@ function normalizeTripPayload(trip) {
 
 /** @param {string} DYNAMIC_PROMPT */
 export async function generateTripWithAI(DYNAMIC_PROMPT) {
-  try {
-    const requestedLocation = extractRequestedLocation(DYNAMIC_PROMPT);
+  const startTime = Date.now();
+  const requestedLocation = extractRequestedLocation(DYNAMIC_PROMPT);
 
+  try {
     const response = await chat.sendMessage({
       message: `${DYNAMIC_PROMPT}\n\n${AI_RESPONSE_CONTRACT}`,
     });
@@ -584,8 +587,26 @@ export async function generateTripWithAI(DYNAMIC_PROMPT) {
       }
     }
 
+    // Fire & forget logging to avoid slowing down user experience
+    addDoc(collection(db, "ai_logs"), {
+      prompt: DYNAMIC_PROMPT.slice(0, 300),
+      requestedLocation,
+      success: true,
+      durationMs: Date.now() - startTime,
+      createdAt: serverTimestamp(),
+    }).catch(() => {});
+
     return normalizedTrip;
   } catch (error) {
+    addDoc(collection(db, "ai_logs"), {
+      prompt: DYNAMIC_PROMPT.slice(0, 300),
+      requestedLocation,
+      success: false,
+      errorMessage: error instanceof Error ? error.message : String(error),
+      durationMs: Date.now() - startTime,
+      createdAt: serverTimestamp(),
+    }).catch(() => {});
+
     throw error;
   }
 }

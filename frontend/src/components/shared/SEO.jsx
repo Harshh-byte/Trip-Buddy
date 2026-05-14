@@ -3,19 +3,19 @@ import { Helmet } from "react-helmet-async";
 /**
  * SEO component for managing document head meta tags dynamically.
  * @param {Object} props
- * @param {string} props.title - The title of the page.
- * @param {string} props.description - The description of the page.
- * @param {string} props.keywords - The keywords for the page.
- * @param {string} props.image - The image for social sharing.
- * @param {string} props.url - The URL of the page.
+ * @param {string} [props.title] - The title of the page.
+ * @param {string} [props.description] - The description of the page.
+ * @param {string} [props.keywords] - The keywords for the page.
+ * @param {string} [props.image] - The image for social sharing.
+ * @param {string} [props.url] - The URL of the page.
  */
-const SEO = ({ 
-  title = "Trip Buddy | AI-Powered Travel Agent", 
-  description = "Design your dream getaway in seconds with our advanced AI travel planner.", 
+const SEO = ({
+  title = "Trip Buddy | AI-Powered Travel Agent",
+  description = "Design your dream getaway in seconds with our advanced AI travel planner.",
   keywords = "AI Travel, Trip Planner, Itinerary Generator, Travel Agent, Vacation Planning",
   image = "https://trip-buddy-n6b3.onrender.com/favicon.png",
-  url = "https://trip-buddy-n6b3.onrender.com/"
-}) => {
+  url = "https://trip-buddy-n6b3.onrender.com/",
+} = {}) => {
   const siteName = "Trip Buddy";
   const fullTitle = title.includes(siteName) ? title : `${title} | ${siteName}`;
 

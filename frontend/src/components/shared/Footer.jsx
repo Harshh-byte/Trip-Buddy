@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import { Plane, Twitter, Github, Mail } from "lucide-react";
 
 const Footer = () => {
@@ -25,11 +26,15 @@ const Footer = () => {
           <div className="text-left">
             <h4 className="font-bold text-[#1A1A1A] mb-4">Product</h4>
             <ul className="space-y-2 text-sm text-gray-500">
-              <li className="hover:text-indigo-600 cursor-pointer transition-colors">
-                AI Planner
+              <li>
+                <Link to="/v2/create-trip" className="hover:text-indigo-600 transition-colors">
+                  AI Planner
+                </Link>
               </li>
-              <li className="hover:text-indigo-600 cursor-pointer transition-colors">
-                Destinations
+              <li>
+                <Link to="/explore" className="hover:text-indigo-600 transition-colors">
+                  Destinations
+                </Link>
               </li>
             </ul>
           </div>
@@ -37,11 +42,15 @@ const Footer = () => {
           <div className="text-left">
             <h4 className="font-bold text-[#1A1A1A] mb-4">Support</h4>
             <ul className="space-y-2 text-sm text-gray-500">
-              <li className="hover:text-indigo-600 cursor-pointer transition-colors">
-                Privacy Policy
+              <li>
+                <Link to="/privacy" className="hover:text-indigo-600 transition-colors">
+                  Privacy Policy
+                </Link>
               </li>
-              <li className="hover:text-indigo-600 cursor-pointer transition-colors">
-                Terms of Service
+              <li>
+                <Link to="/terms" className="hover:text-indigo-600 transition-colors">
+                  Terms of Service
+                </Link>
               </li>
             </ul>
           </div>
