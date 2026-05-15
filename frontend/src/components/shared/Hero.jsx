@@ -1,19 +1,14 @@
-import { Button } from "../ui/button";
-import { FaArrowRightLong } from "react-icons/fa6";
 import {
   MousePointerClick,
   Sparkles,
   Map,
-  MapPin,
   Star,
   TentTree,
   Bus,
   Clock,
-  Plane,
   Globe,
   Tickets,
   UserStar,
-  Link,
   Compass,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";

@@ -10,8 +10,7 @@ import {
   TentTree,
 } from "lucide-react";
 import { format } from "date-fns";
-import { BUDGET_OPTIONS, TRAVELER_OPTIONS } from "../assets/data";
-import { generateTripWithAI } from "../services/aiModel";
+import { BUDGET_OPTIONS, TRAVELER_OPTIONS, INTEREST_OPTIONS } from "../assets/data";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import LoginDialog from "../components/shared/LoginDialog";
@@ -25,7 +24,7 @@ import {
 import Countries from "i18n-iso-countries";
 import enLocale from "i18n-iso-countries/langs/en.json";
 import * as FlagIcons from "country-flag-icons/react/3x2";
-import { doc, setDoc, collection } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "../services/firebaseConfig";
 import { cn } from "../lib/utils";
@@ -60,19 +59,22 @@ const CreateTrip = () => {
      * startDate: string;
      * travelers: string;
      * budget: string;
+     * interests: string[];
      * }} */ ({
       destination: null,
       noOfDays: "",
       startDate: "",
       travelers: "",
       budget: "",
+      interests: [],
     }),
   );
 
   const handleInputChange = (
-    /** @type {"destination" | "noOfDays" | "startDate" | "travelers" | "budget"} */ name,
+    /** @type {"destination" | "noOfDays" | "startDate" | "travelers" | "budget" | "interests"} */ name,
     /** @type {unknown} */ value,
   ) => {
+    // @ts-ignore: allow dynamic key assignment on formData
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -120,11 +122,60 @@ const CreateTrip = () => {
     });
   };
 
-  const saveTripLocally = (
-    /** @type {string} */ docId,
-    /** @type {unknown} */ tripPayload,
-  ) => {
-    localStorage.setItem(`local-trip-${docId}`, JSON.stringify(tripPayload));
+
+  const handleNext = () => {
+    if (step === 1) {
+      if (!formData.destination) {
+        toast.error("Destination Required", {
+          description: "Please specify your travel destination to continue.",
+        });
+        return;
+      }
+      if (!formData.startDate) {
+        toast.error("Departure Date", {
+          description: "Please select a start date for your journey.",
+        });
+        return;
+      }
+      if (!formData.noOfDays) {
+        toast.error("Trip Duration", {
+          description: "Please enter the number of days for your itinerary.",
+        });
+        return;
+      }
+      if (Number(formData.noOfDays) > 7) {
+        toast.error("Too many days", {
+          description: "For optimal itineraries, trips are currently limited to 7 days.",
+        });
+        return;
+      }
+    }
+    if (step === 2) {
+      if (!formData.travelers) {
+        toast.error("Travel Companions", {
+          description: "Please select who will be joining you on this trip.",
+        });
+        return;
+      }
+    }
+
+    if (step < 3) {
+      setStep(step + 1);
+    } else {
+      if (!formData.budget) {
+        toast.error("Travel Budget", {
+          description: "Please select a budget level to finalize your request.",
+        });
+        return;
+      }
+      if (formData.interests.length === 0) {
+        toast.error("Select Interests", {
+          description: "Please select at least one interest to personalize your trip.",
+        });
+        return;
+      }
+      onGenerateTrip();
+    }
   };
 
   const onGenerateTrip = async () => {
@@ -145,26 +196,6 @@ const CreateTrip = () => {
       setOpenDialog(true);
       toast.error("Session expired", {
         description: "Please continue with Google to proceed.",
-      });
-      return;
-    }
-
-    if (
-      !formData?.destination ||
-      !formData?.noOfDays ||
-      !formData?.budget ||
-      !formData?.travelers
-    ) {
-      toast.error("Incomplete Details", {
-        description: "Please fill all fields.",
-      });
-      return;
-    }
-
-    if (Number(formData.noOfDays) > 7) {
-      toast.error("Too many days", {
-        description:
-          "For optimal itineraries, trips are currently limited to 7 days.",
       });
       return;
     }
@@ -541,47 +572,101 @@ const CreateTrip = () => {
                 )}
 
                 {step === 3 && (
-                  <div className="space-y-8 animate-in fade-in slide-in-from-right-8 duration-700">
-                    <div className="text-left">
-                      <h3 className="text-3xl font-black text-slate-900 tracking-tight">
-                        What's the{" "}
-                        <span className="text-indigo-600">vibe?</span>
-                      </h3>
-                      <p className="text-slate-500 font-medium mt-2">
-                        Choose a budget that fits your travel style.
-                      </p>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                      {BUDGET_OPTIONS.map((item) => (
-                        <div
-                          key={item.id}
-                          onClick={() =>
-                            !loading && handleInputChange("budget", item.label)
-                          }
-                          className={cn(
-                            "group p-6 border-2 rounded-3xl transition-all duration-300 text-left relative overflow-hidden",
-                            loading
-                              ? "opacity-50 cursor-not-allowed"
-                              : "cursor-pointer hover:shadow-xl hover:-translate-y-1",
-                            formData.budget === item.label
-                              ? "border-indigo-600 bg-indigo-50/50 shadow-indigo-100"
-                              : "border-slate-100 bg-white hover:border-indigo-100",
-                          )}
-                        >
-                          {formData.budget === item.label && (
-                            <div className="absolute top-4 right-4 h-2 w-2 rounded-full bg-indigo-600 animate-ping" />
-                          )}
-                          <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white border border-slate-100 shadow-sm text-3xl group-hover:scale-110 transition-transform">
-                            {item.icon}
+                  <div className="space-y-12 animate-in fade-in slide-in-from-right-8 duration-700">
+                    <div className="space-y-6">
+                      <div className="text-left">
+                        <h3 className="text-3xl font-black text-slate-900 tracking-tight">
+                          What's the <span className="text-indigo-600">vibe?</span>
+                        </h3>
+                        <p className="text-slate-500 font-medium mt-2">
+                          Choose a budget that fits your travel style.
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        {BUDGET_OPTIONS.map((item) => (
+                          <div
+                            key={item.id}
+                            onClick={() =>
+                              !loading && handleInputChange("budget", item.label)
+                            }
+                            className={cn(
+                              "group p-6 border-2 rounded-3xl transition-all duration-300 text-left relative overflow-hidden",
+                              loading
+                                ? "opacity-50 cursor-not-allowed"
+                                : "cursor-pointer hover:shadow-xl hover:-translate-y-1",
+                              formData.budget === item.label
+                                ? "border-indigo-600 bg-indigo-50/50 shadow-indigo-100"
+                                : "border-slate-100 bg-white hover:border-indigo-100",
+                            )}
+                          >
+                            {formData.budget === item.label && (
+                              <div className="absolute top-4 right-4 h-2 w-2 rounded-full bg-indigo-600 animate-ping" />
+                            )}
+                            <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white border border-slate-100 shadow-sm text-3xl group-hover:scale-110 transition-transform">
+                              {item.icon}
+                            </div>
+                            <h4 className="font-bold text-slate-900 text-lg">
+                              {item.label}
+                            </h4>
+                            <p className="mt-2 text-sm text-slate-500 font-medium leading-relaxed">
+                              {item.desc}
+                            </p>
                           </div>
-                          <h4 className="font-bold text-slate-900 text-lg">
-                            {item.label}
-                          </h4>
-                          <p className="mt-2 text-sm text-slate-500 font-medium leading-relaxed">
-                            {item.desc}
-                          </p>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-6">
+                      <div className="text-left">
+                        <h3 className="text-3xl font-black text-slate-900 tracking-tight">
+                          What do you <span className="text-indigo-600">love?</span>
+                        </h3>
+                        <p className="text-slate-500 font-medium mt-2">
+                          Pick the activities that define your perfect adventure.
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {INTEREST_OPTIONS.map((item) => {
+                          const isSelected = formData.interests.includes(item.label);
+                          return (
+                            <div
+                              key={item.id}
+                              onClick={() => {
+                                if (loading) return;
+                                const newInterests = isSelected
+                                  ? formData.interests.filter((i) => i !== item.label)
+                                  : [...formData.interests, item.label];
+                                handleInputChange("interests", newInterests);
+                              }}
+                              className={cn(
+                                "group p-4 border-2 rounded-2xl transition-all duration-200 text-center cursor-pointer relative overflow-hidden",
+                                isSelected
+                                  ? "border-indigo-600 bg-indigo-600 text-white shadow-lg shadow-indigo-200"
+                                  : "border-slate-100 bg-white text-slate-600 hover:border-indigo-200 hover:bg-indigo-50/30",
+                              )}
+                            >
+                              <div className={cn(
+                                "mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl transition-colors",
+                                isSelected
+                                  ? "bg-white/20 text-white"
+                                  : "bg-indigo-50 text-indigo-600 group-hover:bg-indigo-100"
+                              )}>
+                                {item.icon}
+                              </div>
+                              <h4 className="font-bold text-sm">{item.label}</h4>
+                              {isSelected && (
+                                <div className="absolute top-2 right-2">
+                                  <div className="bg-white/20 rounded-full p-0.5">
+                                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}>
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -598,9 +683,7 @@ const CreateTrip = () => {
                   )}
                   <button
                     disabled={loading}
-                    onClick={() =>
-                      step < 3 ? setStep(step + 1) : onGenerateTrip()
-                    }
+                    onClick={handleNext}
                     className={cn(
                       "flex-1 h-14 flex items-center justify-center gap-2 rounded-2xl font-black text-white transition-all shadow-xl shadow-indigo-100",
                       loading

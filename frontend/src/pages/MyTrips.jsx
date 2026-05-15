@@ -15,7 +15,6 @@ import {
   CalendarDays,
   Compass,
   Loader2,
-  MapPin,
   Route,
   Sparkles,
   Trash2,

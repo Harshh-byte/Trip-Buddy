@@ -33,7 +33,7 @@ const LoginDialog = ({ open, onClose, onLoginSuccess = () => {} }) => {
     onClose();
     onLoginSuccess();
     toast.success(`Welcome back, ${userData.name}!`, {
-      description: "Successfully authenticated.",
+      description: "Successfully logged in.",
     });
   };
 
@@ -46,7 +46,7 @@ const LoginDialog = ({ open, onClose, onLoginSuccess = () => {} }) => {
     const authError = /** @type {{ code?: string, message?: string }} */ (
       error
     );
-    let message = "Authentication failed. Please try again.";
+    let message = "Login failed. Please try again.";
 
     if (authError.code === "auth/user-not-found")
       message = "No account found with this email.";
@@ -57,7 +57,7 @@ const LoginDialog = ({ open, onClose, onLoginSuccess = () => {} }) => {
     if (authError.code === "auth/weak-password")
       message = "Password should be at least 6 characters.";
 
-    toast.error("Auth Error", { description: message });
+    toast.error("Login Error", { description: message });
   };
 
   const googleAuth = useGoogleAuth({

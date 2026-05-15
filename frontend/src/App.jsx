@@ -18,10 +18,13 @@ import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsers from "./pages/admin/AdminUsers";
 import AdminTrips from "./pages/admin/AdminTrips";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminAnalytics from "./pages/admin/AdminAnalytics";
 
 const App = () => {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith("/admin");
+  const hideFooterRoutes = ["/privacy", "/terms"];
+  const shouldHideFooter = isAdminRoute || hideFooterRoutes.includes(location.pathname);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -47,13 +50,14 @@ const App = () => {
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="users" element={<AdminUsers />} />
             <Route path="trips" element={<AdminTrips />} />
+            <Route path="analytics" element={<AdminAnalytics />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>
 
           <Route path="*" element={<PageNotFound />} />
         </Routes>
       </main>
-      {!isAdminRoute && <Footer />}
+      {!shouldHideFooter && <Footer />}
     </div>
   );
 };

@@ -36,7 +36,7 @@ const PrivacyPolicy = () => {
           <section>
             <h2 className="text-xl font-bold text-slate-900 mb-4">4. Third-Party Services</h2>
             <p>
-              We use Secure Cloud Infrastructure for authentication and database management, and Advanced Artificial Intelligence systems 
+              We use Secure Cloud Infrastructure for secure login services and database management, and Advanced Artificial Intelligence systems 
               for itinerary generation. These services have their own security standards.
             </p>
           </section>
