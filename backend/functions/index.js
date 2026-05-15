@@ -7,44 +7,6 @@ admin.initializeApp();
 
 const db = admin.firestore();
 
-const FX_TO_INR = {
-  USD: 83,
-  EUR: 90,
-  GBP: 106,
-  INR: 1,
-  JPY: 0.56,
-  CAD: 61,
-  AUD: 55,
-  SGD: 62,
-  AED: 23,
-  SAR: 22,
-  TRY: 2.6,
-  THB: 2.3,
-  KRW: 0.062,
-  CNY: 11.5,
-  HKD: 10.6,
-  BRL: 16.7,
-  MXN: 4.9,
-  ZAR: 4.5,
-  CHF: 95,
-};
-const CURRENCY_SYMBOL_TO_CODE = {
-  $: "USD",
-  US$: "USD",
-  "€": "EUR",
-  "£": "GBP",
-  "₹": "INR",
-  "¥": "JPY",
-  C$: "CAD",
-  A$: "AUD",
-  S$: "SGD",
-  "₩": "KRW",
-  "₺": "TRY",
-  "฿": "THB",
-  R$: "BRL",
-  R: "ZAR",
-};
-
 const AI_RESPONSE_CONTRACT = `
 Return ONLY valid JSON (no markdown, no explanations).
 Required schema:
@@ -99,6 +61,7 @@ export const onTripRequestCreated = onDocumentCreated(
       - Duration: ${formData.noOfDays} Days
       - Group: ${formData.travelers}
       - Budget Level: ${formData.budget}
+      - Interests: ${formData.interests ? formData.interests.join(", ") : "General Travel"}
       ${AI_RESPONSE_CONTRACT}
     `.trim();
 

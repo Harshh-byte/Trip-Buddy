@@ -14,6 +14,7 @@ import {
   Route,
   Star,
   Users,
+  Heart,
   MapPinned,
   Share2,
   CheckCircle2,
@@ -352,6 +353,9 @@ const ViewTrip = () => {
       budget: base?.budget_note || "Budget flexible",
       travelers: trip?.userSelection?.travelers || "Solo/Group",
       startDate: formatFullDate(trip?.userSelection?.startDate || ""),
+      interests: Array.isArray(trip?.userSelection?.interests) 
+        ? trip.userSelection.interests.join(", ") 
+        : (trip?.userSelection?.interests || "General"),
     };
   }, [trip, destinationLabel]);
 
@@ -366,6 +370,7 @@ const ViewTrip = () => {
     { label: "Travelers", value: summary.travelers, icon: Users },
     { label: "Start Date", value: summary.startDate, icon: Clock3 },
     { label: "Budget", value: summary.budget, icon: Wallet },
+    { label: "Interests", value: summary.interests, icon: Heart },
   ];
 
   if (loading) {

@@ -1,5 +1,17 @@
-import { IndianRupee } from "lucide-react";
-import { Heart, Home, User, UsersRound } from "lucide-react";
+import {
+  IndianRupee,
+  MountainSnow,
+  Landmark,
+  UtensilsCrossed,
+  Palmtree,
+  Beer,
+  Trees,
+  ShoppingBag,
+  Heart,
+  Home,
+  User,
+  UsersRound,
+} from "lucide-react";
 
 export const BUDGET_OPTIONS = [
   {
@@ -86,5 +98,50 @@ export const TRAVELER_OPTIONS = [
     icon: <UsersRound className="w-6 h-6" />,
     desc: "Thrill-seekers group",
     people: "5+ People",
+  },
+];
+
+export const INTEREST_OPTIONS = [
+  {
+    id: "Adventure",
+    label: "Adventure",
+    desc: "Hiking, water sports, and thrill-seeking",
+    icon: <MountainSnow className="w-6 h-6" />,
+  },
+  {
+    id: "Culture",
+    label: "Culture",
+    desc: "Museums, historical sites, and local traditions",
+    icon: <Landmark className="w-6 h-6" />,
+  },
+  {
+    id: "Food",
+    label: "Food",
+    desc: "Local cuisine, street food, and fine dining",
+    icon: <UtensilsCrossed className="w-6 h-6" />,
+  },
+  {
+    id: "Relaxation",
+    label: "Relaxation",
+    desc: "Beaches, spas, and slow-paced days",
+    icon: <Palmtree className="w-6 h-6" />,
+  },
+  {
+    id: "Nightlife",
+    label: "Nightlife",
+    desc: "Bars, clubs, and evening entertainment",
+    icon: <Beer className="w-6 h-6" />,
+  },
+  {
+    id: "Nature",
+    label: "Nature",
+    desc: "National parks, wildlife, and scenic views",
+    icon: <Trees className="w-6 h-6" />,
+  },
+  {
+    id: "Shopping",
+    label: "Shopping",
+    desc: "Local markets, boutiques, and malls",
+    icon: <ShoppingBag className="w-6 h-6" />,
   },
 ];

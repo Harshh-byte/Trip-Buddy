@@ -12,44 +12,24 @@ import {
   MapPin,
   LogOut,
   Menu,
-  X,
-  ChevronRight,
   Command,
   Settings,
+  BarChart3,
 } from "lucide-react";
 import { getStoredAdminUser, logoutAdmin } from "../../services/adminApi";
 import SEO from "../shared/SEO";
 
 const AdminLayout = () => {
   const [adminUser, setAdminUser] = useState(getStoredAdminUser());
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    const handleResize = () => {
-      const mobile = window.innerWidth < 1024;
-      setIsMobile(mobile);
-      if (mobile) setSidebarOpen(false);
-      else setSidebarOpen(true);
-    };
-
-    window.addEventListener("resize", handleResize);
-    handleResize();
-
     const handleStorage = () => setAdminUser(getStoredAdminUser());
     window.addEventListener("storage", handleStorage);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      window.removeEventListener("storage", handleStorage);
-    };
+    return () => window.removeEventListener("storage", handleStorage);
   }, []);
-
-  useEffect(() => {
-    if (isMobile) setSidebarOpen(false);
-  }, [location.pathname, isMobile]);
 
   if (!adminUser) {
     return <Navigate to="/admin/login" replace />;
@@ -63,61 +43,59 @@ const AdminLayout = () => {
 
   const navItems = [
     { name: "Overview", path: "/admin/dashboard", icon: LayoutDashboard },
+    { name: "Analytics", path: "/admin/analytics", icon: BarChart3 },
     { name: "Directory", path: "/admin/users", icon: Users },
     { name: "Registry", path: "/admin/trips", icon: MapPin },
     { name: "Settings", path: "/admin/settings", icon: Settings },
   ];
 
+  const getPageTitle = () => {
+    const currentItem = navItems.find(
+      (item) => item.path === location.pathname,
+    );
+    return currentItem ? currentItem.name : "System Overview";
+  };
+
   return (
-    <div className="min-h-screen bg-slate-50 flex font-sans text-slate-900 relative">
+    <div className="min-h-screen bg-slate-50 flex font-sans text-slate-900 overflow-hidden">
       <SEO
         title="Admin Dashboard"
-        description="System Panel"
+        description="System Dashboard"
         keywords="Admin, Dashboard, Trip Buddy"
         image="https://trip-buddy-n6b3.onrender.com/favicon.png"
         url="https://trip-buddy-n6b3.onrender.com/admin/dashboard"
       />
 
-      {/* Sidebar Overlay for Mobile */}
-      {isMobile && sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 transition-opacity"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* Structural Sidebar */}
       <aside
-        className={`
-          ${isMobile ? "fixed inset-y-0 left-0 z-50 shadow-2xl" : "relative border-r border-slate-200"}
-          ${sidebarOpen ? "translate-x-0 w-64" : "-translate-x-full lg:translate-x-0 lg:w-20"}
-          transition-all duration-300 ease-in-out bg-white flex flex-col shrink-0
-        `}
+        className={`hidden lg:flex flex-col bg-white border-r border-slate-200 transition-all duration-300 ease-in-out z-40 ${
+          isCollapsed ? "w-20" : "w-64"
+        }`}
       >
-        {/* Brand Section */}
-        <div className="h-16 flex items-center justify-between px-5 border-b border-slate-100">
-          <div className="flex items-center gap-3">
-            <div className="bg-indigo-600 p-1.5 rounded-lg text-white">
+        {/* Brand Header */}
+        <div className={`h-16 flex items-center border-b border-slate-100 ${isCollapsed ? "justify-center" : "px-3 gap-3"}`}>
+          <button
+            onClick={() => setIsCollapsed(!isCollapsed)}
+            className={`p-2 rounded-xl hover:bg-slate-100 text-slate-500 hover:text-indigo-600 transition-colors shrink-0 ${isCollapsed ? "mx-auto" : ""}`}
+            title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          <div
+            className={`flex items-center gap-3 overflow-hidden transition-all duration-300 ${
+              isCollapsed ? "w-0 opacity-0" : "w-full opacity-100"
+            }`}
+          >
+            <div className="bg-indigo-600 p-1.5 rounded-lg text-white shadow-md shadow-indigo-200 shrink-0">
               <Command className="w-5 h-5" />
             </div>
-            {(sidebarOpen || isMobile) && (
-              <span className="font-bold text-sm tracking-tight leading-none text-slate-900">
-                Trip <span className="text-indigo-600">Buddy</span>
-              </span>
-            )}
+            <span className="font-bold text-lg tracking-tight truncate">
+              Trip <span className="text-indigo-600">Buddy</span>
+            </span>
           </div>
-          {isMobile && (
-            <button
-              onClick={() => setSidebarOpen(false)}
-              className="p-1 text-slate-400"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          )}
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
+        {/* Desktop Navigation */}
+        <nav className="flex-1 px-3 py-6 space-y-2 overflow-y-auto">
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -125,31 +103,35 @@ const AdminLayout = () => {
                 key={item.path}
                 to={item.path}
                 className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors group ${
+                  `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all group relative ${
                     isActive
                       ? "bg-indigo-50 text-indigo-700"
-                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                      : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
                   }`
                 }
+                title={isCollapsed ? item.name : ""}
               >
                 <Icon
-                  className={`w-5 h-5 shrink-0 ${sidebarOpen || isMobile ? "" : "mx-auto"}`}
+                  className={`w-5 h-5 shrink-0 transition-transform ${
+                    isCollapsed ? "mx-auto group-hover:scale-110" : ""
+                  }`}
                 />
-                {(sidebarOpen || isMobile) && (
-                  <>
-                    <span className="truncate flex-1">{item.name}</span>
-                    <ChevronRight className="w-4 h-4 opacity-0 group-hover:opacity-40 transition-opacity" />
-                  </>
+                {!isCollapsed && (
+                  <span className="truncate flex-1">{item.name}</span>
                 )}
+                {/* Active Indicator Line */}
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-0 bg-indigo-600 rounded-r-full transition-all duration-300 group-[.active]:h-3/4 opacity-0 group-[.active]:opacity-100" />
               </NavLink>
             );
           })}
         </nav>
 
-        {/* User Footer */}
-        <div className="p-4 border-t border-slate-200 bg-slate-50/50">
+        {/* Desktop User Footer */}
+        <div className="p-4 border-t border-slate-100">
           <div
-            className={`flex items-center gap-3 mb-4 ${!(sidebarOpen || isMobile) && "justify-center"}`}
+            className={`flex items-center gap-3 mb-4 ${
+              isCollapsed ? "justify-center" : ""
+            }`}
           >
             <img
               src={
@@ -158,56 +140,83 @@ const AdminLayout = () => {
                 `https://api.dicebear.com/7.x/avataaars/svg?seed=${adminUser?.name || "admin"}`
               }
               alt="Admin"
-              className="w-9 h-9 rounded-full border border-slate-200 object-cover shrink-0 bg-white shadow-sm"
+              className="w-10 h-10 rounded-full border border-slate-200 object-cover shrink-0 shadow-sm"
             />
-            {(sidebarOpen || isMobile) && (
-              <div className="flex flex-col truncate text-left">
+            {!isCollapsed && (
+              <div className="flex flex-col overflow-hidden">
                 <span className="text-sm font-semibold text-slate-900 truncate">
                   {adminUser?.name}
                 </span>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                  Admin
+                <span className="text-xs font-medium text-slate-500">
+                  Administrator
                 </span>
               </div>
             )}
           </div>
           <button
             onClick={handleLogout}
-            className={`w-full flex items-center gap-2 justify-center py-2 rounded-lg text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-colors border border-transparent hover:border-rose-100 ${
-              !(sidebarOpen || isMobile) && "px-0"
+            className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-colors ${
+              isCollapsed ? "px-0" : "px-4"
             }`}
+            title={isCollapsed ? "Sign Out" : ""}
           >
-            <LogOut className="w-4 h-4" />
-            {(sidebarOpen || isMobile) && (
-              <span className="text-xs font-bold uppercase tracking-widest">
-                Sign Out
-              </span>
+            <LogOut className="w-5 h-5 shrink-0" />
+            {!isCollapsed && (
+              <span className="text-sm font-semibold">Sign Out</span>
             )}
           </button>
         </div>
       </aside>
 
-      {/* Main Container */}
-      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
-        {/* Topbar */}
-        <header className="h-16 px-4 md:px-8 flex items-center justify-between shrink-0 bg-white/80 backdrop-blur-md border-b border-slate-200 z-30">
+      {/* ================= MAIN LAYOUT ================= */}
+      <div className="flex-1 flex flex-col min-w-0 h-screen relative">
+        {/* Top Header */}
+        <header className="h-16 px-4 md:px-8 flex items-center justify-between bg-white/70 backdrop-blur-lg border-b border-slate-200/60 sticky top-0 z-30">
+          <div className="flex items-center gap-3">
+            {/* Mobile Logo Only */}
+            <div className="lg:hidden bg-indigo-600 p-1.5 rounded-lg text-white shadow-md shadow-indigo-200 shrink-0">
+              <Command className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-slate-900 tracking-tight">
+                {getPageTitle()}
+              </h2>
+            </div>
+          </div>
+
           <div className="flex items-center gap-4">
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 rounded-md hover:bg-slate-100 text-slate-500 transition-colors"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-            <h2 className="text-sm font-semibold text-slate-800">
-              Admin Panel
-            </h2>
           </div>
         </header>
 
         {/* Content Area */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 max-w-7xl w-full mx-auto animate-in fade-in duration-500">
+        <main className="flex-1 overflow-y-auto p-4 md:p-8 pb-24 lg:pb-8 max-w-7xl w-full mx-auto animate-in fade-in duration-500">
           <Outlet />
         </main>
+
+        {/* ================= MOBILE BOTTOM NAVIGATION ================= */}
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-slate-200/60 pb-safe z-40">
+          <div className="flex justify-around items-center h-16 px-2">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    `flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors ${
+                      isActive
+                        ? "text-indigo-600"
+                        : "text-slate-400 hover:text-slate-600"
+                    }`
+                  }
+                >
+                  <Icon className="w-5 h-5" />
+                  <span className="text-[10px] font-semibold">{item.name}</span>
+                </NavLink>
+              );
+            })}
+          </div>
+        </nav>
       </div>
     </div>
   );

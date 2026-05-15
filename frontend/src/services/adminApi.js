@@ -183,7 +183,7 @@ export const subscribeToAiLogs = (callback) => {
       });
       callback(logs);
     },
-    (err) => {
+    () => {
       const plainQ = collection(db, "ai_logs");
       onSnapshot(plainQ, (snap) => {
         /** @type {any[]} */

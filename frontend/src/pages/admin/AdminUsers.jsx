@@ -8,11 +8,13 @@ import {
   ArrowUpDown,
   Shield,
   ShieldOff,
+  Activity,
 } from "lucide-react";
 import { toast } from "sonner";
 
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [sortConfig, setSortConfig] = useState({
@@ -36,9 +38,11 @@ const AdminUsers = () => {
             providerBadge: u.provider || "google",
           })),
         );
+        setLoading(false);
       },
       // @ts-ignore
       (err) => {
+        setLoading(false);
         if (err.code === "permission-denied") {
           toast.error("Access Denied", {
             description:
@@ -106,6 +110,28 @@ const AdminUsers = () => {
       key,
       direction: p.key === key && p.direction === "asc" ? "desc" : "asc",
     }));
+
+  if (loading) {
+    return (
+      <div className="flex h-[80vh] items-center justify-center">
+        <div className="flex flex-col items-center gap-6">
+          <div className="relative flex items-center justify-center w-16 h-16">
+            <div className="absolute inset-0 rounded-full border-4 border-slate-100"></div>
+            <div className="absolute inset-0 rounded-full border-4 border-indigo-600 border-t-transparent animate-spin"></div>
+            <Activity className="w-5 h-5 text-indigo-600 animate-pulse" />
+          </div>
+          <div className="flex flex-col items-center gap-1">
+            <p className="text-sm font-bold text-slate-900 tracking-tight">
+              Accessing Directory
+            </p>
+            <p className="text-xs font-medium text-slate-400">
+              Verifying identities...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
