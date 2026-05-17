@@ -10,6 +10,8 @@ import {
   ArrowRight,
   ArrowLeft,
   DatabaseZap,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { loginAdmin, seedAdminUser } from "../../services/adminApi";
 import { Button } from "../../components/ui/button";
@@ -23,6 +25,8 @@ const AdminLogin = () => {
   const [secretKey, setSecretKey] = useState("");
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showSecretKey, setShowSecretKey] = useState(false);
   const navigate = useNavigate();
 
   // @ts-ignore
@@ -111,12 +115,23 @@ const AdminLogin = () => {
                   <div className="relative group">
                     <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-rose-400 group-focus-within:text-rose-600 transition-colors" />
                     <input
-                      type="password"
+                      type={showSecretKey ? "text" : "password"}
                       value={secretKey}
                       onChange={(e) => setSecretKey(e.target.value)}
                       placeholder="••••••••"
-                      className="w-full pl-11 pr-4 py-3 bg-rose-50/50 border border-rose-100 rounded-xl text-sm font-medium text-slate-900 placeholder:text-rose-300 focus:bg-white focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 outline-none transition-all"
+                      className="w-full pl-11 pr-11 py-3 bg-rose-50/50 border border-rose-100 rounded-xl text-sm font-medium text-slate-900 placeholder:text-rose-300 focus:bg-white focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 outline-none transition-all"
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowSecretKey(!showSecretKey)}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-rose-400 hover:text-rose-600 transition-colors focus:outline-none"
+                    >
+                      {showSecretKey ? (
+                        <EyeOff className="w-4 h-4" />
+                      ) : (
+                        <Eye className="w-4 h-4" />
+                      )}
+                    </button>
                   </div>
                 </div>
                 
@@ -150,13 +165,24 @@ const AdminLogin = () => {
                 <div className="relative group">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all"
+                    className="w-full pl-11 pr-11 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-600 transition-colors focus:outline-none"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
                 </div>
               </div>
             </div>

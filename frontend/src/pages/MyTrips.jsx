@@ -213,6 +213,7 @@ const MyTrips = () => {
         setTrips([]);
         setIsAuthenticated(false);
         setLoading(false);
+        setOpenLogin(true);
         return;
       }
 
