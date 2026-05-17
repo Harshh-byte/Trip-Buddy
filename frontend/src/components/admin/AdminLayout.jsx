@@ -112,13 +112,17 @@ const AdminLayout = () => {
                 title={isCollapsed ? item.name : ""}
               >
                 <Icon
-                  className={`w-5 h-5 shrink-0 transition-transform ${
+                  className={`w-5 h-5 shrink-0 transition-all duration-300 ${
                     isCollapsed ? "mx-auto group-hover:scale-110" : ""
                   }`}
                 />
-                {!isCollapsed && (
-                  <span className="truncate flex-1">{item.name}</span>
-                )}
+                <span 
+                  className={`truncate transition-all duration-300 overflow-hidden ${
+                    isCollapsed ? "w-0 opacity-0" : "flex-1 opacity-100"
+                  }`}
+                >
+                  {item.name}
+                </span>
                 {/* Active Indicator Line */}
                 <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-0 bg-indigo-600 rounded-r-full transition-all duration-300 group-[.active]:h-3/4 opacity-0 group-[.active]:opacity-100" />
               </NavLink>
@@ -140,18 +144,20 @@ const AdminLayout = () => {
                 `https://api.dicebear.com/7.x/avataaars/svg?seed=${adminUser?.name || "admin"}`
               }
               alt="Admin"
-              className="w-10 h-10 rounded-full border border-slate-200 object-cover shrink-0 shadow-sm"
+              className="w-10 h-10 rounded-full border border-slate-200 object-cover shrink-0 shadow-sm transition-all duration-300"
             />
-            {!isCollapsed && (
-              <div className="flex flex-col overflow-hidden">
-                <span className="text-sm font-semibold text-slate-900 truncate">
-                  {adminUser?.name}
-                </span>
-                <span className="text-xs font-medium text-slate-500">
-                  Administrator
-                </span>
-              </div>
-            )}
+            <div 
+              className={`flex flex-col transition-all duration-300 overflow-hidden whitespace-nowrap ${
+                isCollapsed ? "w-0 opacity-0" : "flex-1 opacity-100"
+              }`}
+            >
+              <span className="text-sm font-semibold text-slate-900 truncate">
+                {adminUser?.name}
+              </span>
+              <span className="text-xs font-medium text-slate-500">
+                Administrator
+              </span>
+            </div>
           </div>
           <button
             onClick={handleLogout}
@@ -160,10 +166,14 @@ const AdminLayout = () => {
             }`}
             title={isCollapsed ? "Sign Out" : ""}
           >
-            <LogOut className="w-5 h-5 shrink-0" />
-            {!isCollapsed && (
+            <LogOut className="w-5 h-5 shrink-0 transition-all duration-300" />
+            <div
+              className={`overflow-hidden transition-all duration-300 flex items-center whitespace-nowrap ${
+                isCollapsed ? "w-0 opacity-0" : "w-auto opacity-100 ml-2"
+              }`}
+            >
               <span className="text-sm font-semibold">Sign Out</span>
-            )}
+            </div>
           </button>
         </div>
       </aside>

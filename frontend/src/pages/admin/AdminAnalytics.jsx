@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useEffect, useState, useMemo } from "react";
 import {
   BarChart,
@@ -398,7 +399,7 @@ const AdminAnalytics = () => {
                   axisLine={false}
                   tickLine={false}
                   tick={{ fontSize: 12, fontWeight: 600, fill: "#64748b" }}
-                  dy={16}
+                  dy={10}
                 />
                 <YAxis
                   axisLine={false}

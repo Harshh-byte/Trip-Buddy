@@ -35,12 +35,15 @@ const Header = () => {
     const handleStorageChange = () => {
       setUser(getStoredUser());
     };
+    const handleOpenLoginDialog = () => setOpenDialog(true);
 
     window.addEventListener("storage", handleStorageChange);
     window.addEventListener(AUTH_USER_CHANGED_EVENT, handleStorageChange);
+    window.addEventListener("open-login-dialog", handleOpenLoginDialog);
     return () => {
       window.removeEventListener("storage", handleStorageChange);
       window.removeEventListener(AUTH_USER_CHANGED_EVENT, handleStorageChange);
+      window.removeEventListener("open-login-dialog", handleOpenLoginDialog);
     };
   }, []);
 
