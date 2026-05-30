@@ -42,6 +42,14 @@ const getFallbackBlogData = (name, country) => ({
   conclusion: `${name} is an amazing travel destination that leaves every visitor with deep memories. Plan your journey today and experience it for yourself!`,
 });
 
+const LOADING_STEPS = [
+  { icon: Globe, text: "Gathering regional destination info..." },
+  { icon: Landmark, text: "Curating top places to visit..." },
+  { icon: Utensils, text: "Analyzing culinary highlights..." },
+  { icon: Wallet, text: "Estimating local travel costs..." },
+  { icon: Sparkles, text: "Polishing your travel guide..." },
+];
+
 const GuideDetails = () => {
   const { wikiTitle } = useParams();
   const location = useLocation();
@@ -59,6 +67,15 @@ const GuideDetails = () => {
   const [countryName, setCountryName] = useState(stateData.countryName || "");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [loadingStep, setLoadingStep] = useState(0);
+
+  useEffect(() => {
+    if (!loading) return;
+    const interval = setInterval(() => {
+      setLoadingStep((prev) => (prev + 1) % LOADING_STEPS.length);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, [loading]);
 
   const [description, setDescription] = useState("");
   const [coverImage, setCoverImage] = useState("");
@@ -219,7 +236,7 @@ const GuideDetails = () => {
         });
         const attractionPlaces = attractionsSearchRes?.data?.places || [];
         const mappedAttractions = attractionPlaces
-          .slice(0, 3)
+          .slice(0, 4)
           .map((place) => {
             const photoName = place.photos?.[0]?.name;
             return {
@@ -315,12 +332,52 @@ Do not wrap in markdown codeblocks. Return raw JSON text only.
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 pt-40 pb-20 px-6 flex items-center justify-center font-sans">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
-          <p className="text-slate-500 font-bold text-sm">
-            Crafting travel guide...
-          </p>
+      <div className="min-h-screen pt-32 px-6 flex items-center justify-center bg-[radial-gradient(ellipse_at_top,var(--tw-gradient-stops))] from-indigo-50 via-slate-50 to-white">
+        <div className="w-full max-w-sm md:max-w-md p-8 md:p-12 bg-white/75 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/80 flex flex-col items-center text-center relative overflow-hidden">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-72 w-72 rounded-full bg-linear-to-br from-indigo-500/15 via-violet-400/10 to-transparent blur-3xl animate-pulse" />
+
+          <div className="relative z-10 mb-8 flex h-28 w-28 items-center justify-center rounded-full bg-linear-to-br from-indigo-500 via-violet-600 to-fuchsia-500 shadow-2xl shadow-indigo-200/60 ring-1 ring-white/70 overflow-hidden">
+            <div className="absolute inset-0 rounded-full border border-white/35 animate-pulse" />
+            <div className="absolute inset-2 rounded-full border border-white/30" />
+            <div className="absolute inset-3 rounded-full bg-white/10 backdrop-blur-sm" />
+
+            {LOADING_STEPS.map((step, index) => {
+              const Icon = step.icon;
+              const isActive = index === loadingStep;
+              return (
+                <div
+                  key={index}
+                  className={`absolute inset-0 flex items-center justify-center transition-all duration-1000 ease-in-out ${
+                    isActive
+                      ? "opacity-100 transform translate-y-0 scale-100"
+                      : "opacity-0 transform translate-y-4 scale-75"
+                  }`}
+                >
+                  <Icon className="w-11 h-11 text-white drop-shadow-md" />
+                </div>
+              );
+            })}
+          </div>
+
+          <h3 className="relative z-10 text-3xl font-black text-slate-900 mb-3 tracking-tight">
+            Crafting Guide...
+          </h3>
+
+          <div className="relative z-10 h-6 overflow-hidden mb-4 w-full">
+            <div
+              className="transition-transform duration-700 ease-in-out flex flex-col items-center"
+              style={{ transform: `translateY(-${loadingStep * 24}px)` }}
+            >
+              {LOADING_STEPS.map((step, i) => (
+                <p
+                  key={i}
+                  className="h-6 text-sm font-bold text-indigo-600/90 leading-6"
+                >
+                  {step.text}
+                </p>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -414,13 +471,13 @@ Do not wrap in markdown codeblocks. Return raw JSON text only.
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-40 pb-20 px-6 font-sans">
+    <div className="min-h-screen bg-slate-50 pt-32 pb-20 px-4 md:px-6 font-sans">
       <SEO
         title={`${destinationName} Travel Guide | Trip Buddy`}
         description={`Explore the ultimate travel guide for ${destinationName}, ${countryName}. Discover key facts, language, currency details, and top local attractions.`}
       />
 
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-screen-2xl mx-auto">
         <div className="mb-8">
           <Link
             to="/explore"
@@ -575,7 +632,7 @@ Do not wrap in markdown codeblocks. Return raw JSON text only.
                     Top Places to Visit
                   </h3>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
                   {attractions.map((att) => (
                     <div
                       key={att.id}
