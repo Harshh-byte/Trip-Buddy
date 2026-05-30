@@ -672,19 +672,19 @@ const Explore = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 pt-40 pb-20 px-6 font-sans animate-in fade-in duration-300">
+      <div className="min-h-screen bg-slate-50 pt-32 pb-20 px-4 md:px-6 font-sans animate-in fade-in duration-300">
         <SEO
           title="Explore Destinations"
           description="Discover your next adventure with Trip Buddy's curated destinations."
         />
 
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-screen-2xl mx-auto">
           <div className="text-center mb-16 space-y-4">
             <div className="h-12 w-96 bg-slate-200 rounded-xl mx-auto animate-pulse" />
             <div className="h-6 w-120 bg-slate-100 rounded-lg mx-auto animate-pulse" />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i) => (
               <div
                 key={i}
@@ -711,13 +711,13 @@ const Explore = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-40 pb-20 px-6 font-sans">
+    <div className="min-h-screen bg-slate-50 pt-32 pb-20 px-4 md:px-6 font-sans">
       <SEO
         title="Explore Destinations"
         description="Discover your next adventure with Trip Buddy's curated destinations."
       />
 
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-screen-2xl mx-auto">
         <div className="text-center mb-16 space-y-4">
           <h1 className="text-5xl font-black text-slate-900 tracking-tight animate-in fade-in slide-in-from-bottom-4 duration-700">
             Discover Your Next{" "}
@@ -735,7 +735,7 @@ const Explore = () => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {destinations.map((dest, idx) => (
             <div
               key={dest.id}
@@ -808,13 +808,10 @@ const Explore = () => {
                   )}
                 </div>
 
-                <div className="flex justify-between items-center mt-6">
-                  <span className="text-xs font-bold text-slate-400">
-                    Written by Trip Guide
-                  </span>
+                <div className="mt-6">
                   <button
                     onClick={() => handlePlanTrip(dest)}
-                    className="text-indigo-600 hover:text-indigo-700 font-bold text-sm flex items-center gap-1 group/btn transition-colors cursor-pointer"
+                    className="w-full h-10 rounded-2xl bg-slate-900 hover:bg-indigo-600 text-white font-bold text-sm flex items-center justify-center gap-2 transition-all hover:scale-102 active:scale-98 group/btn shadow-md shadow-slate-900/10 cursor-pointer"
                   >
                     Read Guide
                     <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
