@@ -12,6 +12,8 @@ import {
   Globe,
   Trash2,
   Activity,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
@@ -253,7 +255,7 @@ const AdminTrips = () => {
                     Owner <ArrowUpDown className="w-3 h-3" />
                   </div>
                 </th>
-                <th className="px-6 py-3 font-semibold text-right">Action</th>
+                <th className="px-6 py-3 font-semibold text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -303,8 +305,8 @@ const AdminTrips = () => {
                       {trip.ownerEmail}
                     </p>
                   </td>
-                  <td className="px-6 py-3 text-right">
-                    <div className="flex items-center justify-end gap-2">
+                  <td className="px-6 py-3 text-center">
+                    <div className="flex items-center justify-center gap-2">
                       <Link
                         to={`/v2/view-trip/${trip.id}`}
                         target="_blank"
@@ -348,16 +350,18 @@ const AdminTrips = () => {
             <button
               onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
               disabled={currentPage === 1}
-              className="px-3 py-1.5 text-xs font-semibold border border-slate-200 rounded-md bg-white disabled:opacity-50 transition-colors hover:bg-slate-50"
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold border border-slate-200 rounded-md bg-white disabled:opacity-50 transition-colors hover:bg-slate-50"
             >
+              <ChevronLeft className="w-3.5 h-3.5" />
               Prev
             </button>
             <button
               onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
               disabled={currentPage === totalPages || totalPages === 0}
-              className="px-3 py-1.5 text-xs font-semibold border border-slate-200 rounded-md bg-white disabled:opacity-50 transition-colors hover:bg-slate-50"
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold border border-slate-200 rounded-md bg-white disabled:opacity-50 transition-colors hover:bg-slate-50"
             >
               Next
+              <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>

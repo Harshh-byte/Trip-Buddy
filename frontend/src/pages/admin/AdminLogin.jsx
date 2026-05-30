@@ -127,9 +127,9 @@ const AdminLogin = () => {
                       className="absolute right-3.5 top-1/2 -translate-y-1/2 text-rose-400 hover:text-rose-600 transition-colors focus:outline-none"
                     >
                       {showSecretKey ? (
-                        <EyeOff className="w-4 h-4" />
-                      ) : (
                         <Eye className="w-4 h-4" />
+                      ) : (
+                        <EyeOff className="w-4 h-4" />
                       )}
                     </button>
                   </div>
@@ -178,9 +178,9 @@ const AdminLogin = () => {
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-600 transition-colors focus:outline-none"
                   >
                     {showPassword ? (
-                      <EyeOff className="w-4 h-4" />
-                    ) : (
                       <Eye className="w-4 h-4" />
+                    ) : (
+                      <EyeOff className="w-4 h-4" />
                     )}
                   </button>
                 </div>
