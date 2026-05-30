@@ -23,13 +23,15 @@ import AdminAnalytics from "./pages/admin/AdminAnalytics";
 const App = () => {
   const location = useLocation();
   const isAdminRoute = location.pathname.startsWith("/admin");
+  const hideHeaderRoutes = ["/privacy", "/terms"];
   const hideFooterRoutes = ["/privacy", "/terms"];
+  const shouldHideHeader = isAdminRoute || hideHeaderRoutes.includes(location.pathname);
   const shouldHideFooter = isAdminRoute || hideFooterRoutes.includes(location.pathname);
 
   return (
     <div className="flex flex-col min-h-screen">
       <Toaster position="top-center" richColors />
-      {!isAdminRoute && <Header />}
+      {!shouldHideHeader && <Header />}
       <main className="flex-1">
         <ScrollToTop />
         <Routes>
@@ -41,7 +43,7 @@ const App = () => {
           <Route path="/v2/my-trips" element={<MyTrips />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsOfService />} />
-          <Route path="/explore" element={<Explore />} />
+          <Route path="/v2/explore" element={<Explore />} />
 
           {/* Admin Core Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />

@@ -77,7 +77,7 @@ const Header = () => {
             to={"/"}
             className="flex items-center gap-x-2.5 cursor-pointer group"
           >
-            <div className="bg-indigo-600 p-2 border-2 rounded-sm group-hover:rotate-12 transition-all duration-500 shadow-lg shadow-indigo-200">
+            <div className="bg-indigo-600 p-2 rounded-sm group-hover:rotate-12 transition-all duration-500">
               <Plane className="w-5 h-5 text-white" />
             </div>
             <span className="font-black text-base tracking-tighter text-slate-900 group-hover:text-indigo-600 transition-colors">
@@ -89,7 +89,7 @@ const Header = () => {
         {/* Right: User Actions */}
         <div className="flex items-center gap-3">
           <Button
-            className="hidden lg:flex h-10 px-6 items-center gap-2 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black shadow-lg shadow-indigo-100 transition-all hover:scale-105 active:scale-95"
+            className="hidden lg:flex h-10 px-6 items-center gap-2 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black transition-all hover:scale-105 active:scale-95"
             onClick={handleCreateTripClick}
           >
             <Sparkles className="w-4 h-4" />

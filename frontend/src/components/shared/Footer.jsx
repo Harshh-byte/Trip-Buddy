@@ -52,7 +52,7 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <Link to="/explore" className="hover:text-indigo-600 transition-colors">
+                <Link to="/v2/explore" className="hover:text-indigo-600 transition-colors">
                   Destinations
                 </Link>
               </li>
@@ -63,12 +63,12 @@ const Footer = () => {
             <h4 className="font-bold text-[#1A1A1A] mb-4">Support</h4>
             <ul className="space-y-2 text-sm text-gray-500">
               <li>
-                <Link to="/privacy" className="hover:text-indigo-600 transition-colors">
+                <Link to="/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 transition-colors">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link to="/terms" className="hover:text-indigo-600 transition-colors">
+                <Link to="/terms" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 transition-colors">
                   Terms of Service
                 </Link>
               </li>

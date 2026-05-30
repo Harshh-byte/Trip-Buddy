@@ -8,7 +8,7 @@ import {
 } from "../ui/dialog";
 import { useGoogleAuth, useEmailAuth } from "../../services/authApi";
 import { toast } from "sonner";
-import { Compass, Mail, Lock, User, ArrowRight, Loader2 } from "lucide-react";
+import { Compass, Mail, Lock, User, ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
 
 /**
  * @param {{
@@ -23,6 +23,7 @@ const LoginDialog = ({ open, onClose, onLoginSuccess = () => {} }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   /**
    * @param {any} userData
@@ -180,12 +181,23 @@ const LoginDialog = ({ open, onClose, onLoginSuccess = () => {} }) => {
               <div className="relative group">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full h-12 pl-11 pr-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 outline-none transition-all"
+                  className="w-full h-12 pl-11 pr-11 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 outline-none transition-all"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-600 transition-colors focus:outline-none cursor-pointer"
+                >
+                  {showPassword ? (
+                    <Eye className="w-4 h-4" />
+                  ) : (
+                    <EyeOff className="w-4 h-4" />
+                  )}
+                </button>
               </div>
               <button
                 type="submit"

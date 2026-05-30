@@ -24,12 +24,12 @@ const destinations = [
   },
   {
     id: 3,
-    name: "Bali",
-    country: "Indonesia",
+    name: "Swiss Alps",
+    country: "Switzerland",
     image:
-      "https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&q=80&w=800",
-    description: "Tropical paradise with lush jungles and serene beaches.",
-    tag: "Relaxation",
+      "https://images.unsplash.com/photo-1528493366314-e317cd98dd52?auto=format&fit=crop&q=80&w=800",
+    description: "Majestic snow-capped peaks, pristine alpine lakes, and charming mountain villages.",
+    tag: "Adventure",
   },
   {
     id: 4,
