@@ -1,70 +1,717 @@
-import React from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Sparkles, MapPin, ArrowRight } from "lucide-react";
+import { ArrowRight, Languages, Wallet } from "lucide-react";
 import SEO from "../components/shared/SEO";
+import {
+  GetPlaceDetails,
+  PHOTO_REF_URL,
+  getStreetViewUrl,
+} from "../services/googlePlaceApi";
 
-const destinations = [
-  {
-    id: 1,
-    name: "Paris",
-    country: "France",
-    image:
-      "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&q=80&w=800",
-    description: "The city of light, romance, and iconic architecture.",
-    tag: "Romantic",
-  },
-  {
-    id: 2,
-    name: "Tokyo",
-    country: "Japan",
-    image:
-      "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&q=80&w=800",
-    description: "A neon-lit metropolis where tradition meets the future.",
-    tag: "Vibrant",
-  },
-  {
-    id: 3,
-    name: "Swiss Alps",
-    country: "Switzerland",
-    image:
-      "https://images.unsplash.com/photo-1528493366314-e317cd98dd52?auto=format&fit=crop&q=80&w=800",
-    description: "Majestic snow-capped peaks, pristine alpine lakes, and charming mountain villages.",
-    tag: "Adventure",
-  },
-  {
-    id: 4,
-    name: "Rome",
-    country: "Italy",
-    image:
-      "https://images.unsplash.com/photo-1552832230-c0197dd311b5?auto=format&fit=crop&q=80&w=800",
-    description: "An eternal city filled with history and ancient wonders.",
-    tag: "Historic",
-  },
-  {
-    id: 5,
-    name: "New York",
-    country: "USA",
-    image:
-      "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&q=80&w=800",
-    description: "The concrete jungle where dreams are made of.",
-    tag: "Iconic",
-  },
-  {
-    id: 6,
-    name: "Santorini",
-    country: "Greece",
-    image:
-      "https://images.unsplash.com/photo-1613395877344-13d4a8e0d49e?auto=format&fit=crop&q=80&w=800",
-    description: "White-washed buildings and stunning sunset views.",
-    tag: "Scenic",
-  },
-];
+let canUsePlacesPhotoLookup = true;
+
+const SEASONAL_POOLS = {
+  Spring: [
+    {
+      id: "spring-1",
+      name: "Kyoto",
+      country: "Japan",
+      wikiTitle: "Kyoto",
+      fallbackDesc:
+        "Kyoto, once the capital of Japan, is a city on the island of Honshu famous for its thousands of classical Buddhist temples, gardens, imperial palaces, Shinto shrines, and traditional wooden houses.",
+      tag: "Cherry Blossoms",
+    },
+    {
+      id: "spring-2",
+      name: "Amsterdam",
+      country: "Netherlands",
+      wikiTitle: "Amsterdam",
+      fallbackDesc:
+        "Amsterdam is the Netherlands' capital, known for its artistic heritage, elaborate canal system and narrow houses with gabled facades, legacies of the city's 17th-century Golden Age.",
+      tag: "Tulip Season",
+    },
+    {
+      id: "spring-3",
+      name: "Washington, D.C.",
+      country: "United States",
+      wikiTitle: "Washington,_D.C.",
+      fallbackDesc:
+        "Washington, D.C., the U.S. capital, is a compact city on the Potomac River, bordering the states of Maryland and Virginia, defined by imposing neoclassical monuments and buildings.",
+      tag: "Cherry Blossom Fest",
+    },
+    {
+      id: "spring-4",
+      name: "Bonn",
+      country: "Germany",
+      wikiTitle: "Bonn",
+      fallbackDesc:
+        "Bonn is a city in western Germany straddling the Rhine River. It’s known for the central Beethoven House, a memorial and museum honoring the composer's birthplace.",
+      tag: "Blossom Avenues",
+    },
+    {
+      id: "spring-5",
+      name: "Vancouver",
+      country: "Canada",
+      wikiTitle: "Vancouver",
+      fallbackDesc:
+        "Vancouver, a bustling west coast seaport in British Columbia, is among Canada’s densest, most ethnically diverse cities, surrounded by mountains and popular for filming.",
+      tag: "Mild Spring",
+    },
+    {
+      id: "spring-6",
+      name: "Paris",
+      country: "France",
+      wikiTitle: "Paris",
+      fallbackDesc:
+        "Paris, France's capital, is a major European city and a global center for art, fashion, gastronomy and culture, famed for its 19th-century cityscape.",
+      tag: "Romantic",
+    },
+    {
+      id: "spring-7",
+      name: "Rome",
+      country: "Italy",
+      wikiTitle: "Rome",
+      fallbackDesc:
+        "Rome is the capital city and a special comune of Italy. Rome serves as the capital of the Lazio region, featuring historical ruins like the Colosseum.",
+      tag: "Spring Sunshine",
+    },
+    {
+      id: "spring-8",
+      name: "Seville",
+      country: "Spain",
+      wikiTitle: "Seville",
+      fallbackDesc:
+        "Seville is the capital and largest city of the Spanish autonomous community of Andalusia and the province of Seville. It is famous for its stunning Alcázar palace complex.",
+      tag: "Spring Blossoms",
+    },
+    {
+      id: "spring-9",
+      name: "London",
+      country: "United Kingdom",
+      wikiTitle: "London",
+      fallbackDesc:
+        "London is the capital and largest city of England and the United Kingdom, famous for its iconic landmarks like Big Ben, the Tower of London, and its historic royal parks that burst with spring colors.",
+      tag: "Spring Gardens",
+    },
+    {
+      id: "spring-10",
+      name: "Florence",
+      country: "Italy",
+      wikiTitle: "Florence",
+      fallbackDesc:
+        "Florence, capital of Italy’s Tuscany region, is home to many masterpieces of Renaissance art and architecture, including the iconic Duomo and Michelangelo’s 'David'.",
+      tag: "Art & Blooms",
+    },
+    {
+      id: "spring-11",
+      name: "Vienna",
+      country: "Austria",
+      wikiTitle: "Vienna",
+      fallbackDesc:
+        "Vienna, Austria’s capital, lies in the country’s east on the Danube River. Its artistic and intellectual legacy was shaped by residents including Mozart, Beethoven and Sigmund Freud.",
+      tag: "Palace Gardens",
+    },
+    {
+      id: "spring-12",
+      name: "San Francisco",
+      country: "United States",
+      wikiTitle: "San Francisco",
+      fallbackDesc:
+        "San Francisco, in northern California, is a hilly city on the tip of a peninsula surrounded by the Pacific Ocean and San Francisco Bay, famous for the Golden Gate Bridge.",
+      tag: "Bay Breezes",
+    },
+  ],
+  Summer: [
+    {
+      id: "summer-1",
+      name: "Santorini",
+      country: "Greece",
+      wikiTitle: "Santorini",
+      fallbackDesc:
+        "Santorini is one of the Cyclades islands in the Aegean Sea. It was devastated by a volcanic eruption in the 16th century BC, forever shaping its rugged landscape.",
+      tag: "Sunny Coast",
+    },
+    {
+      id: "summer-2",
+      name: "Bali",
+      country: "Indonesia",
+      wikiTitle: "Bali",
+      fallbackDesc:
+        "Bali is a province of Indonesia and the westernmost of the Lesser Sunda Islands. East of Java and west of Lombok, the province includes the island of Bali.",
+      tag: "Tropical Getaway",
+    },
+    {
+      id: "summer-3",
+      name: "Amalfi Coast",
+      country: "Italy",
+      wikiTitle: "Amalfi_Coast",
+      fallbackDesc:
+        "The Amalfi Coast is a 50-kilometer stretch of coastline along the southern edge of Italy’s Sorrentine Peninsula, in the Campania region.",
+      tag: "Scenic Coast",
+    },
+    {
+      id: "summer-4",
+      name: "Barcelona",
+      country: "Spain",
+      wikiTitle: "Barcelona",
+      fallbackDesc:
+        "Barcelona is a city on the coast of northeastern Spain. It is the capital and largest city of the autonomous community of Catalonia.",
+      tag: "Vibrant Culture",
+    },
+    {
+      id: "summer-5",
+      name: "Dubrovnik",
+      country: "Croatia",
+      wikiTitle: "Dubrovnik",
+      fallbackDesc:
+        "Dubrovnik is a city in southern Croatia fronting the Adriatic Sea. It's known for its distinctive Old Town, encircled with massive stone walls completed in the 16th century.",
+      tag: "Historic Walls",
+    },
+    {
+      id: "summer-6",
+      name: "Reykjavik",
+      country: "Iceland",
+      wikiTitle: "Reykjavik",
+      fallbackDesc:
+        "Reykjavik, on the coast of Iceland, is the country's capital and largest city. It is home to the National and Saga museums, tracing Iceland’s Viking history.",
+      tag: "Midnight Sun",
+    },
+    {
+      id: "summer-7",
+      name: "Maui",
+      country: "United States",
+      wikiTitle: "Maui",
+      fallbackDesc:
+        "Maui is an island in the Central Pacific, part of the Hawaiian archipelago. Sprawling Haleakala National Park encompasses the island’s highest peak.",
+      tag: "Beach Vibe",
+    },
+    {
+      id: "summer-8",
+      name: "Nice",
+      country: "France",
+      wikiTitle: "Nice",
+      fallbackDesc:
+        "Nice, capital of the Alpes-Maritimes department on the French Riviera, sits on the pebbly shores of the Baie des Anges, founded by the Greeks.",
+      tag: "Riviera Glamour",
+    },
+    {
+      id: "summer-9",
+      name: "Lisbon",
+      country: "Portugal",
+      wikiTitle: "Lisbon",
+      fallbackDesc:
+        "Lisbon is the hilly, coastal capital city of Portugal, renowned for its warm summer weather, pastel-colored buildings, traditional Fado music, and historic tram lines.",
+      tag: "Sunny Streets",
+    },
+    {
+      id: "summer-10",
+      name: "Mallorca",
+      country: "Spain",
+      wikiTitle: "Mallorca",
+      fallbackDesc:
+        "Mallorca is one of Spain's Balearic Islands in the Mediterranean. It's known for beach resorts, sheltered coves, limestone mountains and Roman and Moorish remains.",
+      tag: "Island Escape",
+    },
+    {
+      id: "summer-11",
+      name: "Oahu",
+      country: "United States",
+      wikiTitle: "Oahu",
+      fallbackDesc:
+        "Oahu is a Hawaiian island in the Central Pacific, home to the state capital, Honolulu, historic Pearl Harbor, and the famous world-class surf of the North Shore.",
+      tag: "Surfer's Haven",
+    },
+    {
+      id: "summer-12",
+      name: "Mykonos",
+      country: "Greece",
+      wikiTitle: "Mykonos",
+      fallbackDesc:
+        "Mykonos is an island in the Cyclades group in the Aegean Sea. It's popularly known for its summer party atmosphere, iconic 16th-century windmills, and sandy beaches.",
+      tag: "Cycladic Sun",
+    },
+  ],
+  Autumn: [
+    {
+      id: "autumn-1",
+      name: "Kyoto",
+      country: "Japan",
+      wikiTitle: "Kyoto",
+      fallbackDesc:
+        "Kyoto features jaw-dropping autumn colors (koyo) framing its ancient temples and Zen gardens, transforming the city into a scenic gold and red masterpiece.",
+      tag: "Autumn Foliage",
+    },
+    {
+      id: "autumn-2",
+      name: "Munich",
+      country: "Germany",
+      wikiTitle: "Munich",
+      fallbackDesc:
+        "Munich, Bavaria’s capital, is home to centuries-old buildings and numerous museums. The city is famous for its annual Oktoberfest celebration and its beer halls.",
+      tag: "Oktoberfest",
+    },
+    {
+      id: "autumn-3",
+      name: "Vermont",
+      country: "United States",
+      wikiTitle: "Vermont",
+      fallbackDesc:
+        "Vermont is a state in the northeastern United States, known for its natural landscape, which is primarily forested, and famous for its gorgeous fall foliage.",
+      tag: "Autumn Colors",
+    },
+    {
+      id: "autumn-4",
+      name: "Seoul",
+      country: "South Korea",
+      wikiTitle: "Seoul",
+      fallbackDesc:
+        "Seoul, the capital of South Korea, is a huge metropolis where modern skyscrapers, high-tech subways and pop culture meet Buddhist temples, palaces and street markets.",
+      tag: "Maple Season",
+    },
+    {
+      id: "autumn-5",
+      name: "Montreal",
+      country: "Canada",
+      wikiTitle: "Montreal",
+      fallbackDesc:
+        "Montreal is the largest city in Canada's Québec province. It’s set on an island in the Saint Lawrence River and named after Mt. Royal, the triple-peaked hill at its heart.",
+      tag: "Charming Streets",
+    },
+    {
+      id: "autumn-6",
+      name: "Rome",
+      country: "Italy",
+      wikiTitle: "Rome",
+      fallbackDesc:
+        "Autumn is the perfect time to visit Rome, offering pleasant temperatures and stunning golden light that paints the historic ruins of the Roman Empire.",
+      tag: "Golden Autumn",
+    },
+    {
+      id: "autumn-7",
+      name: "Prague",
+      country: "Czech Republic",
+      wikiTitle: "Prague",
+      fallbackDesc:
+        "Prague, capital city of the Czech Republic, is bisected by the Vltava River. Nicknamed “the City of a Hundred Spires,” it's known for its Old Town Square.",
+      tag: "Fairytale Vibe",
+    },
+    {
+      id: "autumn-8",
+      name: "Paris",
+      country: "France",
+      wikiTitle: "Paris",
+      fallbackDesc:
+        "Paris in Autumn offers romantic walks through the Jardin du Luxembourg with fallen leaves and cozy afternoons inside warm Parisian bistros.",
+      tag: "Cozy Streets",
+    },
+    {
+      id: "autumn-9",
+      name: "Tokyo",
+      country: "Japan",
+      wikiTitle: "Tokyo",
+      fallbackDesc:
+        "Tokyo, Japan’s bustling capital, mixes ultra-modern skyscrapers with historic temples, and its traditional parks offer stunning autumn maple leaf views.",
+      tag: "Autumn Foliage",
+    },
+    {
+      id: "autumn-10",
+      name: "Edinburgh",
+      country: "United Kingdom",
+      wikiTitle: "Edinburgh",
+      fallbackDesc:
+        "Edinburgh is Scotland's compact, hilly capital, dominated by the majestic Edinburgh Castle, boasting atmospheric autumn mist and colorful historic streets.",
+      tag: "Historic Fall",
+    },
+    {
+      id: "autumn-11",
+      name: "Boston",
+      country: "United States",
+      wikiTitle: "Boston",
+      fallbackDesc:
+        "Boston is the capital and largest city of Massachusetts, offering stunning autumn foliage along the Freedom Trail, historic brick streets, and vibrant universities.",
+      tag: "New England Fall",
+    },
+    {
+      id: "autumn-12",
+      name: "Budapest",
+      country: "Hungary",
+      wikiTitle: "Budapest",
+      fallbackDesc:
+        "Budapest, Hungary’s capital, is bisected by the Danube River. Its 19th-century Chain Bridge connects the hilly Buda district with flat Pest, offering warm thermal baths in crisp autumn weather.",
+      tag: "Golden Baths",
+    },
+  ],
+  Winter: [
+    {
+      id: "winter-1",
+      name: "Swiss Alps",
+      country: "Switzerland",
+      wikiTitle: "Swiss_Alps",
+      fallbackDesc:
+        "The Swiss Alps are part of the Alpine range, stretching across the country, world-famous for their premium ski resorts, cable cars, and dramatic glacier vistas.",
+      tag: "Ski Paradise",
+    },
+    {
+      id: "winter-2",
+      name: "Reykjavik",
+      country: "Iceland",
+      wikiTitle: "Reykjavik",
+      fallbackDesc:
+        "Reykjavik in winter is a magical gateway to view the dancing Aurora Borealis (Northern Lights), thermal hot springs, and breathtaking ice caves.",
+      tag: "Northern Lights",
+    },
+    {
+      id: "winter-3",
+      name: "Banff",
+      country: "Canada",
+      wikiTitle: "Banff,_Alberta",
+      fallbackDesc:
+        "Banff is a resort town in the province of Alberta, located within Banff National Park. The peaks of Mt. Rundle and Mt. Cascade dominate its skyline.",
+      tag: "Winter Wonderland",
+    },
+    {
+      id: "winter-4",
+      name: "Hokkaido",
+      country: "Japan",
+      wikiTitle: "Hokkaido",
+      fallbackDesc:
+        "Hokkaido, the northernmost of Japan’s main islands, is famous for its volcanoes, natural hot springs (onsen) and world-class ski areas.",
+      tag: "Snow Festival",
+    },
+    {
+      id: "winter-5",
+      name: "Tromsø",
+      country: "Norway",
+      wikiTitle: "Tromsø",
+      fallbackDesc:
+        "Tromsø, a city in northern Norway, is a major cultural hub above the Arctic Circle. It’s famed as a viewing point for colorful Northern Lights displays.",
+      tag: "Arctic Circle",
+    },
+    {
+      id: "winter-6",
+      name: "Queenstown",
+      country: "New Zealand",
+      wikiTitle: "Queenstown,_New_Zealand",
+      fallbackDesc:
+        "While the Northern hemisphere is in winter, Queenstown experiences gorgeous summer weather, perfect for lake activities, hiking, and extreme sports.",
+      tag: "Summer in Winter",
+    },
+    {
+      id: "winter-7",
+      name: "Zermatt",
+      country: "Switzerland",
+      wikiTitle: "Zermatt",
+      fallbackDesc:
+        "Zermatt, in southern Switzerland’s Valais canton, is a mountain resort renowned for skiing, climbing and hiking. The town lies below the iconic, pyramid-shaped Matterhorn peak.",
+      tag: "Alpine Peaks",
+    },
+    {
+      id: "winter-8",
+      name: "Sydney",
+      country: "Australia",
+      wikiTitle: "Sydney",
+      fallbackDesc:
+        "Escape the freezing winter cold of the north by visiting Sydney, which is in its sun-soaked summer season, offering beautiful beaches like Bondi and outdoor harbor festivals.",
+      tag: "Southern Summer",
+    },
+    {
+      id: "winter-9",
+      name: "Prague",
+      country: "Czech Republic",
+      wikiTitle: "Prague",
+      fallbackDesc:
+        "Prague comes alive in winter with world-famous, cozy Christmas markets, fairy-tale snowy spires, and hot traditional trdelník pastries.",
+      tag: "Winter Markets",
+    },
+    {
+      id: "winter-10",
+      name: "Aspen",
+      country: "United States",
+      wikiTitle: "Aspen,_Colorado",
+      fallbackDesc:
+        "Aspen, in Colorado’s Rocky Mountains, is a famous ski resort town and a year-round destination for outdoor recreation, luxury shopping, and dining.",
+      tag: "Snow Skiing",
+    },
+    {
+      id: "winter-11",
+      name: "Lapland",
+      country: "Finland",
+      wikiTitle: "Lapland_(Finland)",
+      fallbackDesc:
+        "Lapland is Finland’s northernmost region, a sparsely populated area bordering Sweden, Norway, Russia and the Baltic Sea, known as the official hometown of Santa Claus.",
+      tag: "Santa's Home",
+    },
+    {
+      id: "winter-12",
+      name: "Salzburg",
+      country: "Austria",
+      wikiTitle: "Salzburg",
+      fallbackDesc:
+        "Salzburg is an Austrian city on the border of Germany, with views of the Eastern Alps, known as the birthplace of Mozart and decorated beautifully with snow-capped baroque domes.",
+      tag: "Alpine Baroque",
+    },
+  ],
+};
+
+/**
+ * Capitalize each word in a string.
+ * @param {string} str
+ * @returns {string}
+ */
+const capitalizeWords = (str) => {
+  if (!str) return "";
+  return str
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+};
 
 const Explore = () => {
   const navigate = useNavigate();
+  const [destinations, setDestinations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [activeSeason, setActiveSeason] = useState("");
+  const [weekOfYear, setWeekOfYear] = useState(0);
+
+  /**
+   * @param {Date} date
+   * @returns {number}
+   */
+  const getWeekNumber = (date) => {
+    const d = new Date(
+      Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()),
+    );
+    const dayNum = d.getUTCDay() || 7;
+    d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+  };
+
+  /**
+   * @param {number} month - zero-based month index (0 = January)
+   * @returns {string}
+   */
+  const getSeason = (month) => {
+    if (month >= 2 && month <= 4) return "Spring";
+    if (month >= 5 && month <= 7) return "Summer";
+    if (month >= 8 && month <= 10) return "Autumn";
+    return "Winter";
+  };
+
+  /**
+   * @param {{wikiTitle:string,name:string,country:string,language?:string,currencyName?:string,currencySymbol?:string,flag?:string,flagUrl?:string}} dest
+   */
+  const handlePlanTrip = (dest) => {
+    navigate(`/explore/${encodeURIComponent(dest.wikiTitle)}`, {
+      state: {
+        destinationName: dest.name,
+        countryName: dest.country,
+        language: dest?.language || undefined,
+        currencyName: dest?.currencyName || undefined,
+        currencySymbol: dest?.currencySymbol || undefined,
+        flag: dest?.flag || undefined,
+        flagUrl: dest?.flagUrl || undefined,
+      },
+    });
+  };
+
+  useEffect(() => {
+    const loadDestinations = async () => {
+      setLoading(true);
+      setError(null);
+
+      const now = new Date();
+      const season = getSeason(now.getMonth());
+      const week = getWeekNumber(now);
+      const year = now.getFullYear();
+      setActiveSeason(season);
+      setWeekOfYear(week);
+
+      const cacheKey = `trip_buddy_discover_weekly_v5_w${week}_y${year}`;
+      const cached = localStorage.getItem(cacheKey);
+
+      if (cached) {
+        try {
+          setDestinations(JSON.parse(cached));
+          setLoading(false);
+          return;
+        } catch (e) {
+          localStorage.removeItem(cacheKey);
+        }
+      }
+
+      const pool = SEASONAL_POOLS[season];
+      const selectedPool = [];
+      for (let i = 0; i < 12; i++) {
+        const idx = (week + i) % pool.length;
+        selectedPool.push(pool[idx]);
+      }
+
+      try {
+        const resolved = await Promise.all(
+          selectedPool.map(async (dest) => {
+            let desc = dest.fallbackDesc;
+            let img = getStreetViewUrl(`${dest.name}, ${dest.country}`);
+            let flag = "";
+            let flagUrl = "";
+            let currencySymbol = "";
+            let currencyName = "";
+            let language = "";
+
+            try {
+              const wikiRes = await fetch(
+                `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(dest.wikiTitle)}`,
+              );
+              if (wikiRes.ok) {
+                const wikiData = await wikiRes.json();
+                if (wikiData.extract) {
+                  desc = wikiData.extract;
+                }
+                if (wikiData.thumbnail?.source) {
+                  img = wikiData.thumbnail.source;
+                }
+              }
+            } catch (wikiErr) {}
+
+            try {
+              const countriesRes = await fetch(
+                `https://restcountries.com/v3.1/name/${encodeURIComponent(dest.country)}?fullText=true`,
+              );
+              if (countriesRes.ok) {
+                const countriesData = await countriesRes.json();
+                const countryObj = countriesData[0];
+                if (countryObj) {
+                  flag = countryObj.flag || "";
+                  flagUrl =
+                    countryObj.flags?.png || countryObj.flags?.svg || "";
+
+                  // Safely read currencies object
+                  const currencies =
+                    countryObj.currencies &&
+                    typeof countryObj.currencies === "object"
+                      ? countryObj.currencies
+                      : null;
+                  const currencyKey = currencies
+                    ? Object.keys(currencies)[0]
+                    : null;
+                  const currency = currencyKey
+                    ? currencies?.[currencyKey]
+                    : null;
+                  if (currency && typeof currency === "object") {
+                    currencySymbol = currency.symbol || currencyKey || "";
+                    currencyName = currency.name || "";
+                  }
+
+                  // Safely read languages object
+                  const languages =
+                    countryObj.languages &&
+                    typeof countryObj.languages === "object"
+                      ? Object.values(countryObj.languages)
+                      : [];
+                  if (languages.length > 0) {
+                    language = String(languages[0]);
+                  }
+                }
+              }
+            } catch (countryErr) {}
+
+            if (canUsePlacesPhotoLookup) {
+              try {
+                const placesRes = await GetPlaceDetails({
+                  textQuery: `${dest.name}, ${dest.country}`,
+                });
+                const photoName =
+                  placesRes?.data?.places?.[0]?.photos?.[0]?.name;
+                if (photoName) {
+                  img = PHOTO_REF_URL.replace("{NAME}", photoName);
+                }
+              } catch (placesErr) {
+                if (
+                  placesErr &&
+                  placesErr.response &&
+                  placesErr.response.status === 403
+                ) {
+                  canUsePlacesPhotoLookup = false;
+                }
+              }
+            }
+
+            return {
+              ...dest,
+              description: desc,
+              image: img,
+              flag,
+              flagUrl,
+              currencySymbol,
+              currencyName,
+              language,
+            };
+          }),
+        );
+
+        localStorage.setItem(cacheKey, JSON.stringify(resolved));
+        setDestinations(resolved);
+      } catch (err) {
+        setError(
+          "Could not load recommendations. Showing offline default views.",
+        );
+        const fallbackList = selectedPool.map((dest) => ({
+          ...dest,
+          description: dest.fallbackDesc,
+          image: getStreetViewUrl(`${dest.name}, ${dest.country}`),
+        }));
+        setDestinations(fallbackList);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDestinations();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 pt-40 pb-20 px-6 font-sans animate-in fade-in duration-300">
+        <SEO
+          title="Explore Destinations"
+          description="Discover your next adventure with Trip Buddy's curated destinations."
+        />
+
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-16 space-y-4">
+            <div className="h-12 w-96 bg-slate-200 rounded-xl mx-auto animate-pulse" />
+            <div className="h-6 w-120 bg-slate-100 rounded-lg mx-auto animate-pulse" />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i) => (
+              <div
+                key={i}
+                className="bg-white rounded-[2.5rem] overflow-hidden border border-slate-200 shadow-sm h-130 animate-pulse flex flex-col"
+              >
+                <div className="aspect-4/5 bg-slate-200 relative" />
+                <div className="p-8 flex-1 flex flex-col justify-between space-y-4">
+                  <div className="space-y-3">
+                    <div className="h-4 bg-slate-200 rounded-sm w-3/4" />
+                    <div className="h-4 bg-slate-100 rounded-sm w-full" />
+                  </div>
+                  <div className="h-4 bg-slate-200 rounded-sm w-1/3" />
+                  <div className="flex justify-between items-center pt-4 border-t border-slate-100">
+                    <div className="h-3 bg-slate-100 rounded-sm w-1/4" />
+                    <div className="h-4 bg-slate-200 rounded-sm w-1/4" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-32 pb-20 px-6 font-sans">
+    <div className="min-h-screen bg-slate-50 pt-40 pb-20 px-6 font-sans">
       <SEO
         title="Explore Destinations"
         description="Discover your next adventure with Trip Buddy's curated destinations."
@@ -72,10 +719,6 @@ const Explore = () => {
 
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16 space-y-4">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 text-xs font-black uppercase tracking-widest animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <Sparkles className="w-3 h-3" />
-            Curated For You
-          </div>
           <h1 className="text-5xl font-black text-slate-900 tracking-tight animate-in fade-in slide-in-from-bottom-4 duration-700">
             Discover Your Next{" "}
             <span className="text-indigo-600 italic">Adventure</span>
@@ -86,11 +729,17 @@ const Explore = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {error && (
+          <div className="mb-8 p-4 bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-2xl text-center">
+            {error}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {destinations.map((dest, idx) => (
             <div
               key={dest.id}
-              className="group relative bg-white rounded-[2.5rem] overflow-hidden border border-slate-200 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 animate-in fade-in zoom-in-95"
+              className="group relative bg-white rounded-[2.5rem] overflow-hidden border border-slate-200 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 animate-in fade-in zoom-in-95 flex flex-col"
               style={{ animationDelay: `${idx * 100}ms` }}
             >
               <div className="aspect-4/5 overflow-hidden relative">
@@ -108,9 +757,19 @@ const Explore = () => {
                 </div>
 
                 <div className="absolute bottom-6 left-6 right-6 text-white">
-                  <div className="flex items-center gap-1 text-xs font-bold text-indigo-300 mb-1">
-                    <MapPin className="w-3 h-3" />
-                    {dest.country}
+                  <div className="flex items-center gap-2 text-xs font-bold text-indigo-300 mb-1">
+                    {dest.flagUrl ? (
+                      <img
+                        src={dest.flagUrl}
+                        alt=""
+                        className="w-4 h-3 object-cover rounded-xs inline-block shadow-sm"
+                      />
+                    ) : (
+                      <span className="text-base leading-none">
+                        {dest.flag || "📍"}
+                      </span>
+                    )}
+                    <span>{dest.country}</span>
                   </div>
                   <h3 className="text-2xl font-black tracking-tight">
                     {dest.name}
@@ -118,17 +777,49 @@ const Explore = () => {
                 </div>
               </div>
 
-              <div className="p-8">
-                <p className="text-slate-500 text-sm leading-relaxed mb-6">
-                  {dest.description}
-                </p>
-                <button
-                  onClick={() => navigate("/v2/create-trip")}
-                  className="w-full h-12 rounded-2xl bg-slate-900 text-white font-bold text-sm flex items-center justify-center gap-2 group-hover:bg-indigo-600 transition-colors shadow-lg shadow-slate-200"
-                >
-                  Plan this trip
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                </button>
+              <div className="p-8 flex-1 flex flex-col justify-between">
+                <div className="space-y-4">
+                  <p className="text-slate-500 text-sm leading-relaxed line-clamp-3">
+                    {dest.description || dest.fallbackDesc}
+                  </p>
+
+                  {/* Country Metadata Details */}
+                  {(dest.language || dest.currencyName) && (
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-500 py-3 border-y border-slate-100">
+                      {dest.language && (
+                        <div
+                          className="flex items-center gap-1.5"
+                          title={`Native Language: ${dest.language}`}
+                        >
+                          <Languages className="w-4 h-4 text-indigo-500 shrink-0" />
+                          <span>{dest.language}</span>
+                        </div>
+                      )}
+                      {dest.currencyName && (
+                        <div
+                          className="flex items-center gap-1.5 ml-auto"
+                          title={`Local Currency: ${dest.currencyName}`}
+                        >
+                          <Wallet className="w-4 h-4 text-emerald-500 shrink-0" />
+                          <span>{capitalizeWords(dest.currencyName)}</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-between items-center mt-6">
+                  <span className="text-xs font-bold text-slate-400">
+                    Written by Trip Guide
+                  </span>
+                  <button
+                    onClick={() => handlePlanTrip(dest)}
+                    className="text-indigo-600 hover:text-indigo-700 font-bold text-sm flex items-center gap-1 group/btn transition-colors cursor-pointer"
+                  >
+                    Read Guide
+                    <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                  </button>
+                </div>
               </div>
             </div>
           ))}

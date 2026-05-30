@@ -11,6 +11,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import ScrollToTop from "./components/shared/ScrollToTop";
 import Explore from "./pages/Explore";
+import GuideDetails from "./pages/GuideDetails";
 
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminLayout from "./components/admin/AdminLayout";
@@ -25,8 +26,10 @@ const App = () => {
   const isAdminRoute = location.pathname.startsWith("/admin");
   const hideHeaderRoutes = ["/privacy", "/terms"];
   const hideFooterRoutes = ["/privacy", "/terms"];
-  const shouldHideHeader = isAdminRoute || hideHeaderRoutes.includes(location.pathname);
-  const shouldHideFooter = isAdminRoute || hideFooterRoutes.includes(location.pathname);
+  const shouldHideHeader =
+    isAdminRoute || hideHeaderRoutes.includes(location.pathname);
+  const shouldHideFooter =
+    isAdminRoute || hideFooterRoutes.includes(location.pathname);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -44,6 +47,7 @@ const App = () => {
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsOfService />} />
           <Route path="/v2/explore" element={<Explore />} />
+          <Route path="/v2/explore/:wikiTitle" element={<GuideDetails />} />
 
           {/* Admin Core Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />

@@ -12,7 +12,7 @@ import {
 import { format } from "date-fns";
 import { BUDGET_OPTIONS, TRAVELER_OPTIONS, INTEREST_OPTIONS } from "../assets/data";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import LoginDialog from "../components/shared/LoginDialog";
 import { Button } from "../components/ui/button";
 import { Calendar } from "../components/ui/calendar";
@@ -44,6 +44,7 @@ const CreateTrip = () => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const navigate = useNavigate();
+  const location = useLocation();
   const [openDialog, setOpenDialog] = useState(false);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -61,7 +62,7 @@ const CreateTrip = () => {
      * budget: string;
      * interests: string[];
      * }} */ ({
-      destination: null,
+      destination: location.state?.destination || null,
       noOfDays: "",
       startDate: "",
       travelers: "",
