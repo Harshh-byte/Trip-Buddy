@@ -46,8 +46,8 @@ const App = () => {
           <Route path="/v2/my-trips" element={<MyTrips />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsOfService />} />
-          <Route path="/v2/explore" element={<Explore />} />
-          <Route path="/v2/explore/:wikiTitle" element={<GuideDetails />} />
+          <Route path="/explore" element={<Explore />} />
+          <Route path="/explore/:wikiTitle" element={<GuideDetails />} />
 
           {/* Admin Core Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
