@@ -423,7 +423,7 @@ Do not wrap in markdown codeblocks. Return raw JSON text only.
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
           <Link
-            to="/v2/explore"
+            to="/explore"
             className="inline-flex items-center gap-2 text-slate-500 hover:text-indigo-600 font-bold text-sm transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
