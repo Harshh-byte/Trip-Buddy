@@ -24,9 +24,17 @@ import {
 import { auth, db } from "../services/firebaseConfig";
 import LoginDialog from "../components/shared/LoginDialog";
 import { Button } from "../components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "../components/ui/dialog";
 import { toast } from "sonner";
 import { cn } from "../lib/utils";
 import SEO from "../components/shared/SEO";
+import Skeleton from "@mui/material/Skeleton";
 import {
   GetPlaceDetails,
   PHOTO_REF_URL,
@@ -135,6 +143,8 @@ const MyTrips = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [openLogin, setOpenLogin] = useState(false);
   const [deletingTripId, setDeletingTripId] = useState("");
+  const [tripToDelete, setTripToDelete] = useState(/** @type {any | null} */ (null));
+  const forceSkeleton = false;
 
   const performDeleteTrip = async (
     /** @type {{ id?: string; docId?: string; userSelection?: any }} */ trip,
@@ -193,18 +203,7 @@ const MyTrips = () => {
 
     if (deletingTripId === targetTripId) return;
 
-    toast.warning("Remove this Itinerary?", {
-      description: "This will permanently delete your travel plan. This action cannot be undone.",
-      action: {
-        label: "Delete Trip",
-        onClick: () => performDeleteTrip(trip),
-      },
-      cancel: {
-        label: "Keep it",
-        onClick: () => {},
-      },
-      duration: 10000,
-    });
+    setTripToDelete(trip);
   };
 
   useEffect(() => {
@@ -290,28 +289,49 @@ const MyTrips = () => {
           </div>
         </div>
 
-        {loading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {(loading || forceSkeleton) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {Array.from({ length: 6 }).map((_, idx) => (
               <div
                 key={idx}
-                className="flex flex-col h-100 rounded-4xl border border-slate-200/60 bg-white p-2 shadow-sm"
+                className="flex flex-col overflow-hidden rounded-[2.5rem] bg-white/70 backdrop-blur-md border border-white/50 shadow-xl p-2.5"
               >
-                <div className="h-48 w-full rounded-3xl bg-slate-100 animate-pulse" />
-                <div className="p-5 space-y-4">
-                  <div className="h-6 w-3/4 rounded-lg bg-slate-100 animate-pulse" />
-                  <div className="space-y-2">
-                    <div className="h-4 w-1/2 rounded-md bg-slate-50 animate-pulse" />
-                    <div className="h-4 w-2/3 rounded-md bg-slate-50 animate-pulse" />
+                <div className="relative h-64 w-full overflow-hidden rounded-[1.8rem]">
+                  <Skeleton
+                    variant="rectangular"
+                    animation="wave"
+                    width="100%"
+                    height="100%"
+                  />
+                </div>
+                <div className="flex flex-1 flex-col p-8">
+                  <div className="grid grid-cols-2 gap-4 mb-8">
+                    <div className="bg-slate-50/50 rounded-2xl p-3 border border-slate-100 space-y-1">
+                      <Skeleton variant="text" animation="wave" width="40%" height={12} />
+                      <Skeleton variant="text" animation="wave" width="80%" height={20} />
+                    </div>
+                    <div className="bg-slate-50/50 rounded-2xl p-3 border border-slate-100 space-y-1">
+                      <Skeleton variant="text" animation="wave" width="40%" height={12} />
+                      <Skeleton variant="text" animation="wave" width="80%" height={20} />
+                    </div>
                   </div>
-                  <div className="h-12 w-full rounded-xl bg-slate-50 animate-pulse mt-auto" />
+                  <Skeleton
+                    variant="rectangular"
+                    animation="wave"
+                    width="100%"
+                    height={56}
+                    className="rounded-2xl mt-auto"
+                  />
+                  <div className="flex justify-center mt-4">
+                    <Skeleton variant="text" animation="wave" width="50%" height={16} />
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         )}
 
-        {!loading && !isAuthenticated && (
+        {!loading && !forceSkeleton && !isAuthenticated && (
           <div className="relative overflow-hidden rounded-[2.5rem] glass-card p-12 text-center">
             <div className="absolute inset-0 bg-linear-to-br from-indigo-50/50 via-white to-orange-50/30" />
             <div className="relative z-10 flex flex-col items-center">
@@ -336,6 +356,7 @@ const MyTrips = () => {
         )}
 
         {!loading &&
+          !forceSkeleton &&
           isAuthenticated &&
           trips.length === 0 &&
           pendingRequests.length === 0 && (
@@ -357,6 +378,7 @@ const MyTrips = () => {
           )}
 
         {!loading &&
+          !forceSkeleton &&
           isAuthenticated &&
           (trips.length > 0 || pendingRequests.length > 0) && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -493,6 +515,50 @@ const MyTrips = () => {
         onClose={() => setOpenLogin(false)}
         onLoginSuccess={() => setOpenLogin(false)}
       />
+
+      <Dialog open={!!tripToDelete} onOpenChange={() => setTripToDelete(null)}>
+        <DialogContent className="sm:max-w-md rounded-[2.5rem] p-8 bg-white border border-slate-200 shadow-2xl">
+          <div className="flex flex-col items-center text-center">
+            <div className="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-rose-100/50">
+              <Trash2 className="w-8 h-8 text-rose-600 animate-pulse" />
+            </div>
+
+            <DialogHeader className="flex flex-col items-center w-full mb-6">
+              <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight">
+                Delete this Itinerary?
+              </DialogTitle>
+              <DialogDescription className="text-center text-sm text-slate-500 font-medium mt-2 leading-relaxed">
+                This will permanently delete your travel plan for{" "}
+                <span className="font-bold text-slate-800">
+                  {tripToDelete ? getDestinationLabel(tripToDelete).split(",")[0] : ""}
+                </span>
+                . This action is irreversible.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="flex gap-4 w-full mt-4">
+              <Button
+                variant="outline"
+                onClick={() => setTripToDelete(null)}
+                className="flex-1 h-12 rounded-2xl border-slate-200 font-bold hover:bg-slate-50 transition-all text-slate-600 focus:outline-none"
+              >
+                Keep It
+              </Button>
+              <Button
+                onClick={() => {
+                  if (tripToDelete) {
+                    performDeleteTrip(tripToDelete);
+                    setTripToDelete(null);
+                  }
+                }}
+                className="flex-1 h-12 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-bold shadow-lg shadow-rose-100 transition-all hover:scale-[1.02] active:scale-95 focus:outline-none"
+              >
+                Delete Trip
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 };
