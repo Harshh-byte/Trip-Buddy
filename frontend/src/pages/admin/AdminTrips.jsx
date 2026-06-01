@@ -5,11 +5,9 @@ import {
   deleteTrip,
 } from "../../services/adminApi";
 import {
-  MapPin,
   ExternalLink,
   Search,
   ArrowUpDown,
-  Globe,
   Trash2,
   Activity,
   ChevronLeft,

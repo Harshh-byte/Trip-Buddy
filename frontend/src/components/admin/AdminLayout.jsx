@@ -11,7 +11,6 @@ import {
   Users,
   MapPin,
   LogOut,
-  Menu,
   Settings,
   BarChart3,
   Plane,
@@ -83,7 +82,6 @@ const AdminLayout = () => {
           isCollapsed ? "w-20" : "w-64"
         }`}
       >
-        {/* Floating Toggle Button */}
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
           className="absolute -right-3 top-5 z-50 flex h-6 w-6 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 hover:text-indigo-600 shadow-md hover:shadow-lg cursor-pointer transition-all duration-200 hover:scale-110"
@@ -96,7 +94,6 @@ const AdminLayout = () => {
           )}
         </button>
 
-        {/* Brand Header */}
         <div className="h-16 flex items-center border-b border-slate-100 pl-6 gap-3 transition-all duration-300">
           <div className="bg-indigo-600 p-2 rounded-sm text-white shadow-md shrink-0">
             <Plane className="w-5 h-5" />
@@ -110,7 +107,6 @@ const AdminLayout = () => {
           </span>
         </div>
 
-        {/* Desktop Navigation */}
         <nav className="flex-1 px-3 py-6 space-y-2 overflow-y-auto">
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -135,14 +131,12 @@ const AdminLayout = () => {
                 >
                   {item.name}
                 </span>
-                {/* Active Indicator Line */}
                 <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-0 bg-indigo-600 rounded-r-full transition-all duration-300 group-[.active]:h-3/4 opacity-0 group-[.active]:opacity-100" />
               </NavLink>
             );
           })}
         </nav>
 
-        {/* Desktop User Footer */}
         <div className={`p-4 border-t border-slate-100 transition-all duration-300 ${isCollapsed ? "pl-5 pr-3" : "pl-4 pr-4"}`}>
           <div className="flex items-center gap-3 mb-4">
             <img
@@ -186,12 +180,9 @@ const AdminLayout = () => {
         </div>
       </aside>
 
-      {/* ================= MAIN LAYOUT ================= */}
       <div className="flex-1 flex flex-col min-w-0 h-screen relative">
-        {/* Top Header */}
         <header className="h-16 px-4 md:px-8 flex items-center justify-between bg-white/70 backdrop-blur-lg border-b border-slate-200/60 sticky top-0 z-30">
           <div className="flex items-center gap-3">
-            {/* Mobile Logo and Fixed Brand Name */}
             <div className="lg:hidden flex items-center gap-2">
               <div className="bg-indigo-600 p-1.5 rounded-lg text-white shadow-md shadow-indigo-200 shrink-0">
                 <Plane className="w-4 h-4" />
@@ -201,7 +192,6 @@ const AdminLayout = () => {
               </span>
             </div>
 
-            {/* Desktop Page Title */}
             <h2 className="hidden lg:block text-lg font-bold text-slate-900 tracking-tight">
               {getPageTitle()}
             </h2>
@@ -211,12 +201,10 @@ const AdminLayout = () => {
           </div>
         </header>
 
-        {/* Content Area */}
         <main className={`flex-1 overflow-y-auto p-4 md:p-8 pb-24 lg:pb-8 w-full animate-in fade-in duration-500 ${getPageMaxWidth()}`}>
           <Outlet />
         </main>
 
-        {/* ================= MOBILE BOTTOM NAVIGATION ================= */}
         <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-slate-200/60 pb-safe z-40">
           <div className="flex justify-around items-center h-16 px-2">
             {navItems.map((item) => {

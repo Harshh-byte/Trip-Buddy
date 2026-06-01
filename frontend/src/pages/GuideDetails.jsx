@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useLocation, useNavigate, Link } from "react-router-dom";
 import {
   ArrowLeft,
@@ -10,7 +10,6 @@ import {
   Sparkles,
   Navigation,
   Calendar,
-  Loader2,
   Hotel,
   Briefcase,
   Utensils,
@@ -58,11 +57,10 @@ const GuideDetails = () => {
 
   const stateData = location.state || {};
 
-  // @ts-ignore
   const [destinationName, setDestinationName] = useState(
     // @ts-ignore
     stateData.destinationName ||
-      decodeURIComponent(wikiTitle).replace(/_/g, " "),
+      decodeURIComponent(wikiTitle || "").replace(/_/g, " "),
   );
   // @ts-ignore
   const [countryName, setCountryName] = useState(stateData.countryName || "");
@@ -95,7 +93,7 @@ const GuideDetails = () => {
   // @ts-ignore
   const [language, setLanguage] = useState(stateData.language || "");
   const [capital, setCapital] = useState("");
-  const [attractions, setAttractions] = useState([]);
+  const [attractions, setAttractions] = useState(/** @type {any[]} */ ([]));
   const [blogData, setBlogData] = useState(null);
 
   const capitalizeWords = (str) => {
@@ -138,7 +136,7 @@ const GuideDetails = () => {
 
       try {
         const wikiRes = await fetch(
-          `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(wikiTitle)}`,
+          `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(wikiTitle || "")}`,
         );
         if (wikiRes.ok) {
           const wikiData = await wikiRes.json();

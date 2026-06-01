@@ -54,7 +54,6 @@ const Hero = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              {/* Button removed as per request */}
             </div>
           </div>
 

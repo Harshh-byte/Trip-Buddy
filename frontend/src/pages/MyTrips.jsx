@@ -356,7 +356,6 @@ const MyTrips = () => {
             </div>
           )}
 
-        {/* Added the conditional wrapper for the grid to fix the orphan closing brace */}
         {!loading &&
           isAuthenticated &&
           (trips.length > 0 || pendingRequests.length > 0) && (

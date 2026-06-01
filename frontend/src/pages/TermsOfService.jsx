@@ -7,7 +7,6 @@ const TermsOfService = () => {
     <div className="min-h-screen bg-slate-50/30 font-sans flex flex-col">
       <SEO title="Terms of Service" description="Rules and guidelines for using Trip Buddy." />
       
-      {/* Custom document header */}
       <header className="border-b border-slate-100 py-4 px-6 bg-white/85 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-x-3">
@@ -34,7 +33,6 @@ const TermsOfService = () => {
         </div>
       </header>
 
-      {/* Main Content Area */}
       <main className="flex-1 pt-8 pb-16 px-6">
         <div className="max-w-3xl mx-auto bg-white rounded-4xl border border-slate-100 p-8 md:p-12 shadow-sm">
           <h1 className="text-4xl font-black text-slate-900 mb-8 tracking-tight">Terms of Service</h1>
