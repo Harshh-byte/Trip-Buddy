@@ -111,7 +111,7 @@ const AdminSettings = () => {
                   {/* @ts-ignore */}
                   <button
                     onClick={() => setIsEditingName(false)}
-                    className="p-1.5 text-slate-400 hover:bg-slate-100 rounded-md transition-colors"
+                    className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-md transition-colors"
                   >
                     <CloseIcon className="w-5 h-5" />
                   </button>

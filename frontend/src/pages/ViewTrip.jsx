@@ -369,8 +369,8 @@ const ViewTrip = () => {
     { label: "Duration", value: summary.duration, icon: CalendarDays },
     { label: "Travelers", value: summary.travelers, icon: Users },
     { label: "Start Date", value: summary.startDate, icon: Clock3 },
-    { label: "Budget", value: summary.budget, icon: Wallet },
     { label: "Interests", value: summary.interests, icon: Heart },
+    { label: "Budget", value: summary.budget, icon: Wallet },
   ];
 
   if (loading) {
@@ -500,7 +500,10 @@ const ViewTrip = () => {
                 {statCards.map((item) => (
                   <div
                     key={item.label}
-                    className="flex flex-col h-full rounded-[1.8rem] glass-card p-6 border border-white/60 bg-white/40 backdrop-blur-xl hover:shadow-xl hover:-translate-y-1 transition-all group"
+                    className={cn(
+                      "flex flex-col h-full rounded-[1.8rem] glass-card p-6 border border-white/60 bg-white/40 backdrop-blur-xl hover:shadow-xl hover:-translate-y-1 transition-all group",
+                      item.label === "Budget" && "sm:col-span-2"
+                    )}
                   >
                     <div className="flex items-center gap-3 mb-4">
                       <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-white border border-slate-100 text-indigo-600 shadow-sm group-hover:scale-110 transition-transform">

@@ -142,7 +142,7 @@ const AdminAnalytics = () => {
   }) => {
     if (percent < 0.05) return null;
     const RADIAN = Math.PI / 180;
-    const radius = outerRadius * 1.15;
+    const radius = outerRadius * 1.08;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
@@ -183,7 +183,7 @@ const AdminAnalytics = () => {
   }
 
   return (
-    <div className="space-y-8 pb-12 max-w-400 mx-auto">
+    <div className="space-y-8 pb-12 w-full">
       <style>{chartStyles}</style>
 
       {/* Header */}
@@ -269,7 +269,7 @@ const AdminAnalytics = () => {
                   paddingAngle={6}
                   dataKey="value"
                   label={renderCustomizedLabel}
-                  labelLine={true}
+                  labelLine={false}
                   stroke="none"
                 >
                   {(budgetData.length > 0
@@ -330,7 +330,7 @@ const AdminAnalytics = () => {
                   outerRadius={105}
                   dataKey="value"
                   label={renderCustomizedLabel}
-                  labelLine={true}
+                  labelLine={false}
                   stroke="none"
                 >
                   {(travelerData.length > 0

@@ -672,7 +672,7 @@ const Explore = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 pt-32 pb-20 px-4 md:px-6 font-sans animate-in fade-in duration-300">
+      <div className="min-h-screen bg-slate-50 pt-44 pb-20 px-4 md:px-6 font-sans animate-in fade-in duration-300">
         <SEO
           title="Explore Destinations"
           description="Discover your next adventure with Trip Buddy's curated destinations."
@@ -711,7 +711,7 @@ const Explore = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-32 pb-20 px-4 md:px-6 font-sans">
+    <div className="min-h-screen bg-slate-50 pt-44 pb-20 px-4 md:px-6 font-sans">
       <SEO
         title="Explore Destinations"
         description="Discover your next adventure with Trip Buddy's curated destinations."
