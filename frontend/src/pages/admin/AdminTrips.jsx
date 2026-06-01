@@ -15,6 +15,14 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { Button } from "../../components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "../../components/ui/dialog";
 
 const AdminTrips = () => {
   /** @type {[any[], Function]} */
@@ -24,6 +32,7 @@ const AdminTrips = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [tripToDelete, setTripToDelete] = useState(/** @type {{ id: string, location: string } | null} */ (null));
   const [sortConfig, setSortConfig] = useState({
     key: "id",
     direction: "desc",
@@ -161,26 +170,7 @@ const AdminTrips = () => {
 
   // @ts-ignore
   const handleDeleteTrip = (tripId, location) => {
-    toast.warning(`Remove trip to ${location}?`, {
-      description:
-        "This action will permanently delete this itinerary from the database.",
-      action: {
-        label: "Delete",
-        onClick: async () => {
-          try {
-            await deleteTrip(tripId);
-            toast.success("Trip deleted successfully");
-          } catch (err) {
-            toast.error("Failed to delete trip");
-          }
-        },
-      },
-      cancel: {
-        label: "Keep it",
-        onClick: () => {},
-      },
-      duration: 5000,
-    });
+    setTripToDelete({ id: tripId, location });
   };
 
   if (loading) {
@@ -364,6 +354,55 @@ const AdminTrips = () => {
           </div>
         </div>
       </div>
+
+      <Dialog open={!!tripToDelete} onOpenChange={() => setTripToDelete(null)}>
+        <DialogContent className="sm:max-w-md rounded-[2.5rem] p-8 bg-white border border-slate-200 shadow-2xl">
+          <div className="flex flex-col items-center text-center">
+            <div className="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-rose-100/50">
+              <Trash2 className="w-8 h-8 text-rose-600 animate-pulse" />
+            </div>
+
+            <DialogHeader className="flex flex-col items-center w-full mb-6">
+              <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight">
+                Delete Trip from Registry?
+              </DialogTitle>
+              <DialogDescription className="text-center text-sm text-slate-500 font-medium mt-2 leading-relaxed">
+                This will permanently delete the itinerary for{" "}
+                <span className="font-bold text-slate-800">
+                  {tripToDelete ? tripToDelete.location.split(",")[0] : ""}
+                </span>{" "}
+                from the database. This action is irreversible.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="flex gap-4 w-full mt-4">
+              <Button
+                variant="outline"
+                onClick={() => setTripToDelete(null)}
+                className="flex-1 h-12 rounded-2xl border-slate-200 font-bold hover:bg-slate-50 transition-all text-slate-600 focus:outline-none"
+              >
+                Keep It
+              </Button>
+              <Button
+                onClick={async () => {
+                  if (tripToDelete) {
+                    try {
+                      await deleteTrip(tripToDelete.id);
+                      toast.success("Trip deleted successfully");
+                    } catch (err) {
+                      toast.error("Failed to delete trip");
+                    }
+                    setTripToDelete(null);
+                  }
+                }}
+                className="flex-1 h-12 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-bold shadow-lg shadow-rose-100 transition-all hover:scale-[1.02] active:scale-95 focus:outline-none"
+              >
+                Delete Trip
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

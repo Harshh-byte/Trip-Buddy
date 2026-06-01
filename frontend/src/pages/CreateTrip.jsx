@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import GooglePlacesAutocomplete from "react-google-places-autocomplete";
 import {
   CalendarDays,
@@ -70,6 +70,10 @@ const CreateTrip = () => {
       interests: [],
     }),
   );
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [step]);
 
   const handleInputChange = (
     /** @type {"destination" | "noOfDays" | "startDate" | "travelers" | "budget" | "interests"} */ name,

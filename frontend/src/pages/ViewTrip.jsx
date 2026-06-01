@@ -576,8 +576,11 @@ const ViewTrip = () => {
 
                     <div className="flex flex-1 flex-col p-6 space-y-4">
                       <div>
-                        <h4 className="text-lg font-bold text-slate-900 leading-tight group-hover:text-indigo-600 transition-colors">
-                          {hotel.name}
+                        <h4 className="text-lg font-bold text-slate-900 leading-tight flex items-center gap-2 group-hover:text-indigo-600 transition-colors">
+                          <span>{hotel.name}</span>
+                          <div className="p-1.5 rounded-full bg-slate-50 group-hover:bg-indigo-50 shrink-0 transition-colors">
+                            <Navigation className="w-4 h-4 text-slate-400 group-hover:text-indigo-600 transition-colors" />
+                          </div>
                         </h4>
                         <p className="mt-2 flex items-start gap-1.5 text-sm text-slate-500 font-medium">
                           <MapPin className="w-4 h-4 shrink-0 text-slate-400 mt-0.5" />
@@ -707,8 +710,8 @@ const ViewTrip = () => {
                               rel="noopener noreferrer"
                               className="block focus:outline-none"
                             >
-                              <h5 className="text-lg font-bold text-slate-900 leading-tight flex items-start justify-between gap-2 group-hover/card:text-indigo-600 transition-colors">
-                                {activity.title}
+                              <h5 className="text-lg font-bold text-slate-900 leading-tight flex items-center gap-2 group-hover/card:text-indigo-600 transition-colors">
+                                <span>{activity.title}</span>
                                 <div className="p-1.5 rounded-full bg-slate-50 group-hover/card:bg-indigo-50 shrink-0 transition-colors">
                                   <Navigation className="w-4 h-4 text-slate-400 group-hover/card:text-indigo-600 transition-colors" />
                                 </div>
