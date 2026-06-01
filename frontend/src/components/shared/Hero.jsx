@@ -277,10 +277,10 @@ const FAQ = () => {
               value={`item-${index}`}
               className="glass-card rounded-3xl px-6 py-2 data-[state=open]:border-indigo-100"
             >
-              <AccordionTrigger className="text-left font-bold text-[#1A1A1A] text-lg hover:no-underline hover:text-indigo-600 transition-colors">
+              <AccordionTrigger className="text-left font-bricolage font-bold text-[#1A1A1A] text-lg tracking-tight hover:no-underline hover:text-indigo-600 transition-colors">
                 {faq.question}
               </AccordionTrigger>
-              <AccordionContent className="text-gray-500 text-base leading-relaxed pb-4">
+              <AccordionContent className="text-gray-500 font-bricolage text-base leading-relaxed pb-4">
                 {faq.answer}
               </AccordionContent>
             </AccordionItem>

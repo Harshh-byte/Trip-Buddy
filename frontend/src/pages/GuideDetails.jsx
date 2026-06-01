@@ -19,6 +19,7 @@ import {
   ShieldCheck,
   ScrollText,
   Building2,
+  Map,
 } from "lucide-react";
 import SEO from "../components/shared/SEO";
 import {
@@ -478,18 +479,17 @@ Do not wrap in markdown codeblocks. Return raw JSON text only.
       />
 
       <div className="max-w-screen-2xl mx-auto">
-        <div className="mb-8">
-          <Link
-            to="/explore"
-            className="inline-flex items-center gap-2 text-slate-500 hover:text-indigo-600 font-bold text-sm transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Explore
-          </Link>
-        </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_350px] gap-12 mb-12 items-start">
           <section className="relative h-96 lg:h-112 rounded-[2.5rem] overflow-hidden shadow-xl flex-1">
+            <div className="absolute top-6 left-6 md:top-8 md:left-8 z-10">
+              <Link
+                to="/explore"
+                className="inline-flex items-center gap-1.5 rounded-full bg-white/10 backdrop-blur-md px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white hover:bg-white hover:text-indigo-600 transition-colors border border-white/20 shadow-sm"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                Back to Explore
+              </Link>
+            </div>
             {coverImage ? (
               <img
                 src={coverImage}
@@ -505,7 +505,8 @@ Do not wrap in markdown codeblocks. Return raw JSON text only.
 
             <div className="absolute inset-x-0 bottom-0 p-6 md:p-8 text-white">
               <div className="flex flex-wrap items-center gap-3 mb-2">
-                <span className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-widest border border-white/30">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white text-[10px] font-black uppercase tracking-widest border border-white/30">
+                  <Map className="w-3.5 h-3.5 text-indigo-300" />
                   Travel Guide
                 </span>
               </div>

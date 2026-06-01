@@ -33,9 +33,9 @@ const Footer = () => {
               <div className="bg-indigo-600 p-2 rounded-sm">
                 <Plane className="w-5 h-5 text-white" />
               </div>
-              <span className="flex font-bold text-xl tracking-tight text-slate-900">
-                Trip Buddy
-              </span>
+              <h4 className="font-bold tracking-tight text-slate-900">
+                Trip{" "}<span className="text-indigo-600">Buddy</span>
+              </h4>
             </div>
             <p className="text-gray-500 text-sm leading-relaxed">
               Your intelligent travel companion. We turn your bucket list into
