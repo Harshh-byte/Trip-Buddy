@@ -278,7 +278,6 @@ const CreateTrip = () => {
         <div className="glass-card rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/40">
           <div className="p-1 md:p-2 bg-white/40 backdrop-blur-xl">
             <div className="bg-white/80 rounded-4xl p-6 md:p-12">
-              {/* Step Progress */}
               <div className="mb-12">
                 <div className="flex items-center justify-between mb-4">
                   <span className="text-[11px] font-black uppercase tracking-widest text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">

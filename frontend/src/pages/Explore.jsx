@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, Languages, Wallet } from "lucide-react";
 import SEO from "../components/shared/SEO";
+import Skeleton from "@mui/material/Skeleton";
 import {
   GetPlaceDetails,
   PHOTO_REF_URL,
@@ -468,11 +469,9 @@ const capitalizeWords = (str) => {
 
 const Explore = () => {
   const navigate = useNavigate();
-  const [destinations, setDestinations] = useState([]);
+  const [destinations, setDestinations] = useState(/** @type {any[]} */ ([]));
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [activeSeason, setActiveSeason] = useState("");
-  const [weekOfYear, setWeekOfYear] = useState(0);
+  const [error, setError] = useState(/** @type {string | null} */ (null));
 
   /**
    * @param {Date} date
@@ -485,7 +484,7 @@ const Explore = () => {
     const dayNum = d.getUTCDay() || 7;
     d.setUTCDate(d.getUTCDate() + 4 - dayNum);
     const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-    return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+    return Math.ceil(((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
   };
 
   /**
@@ -525,8 +524,6 @@ const Explore = () => {
       const season = getSeason(now.getMonth());
       const week = getWeekNumber(now);
       const year = now.getFullYear();
-      setActiveSeason(season);
-      setWeekOfYear(week);
 
       const cacheKey = `trip_buddy_discover_weekly_v5_w${week}_y${year}`;
       const cached = localStorage.getItem(cacheKey);
@@ -586,7 +583,6 @@ const Explore = () => {
                   flagUrl =
                     countryObj.flags?.png || countryObj.flags?.svg || "";
 
-                  // Safely read currencies object
                   const currencies =
                     countryObj.currencies &&
                     typeof countryObj.currencies === "object"
@@ -603,7 +599,6 @@ const Explore = () => {
                     currencyName = currency.name || "";
                   }
 
-                  // Safely read languages object
                   const languages =
                     countryObj.languages &&
                     typeof countryObj.languages === "object"
@@ -670,7 +665,9 @@ const Explore = () => {
     loadDestinations();
   }, []);
 
-  if (loading) {
+  const forceSkeleton = false;
+
+  if (loading || forceSkeleton) {
     return (
       <div className="min-h-screen bg-slate-50 pt-44 pb-20 px-4 md:px-6 font-sans animate-in fade-in duration-300">
         <SEO
@@ -680,26 +677,136 @@ const Explore = () => {
 
         <div className="max-w-screen-2xl mx-auto">
           <div className="text-center mb-16 space-y-4">
-            <div className="h-12 w-96 bg-slate-200 rounded-xl mx-auto animate-pulse" />
-            <div className="h-6 w-120 bg-slate-100 rounded-lg mx-auto animate-pulse" />
+            <h1 className="text-5xl font-black text-slate-900 tracking-tight animate-in fade-in slide-in-from-bottom-4 duration-700">
+              Discover Your Next{" "}
+              <span className="text-indigo-600 italic">Adventure</span>
+            </h1>
+            <p className="text-slate-500 max-w-2xl mx-auto text-lg animate-in fade-in slide-in-from-bottom-4 duration-1000">
+              Explore our handpicked selection of global gems and let our AI turn
+              your inspiration into a perfect itinerary.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i) => (
               <div
                 key={i}
-                className="bg-white rounded-[2.5rem] overflow-hidden border border-slate-200 shadow-sm h-130 animate-pulse flex flex-col"
+                className="bg-white rounded-[2.5rem] overflow-hidden border border-slate-200 shadow-sm flex flex-col"
               >
-                <div className="aspect-4/5 bg-slate-200 relative" />
-                <div className="p-8 flex-1 flex flex-col justify-between space-y-4">
-                  <div className="space-y-3">
-                    <div className="h-4 bg-slate-200 rounded-sm w-3/4" />
-                    <div className="h-4 bg-slate-100 rounded-sm w-full" />
+                {/* Image & Header Overlay Skeleton */}
+                <div className="aspect-video relative overflow-hidden">
+                  <Skeleton
+                    variant="rectangular"
+                    animation="wave"
+                    width="100%"
+                    height="100%"
+                  />
+                  {/* Tag */}
+                  <div className="absolute top-6 left-6 z-10">
+                    <Skeleton
+                      variant="rounded"
+                      animation="wave"
+                      width={64}
+                      height={20}
+                      className="rounded-full"
+                      sx={{ bgcolor: "rgba(0, 0, 0, 0.12)" }}
+                    />
                   </div>
-                  <div className="h-4 bg-slate-200 rounded-sm w-1/3" />
-                  <div className="flex justify-between items-center pt-4 border-t border-slate-100">
-                    <div className="h-3 bg-slate-100 rounded-sm w-1/4" />
-                    <div className="h-4 bg-slate-200 rounded-sm w-1/4" />
+                  {/* Country & Name */}
+                  <div className="absolute bottom-6 left-6 right-6 z-10 space-y-2">
+                    <Skeleton
+                      variant="rounded"
+                      animation="wave"
+                      width={80}
+                      height={12}
+                      className="rounded-sm"
+                      sx={{ bgcolor: "rgba(0, 0, 0, 0.12)" }}
+                    />
+                    <Skeleton
+                      variant="rounded"
+                      animation="wave"
+                      width={128}
+                      height={24}
+                      className="rounded-md"
+                      sx={{ bgcolor: "rgba(0, 0, 0, 0.18)" }}
+                    />
+                  </div>
+                </div>
+
+                {/* Card Body Skeleton */}
+                <div className="p-8 flex-1 flex flex-col justify-between">
+                  <div className="space-y-4">
+                    {/* Description Text Lines */}
+                    <div className="space-y-2">
+                      <Skeleton
+                        variant="rounded"
+                        animation="wave"
+                        width="100%"
+                        height={12}
+                        className="rounded-sm"
+                      />
+                      <Skeleton
+                        variant="rounded"
+                        animation="wave"
+                        width="100%"
+                        height={12}
+                        className="rounded-sm"
+                      />
+                      <Skeleton
+                        variant="rounded"
+                        animation="wave"
+                        width="66%"
+                        height={12}
+                        className="rounded-sm"
+                      />
+                    </div>
+
+                    {/* Country Metadata: Languages and Currency */}
+                    <div className="flex items-center justify-between py-3 border-y border-slate-100">
+                      <div className="flex items-center gap-1.5 w-1/3">
+                        <Skeleton
+                          variant="circular"
+                          animation="wave"
+                          width={16}
+                          height={16}
+                        />
+                        <Skeleton
+                          variant="rounded"
+                          animation="wave"
+                          width={48}
+                          height={12}
+                          className="rounded-sm"
+                        />
+                      </div>
+                      <div className="flex items-center gap-1.5 w-1/3 justify-end">
+                        <Skeleton
+                          variant="circular"
+                          animation="wave"
+                          width={16}
+                          height={16}
+                        />
+                        <Skeleton
+                          variant="rounded"
+                          animation="wave"
+                          width={48}
+                          height={12}
+                          className="rounded-sm"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Read Guide Button Placeholder */}
+                  <div className="mt-6">
+                    <Skeleton
+                      variant="rectangular"
+                      animation="wave"
+                      sx={{
+                        borderRadius: "1rem",
+                        height: "2.5rem",
+                        width: "100%",
+                      }}
+                    />
                   </div>
                 </div>
               </div>
@@ -742,7 +849,7 @@ const Explore = () => {
               className="group relative bg-white rounded-[2.5rem] overflow-hidden border border-slate-200 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 animate-in fade-in zoom-in-95 flex flex-col"
               style={{ animationDelay: `${idx * 100}ms` }}
             >
-              <div className="aspect-4/5 overflow-hidden relative">
+              <div className="aspect-video overflow-hidden relative">
                 <img
                   src={dest.image}
                   alt={dest.name}

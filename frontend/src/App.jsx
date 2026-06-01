@@ -38,7 +38,6 @@ const App = () => {
       <main className="flex-1">
         <ScrollToTop />
         <Routes>
-          {/* Main App Routes */}
           <Route path="/" element={<Home />} />
           <Route path="/v2/create-trip" element={<CreateTrip />} />
           <Route path="/v2/view-trip" element={<ViewTrip />} />
@@ -49,7 +48,6 @@ const App = () => {
           <Route path="/explore" element={<Explore />} />
           <Route path="/explore/:wikiTitle" element={<GuideDetails />} />
 
-          {/* Admin Core Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Navigate to="/admin/dashboard" replace />} />

@@ -2,13 +2,11 @@ import { useEffect, useState, useMemo } from "react";
 import {
   Users,
   MapPin,
-  TrendingUp,
   ArrowUpRight,
   ArrowDownRight,
   Activity,
   Brain,
   Cpu,
-  Sparkles,
   Zap,
   CheckCircle2,
   Database,
