@@ -56,12 +56,19 @@ export const onTripRequestCreated = onDocumentCreated(
       });
 
       const DYNAMIC_PROMPT = `
-      Generate a detailed travel plan for:
+      Generate a detailed travel plan tailored specifically to the user's selected interests.
+      Details:
       - Location: ${formData.destinationLabel}
       - Duration: ${formData.noOfDays} Days
       - Group: ${formData.travelers}
       - Budget Level: ${formData.budget}
       - Interests: ${formData.interests ? formData.interests.join(", ") : "General Travel"}
+
+      Crucial Customization Rules:
+      - Heavily tailor the itinerary activities ("plan") and hotel recommendations ("hotel_options") to align with and lean into the selected interests.
+      - For instance, if "Food" is selected, prioritize culinary tours, local street food markets, and highly-rated dining spots. If "Adventure" is selected, focus on outdoor excursions, hikes, and active thrills. If "Relaxation" is selected, prioritize spas, beaches, and slow-paced/leisurely schedules.
+      - Blend these interests naturally into the daily schedule while respecting the location, group composition, and budget level.
+
       ${AI_RESPONSE_CONTRACT}
     `.trim();
 
