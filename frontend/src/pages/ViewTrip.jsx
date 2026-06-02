@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { doc, getDoc, onSnapshot } from "firebase/firestore";
+import { doc, getDoc, onSnapshot, writeBatch } from "firebase/firestore";
+import { toast } from "sonner";
 import { useSearchParams } from "react-router-dom";
 import { auth, db } from "../services/firebaseConfig";
 import { cn } from "../lib/utils";
@@ -23,6 +24,12 @@ import {
   Sparkles,
   Hourglass,
   Wallet,
+  Download,
+  Loader2,
+  Send,
+  X,
+  User,
+  BotMessageSquare,
 } from "lucide-react";
 import SEO from "../components/shared/SEO";
 import {
@@ -158,6 +165,7 @@ const normalizeHotels = (tripData) => {
           hotel?.description ||
           hotel?.desc ||
           "Experience a wonderful stay curated for your comfort.",
+        geo_coordinates: hotel?.geo_coordinates || hotel?.coordinates || null,
       }))
     : [];
 };
@@ -175,6 +183,7 @@ const normalizeActivities = (planSource) => {
           item?.description ||
           "A highly recommended stop on your journey.",
         estDuration: item?.est_duration_min || null,
+        geo_coordinates: item?.geo_coordinates || item?.coordinates || null,
       }))
     : [];
 };
@@ -246,6 +255,503 @@ const ViewTrip = () => {
 
   const [loadingStep, setLoadingStep] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [pdfDownloading, setPdfDownloading] = useState(false);
+  const [activeDayIndex, setActiveDayIndex] = useState(0);
+
+  const [chatOpen, setChatOpen] = useState(false);
+  const [inputText, setInputText] = useState("");
+  const [chatHistory, setChatHistory] = useState([
+    {
+      role: "model",
+      content:
+        "Hello! I'm your AI Trip Assistant. Ask me to customize your itinerary, add stops, swap hotels, or provide local tips!",
+    },
+  ]);
+  const [aiTyping, setAiTyping] = useState(false);
+
+  const chatEndRef = useRef(/** @type {HTMLDivElement | null} */ (null));
+
+  useEffect(() => {
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [chatHistory, aiTyping]);
+
+  const updateTripDataInFirestore = async (newTripData) => {
+    try {
+      const updatedTrip = {
+        ...trip,
+        tripData: newTripData,
+      };
+
+      setTrip(updatedTrip);
+      localStorage.setItem(
+        getLocalTripKey(tripId || ""),
+        JSON.stringify(updatedTrip),
+      );
+
+      const batch = writeBatch(db);
+
+      const globalTripRef = doc(db, "Trips", tripId || "");
+      batch.set(globalTripRef, updatedTrip, { merge: true });
+
+      const targetUserId = trip.userId || auth.currentUser?.uid;
+      if (targetUserId) {
+        const userTripRef = doc(
+          db,
+          "users",
+          targetUserId,
+          "trips",
+          tripId || "",
+        );
+        batch.set(userTripRef, updatedTrip, { merge: true });
+      }
+
+      await batch.commit();
+      toast.success("Itinerary updated successfully!", {
+        description: "Your route map and itinerary have been refreshed.",
+      });
+    } catch (error) {
+      console.error("Failed to update trip in Firestore:", error);
+      toast.error("Failed to sync trip updates. Please try again.");
+    }
+  };
+
+  const handleSendMessage = async (e) => {
+    if (e) e.preventDefault();
+    const trimmed = inputText.trim();
+    if (!trimmed || aiTyping) return;
+
+    const userMsg = { role: "user", content: trimmed };
+    setChatHistory((prev) => [...prev, userMsg]);
+    setInputText("");
+    setAiTyping(true);
+
+    try {
+      const geminiApiKey = import.meta.env.VITE_GEMINI_API_KEY;
+      if (!geminiApiKey) {
+        throw new Error("Gemini API key is not configured.");
+      }
+
+      const contentsForApi = chatHistory
+        .filter((_, idx) => idx > 0)
+        .map((msg) => ({
+          role: msg.role,
+          parts: [{ text: msg.content }],
+        }));
+      contentsForApi.push({
+        role: "user",
+        parts: [{ text: trimmed }],
+      });
+
+      const systemPrompt = `You are Trip Buddy's AI Travel Assistant. Your goal is to help the user modify, customize, and answer questions about their current trip itinerary.
+
+Current Trip Data:
+${JSON.stringify(trip?.tripData)}
+
+User Selection:
+${JSON.stringify(trip?.userSelection)}
+
+Instructions:
+1. You can answer questions about the destinations, hotels, or activities.
+2. You can add, remove, or modify activities, days, hotels, or recommendations based on the user's request.
+3. If the user wants to make a change, you MUST generate the fully updated tripData object (representing the complete itinerary) and return it in the "updatedTripData" field. The updated tripData MUST preserve the original structure, including fields like "trip_summary", "hotel_options" (or "hotels"), "itinerary" (or "day_wise_plan"), etc.
+4. When adding new activities or hotels, try to include estimated geographic coordinates (latitude and longitude) under the "geo_coordinates" field (e.g. { "lat": 28.6139, "lng": 77.209 }) based on standard coordinates of the place, so that they can be plotted on the map.
+5. If no changes to the itinerary are requested (e.g., the user is just asking a question or chatting), set the "updatedTripData" field to null.
+6. Always return a valid JSON object matching the following schema:
+{
+  "message": "Your text response or explanation of the changes made",
+  "updatedTripData": <updated_trip_data_object_or_null>
+}
+Do not include any markdown wrappers (like \`\`\`json). Return raw JSON only.`;
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            contents: contentsForApi,
+            systemInstruction: {
+              parts: [{ text: systemPrompt }],
+            },
+            generationConfig: {
+              responseMimeType: "application/json",
+            },
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status} ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      const rawText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!rawText) {
+        throw new Error("No response text from AI.");
+      }
+
+      const parsed = JSON.parse(rawText.trim());
+      setChatHistory((prev) => [
+        ...prev,
+        { role: "model", content: parsed.message },
+      ]);
+
+      if (parsed.updatedTripData) {
+        await updateTripDataInFirestore(parsed.updatedTripData);
+      }
+    } catch (error) {
+      console.error("Chat error:", error);
+      setChatHistory((prev) => [
+        ...prev,
+        {
+          role: "model",
+          content:
+            "Sorry, I encountered an issue processing that request. Please try again.",
+        },
+      ]);
+      toast.error("Failed to process message.");
+    } finally {
+      setAiTyping(false);
+    }
+  };
+
+  const getBase64Logo = () => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = "/favicon.png";
+      img.crossOrigin = "anonymous";
+      img.onload = () => {
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = img.width;
+          canvas.height = img.height;
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.drawImage(img, 0, 0);
+            resolve(canvas.toDataURL("image/png"));
+          } else {
+            resolve(null);
+          }
+        } catch (e) {
+          resolve(null);
+        }
+      };
+      img.onerror = () => {
+        resolve(null);
+      };
+    });
+  };
+
+  const cleanTextForPDF = (str) => {
+    if (typeof str !== "string") return "";
+    return str
+      .replace(/₹/g, "Rs. ")
+      .replace(/[\u201e\u200e\u200b\u200f\ufeff]/g, "")
+      .replace(/[\u2018\u2019]/g, "'")
+      .replace(/[\u201C\u201D]/g, '"')
+      .replace(/[\u2013\u2014]/g, "-")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^\x00-\x7F]/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+  };
+
+  const exportToPDF = async () => {
+    setPdfDownloading(true);
+    try {
+      const { jsPDF } = await import("jspdf");
+      const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      const logoBase64 = await getBase64Logo();
+
+      const drawPageDecorations = (pdfDoc) => {
+        pdfDoc.setFont("helvetica", "normal");
+        pdfDoc.setFontSize(8);
+        pdfDoc.setTextColor(156, 163, 175);
+        pdfDoc.text("Trip Buddy — AI Travel Itinerary", 15, 10);
+        pdfDoc.setDrawColor(229, 231, 235);
+        pdfDoc.setLineWidth(0.2);
+        pdfDoc.line(15, 12, 195, 12);
+
+        pdfDoc.line(15, 282, 195, 282);
+        pdfDoc.text("Generated with Passion by Trip Buddy", 15, 287);
+      };
+
+      let y = 15;
+
+      doc.setFillColor(79, 70, 229);
+      doc.roundedRect(15, y, 180, 22, 3, 3, "F");
+
+      if (logoBase64) {
+        try {
+          doc.addImage(logoBase64, "PNG", 20, y + 3, 16, 16);
+        } catch (e) {
+          console.error("Failed to add image to PDF", e);
+        }
+      }
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text("TRIP BUDDY", logoBase64 ? 40 : 20, y + 14);
+
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.text("YOUR AI TRAVEL COMPANION", 120, y + 13);
+
+      y += 38;
+
+      doc.setFontSize(22);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(17, 24, 39);
+      doc.text(cleanTextForPDF(destinationLabel.split(",")[0]), 15, y);
+
+      y += 6;
+      doc.setFontSize(10.5);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(79, 70, 229);
+      doc.text(cleanTextForPDF(destinationLabel), 15, y);
+
+      y += 10;
+
+      doc.setFillColor(249, 250, 251);
+      doc.setDrawColor(229, 231, 235);
+      doc.roundedRect(15, y, 180, 34, 2, 2, "FD");
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7.5);
+      doc.setTextColor(156, 163, 175);
+      doc.text("DURATION", 22, y + 7);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(17, 24, 39);
+      doc.text(cleanTextForPDF(summary.duration), 22, y + 12);
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7.5);
+      doc.setTextColor(156, 163, 175);
+      doc.text("START DATE", 22, y + 20);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(17, 24, 39);
+      doc.text(cleanTextForPDF(summary.startDate), 22, y + 25);
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7.5);
+      doc.setTextColor(156, 163, 175);
+      doc.text("TRAVELERS", 80, y + 7);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(17, 24, 39);
+      doc.text(cleanTextForPDF(summary.travelers), 80, y + 12);
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7.5);
+      doc.setTextColor(156, 163, 175);
+      doc.text("ESTIMATED BUDGET", 80, y + 20);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(17, 24, 39);
+      const budgetLines = doc.splitTextToSize(
+        cleanTextForPDF(summary.budget),
+        108,
+      );
+      doc.text(budgetLines, 80, y + 25);
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7.5);
+      doc.setTextColor(156, 163, 175);
+      doc.text("INTERESTS", 138, y + 7);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(17, 24, 39);
+      const interestLines = doc.splitTextToSize(
+        cleanTextForPDF(summary.interests),
+        50,
+      );
+      doc.text(interestLines, 138, y + 12);
+
+      y += 46;
+
+      if (hotels.length > 0) {
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(12);
+        doc.setTextColor(79, 70, 229);
+        doc.text("Recommended Stays", 15, y);
+        doc.setDrawColor(229, 231, 235);
+        doc.line(15, y + 2, 195, y + 2);
+        y += 8;
+
+        hotels.forEach((hotel) => {
+          if (y > 235) {
+            doc.addPage();
+            drawPageDecorations(doc);
+            y = 25;
+          }
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(10);
+          doc.setTextColor(17, 24, 39);
+          doc.text(cleanTextForPDF(hotel.name), 15, y);
+
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(9);
+          const ratingText = hotel.rating ? `Rating: ${hotel.rating}/5` : "";
+          const priceText = hotel.price
+            ? `${formatPrice(hotel.price)}/night`
+            : "";
+          const rightText = [ratingText, priceText]
+            .filter(Boolean)
+            .join("  |  ");
+          doc.text(cleanTextForPDF(rightText), 195, y, { align: "right" });
+
+          y += 5;
+          doc.setFont("helvetica", "normal");
+          doc.setFontSize(8.5);
+          doc.setTextColor(107, 114, 128);
+          doc.text("Address: " + cleanTextForPDF(hotel.address), 15, y);
+
+          y += 4.5;
+          doc.setFontSize(9);
+          doc.setTextColor(75, 85, 99);
+          const hotelDescLines = doc.splitTextToSize(
+            cleanTextForPDF(hotel.description),
+            180,
+          );
+          for (let i = 0; i < hotelDescLines.length; i++) {
+            if (y > 268) {
+              doc.addPage();
+              drawPageDecorations(doc);
+              y = 25;
+            }
+            doc.text(hotelDescLines[i], 15, y);
+            y += 4.5;
+          }
+          y += 5.5;
+        });
+      }
+
+      if (itineraryDays.length > 0) {
+        if (y > 210) {
+          doc.addPage();
+          drawPageDecorations(doc);
+          y = 25;
+        } else {
+          y += 5;
+        }
+
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(12);
+        doc.setTextColor(79, 70, 229);
+        doc.text("Daily Itinerary", 15, y);
+        doc.setDrawColor(229, 231, 235);
+        doc.line(15, y + 2, 195, y + 2);
+        y += 8;
+
+        itineraryDays.forEach((day) => {
+          if (y > 235) {
+            doc.addPage();
+            drawPageDecorations(doc);
+            y = 25;
+          }
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(11);
+          doc.setTextColor(79, 70, 229);
+          doc.text(cleanTextForPDF(`${day.label} — ${day.title}`), 15, y);
+          y += 6.5;
+
+          let lastBulletY = null;
+          let lastBulletPage = null;
+
+          day.activities.forEach((act) => {
+            if (y > 245) {
+              doc.addPage();
+              drawPageDecorations(doc);
+              y = 25;
+              lastBulletY = null;
+            }
+
+            const currentPage = doc.getNumberOfPages();
+            if (lastBulletY !== null && lastBulletPage === currentPage) {
+              doc.setDrawColor(199, 210, 254);
+              doc.setLineWidth(0.5);
+              doc.line(18, lastBulletY + 1.2, 18, y - 1 - 1.2);
+            }
+
+            doc.setFillColor(79, 70, 229);
+            doc.circle(18, y - 1, 1.2, "F");
+
+            lastBulletY = y - 1;
+            lastBulletPage = currentPage;
+
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(9.5);
+            doc.setTextColor(17, 24, 39);
+            const actTitle = `${act.time}  -  ${act.title}`;
+            doc.text(cleanTextForPDF(actTitle), 23, y);
+
+            if (act.estDuration) {
+              doc.setFont("helvetica", "normal");
+              doc.setFontSize(8.5);
+              doc.setTextColor(107, 114, 128);
+              doc.text(
+                cleanTextForPDF(`Duration: ${act.estDuration} min`),
+                195,
+                y,
+                { align: "right" },
+              );
+            }
+
+            y += 5;
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(9);
+            doc.setTextColor(75, 85, 99);
+            const actDescLines = doc.splitTextToSize(
+              cleanTextForPDF(act.description),
+              172,
+            );
+            for (let i = 0; i < actDescLines.length; i++) {
+              if (y > 268) {
+                doc.addPage();
+                drawPageDecorations(doc);
+                y = 25;
+                lastBulletY = null;
+              }
+              doc.text(actDescLines[i], 23, y);
+              y += 4.5;
+            }
+            y += 4.5;
+          });
+          y += 4;
+        });
+      }
+
+      const pageCount = doc.getNumberOfPages();
+      for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        drawPageDecorations(doc);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.setTextColor(156, 163, 175);
+        doc.text(`Page ${i} of ${pageCount}`, 195, 287, { align: "right" });
+      }
+
+      const fileName = `${destinationLabel.split(",")[0].trim().replace(/\s+/g, "_")}_Itinerary.pdf`;
+      doc.save(fileName);
+    } catch (error) {
+      console.error("PDF generation failed:", error);
+    } finally {
+      setPdfDownloading(false);
+    }
+  };
 
   useEffect(() => {
     if (!loading) return;
@@ -290,8 +796,7 @@ const ViewTrip = () => {
             );
             if (userTripSnap.exists()) foundTrip = userTripSnap.data();
           }
-        } catch (e) {
-        }
+        } catch (e) {}
       }
 
       if (foundTrip) {
@@ -353,9 +858,9 @@ const ViewTrip = () => {
       budget: base?.budget_note || "Budget flexible",
       travelers: trip?.userSelection?.travelers || "Solo/Group",
       startDate: formatFullDate(trip?.userSelection?.startDate || ""),
-      interests: Array.isArray(trip?.userSelection?.interests) 
-        ? trip.userSelection.interests.join(", ") 
-        : (trip?.userSelection?.interests || "General"),
+      interests: Array.isArray(trip?.userSelection?.interests)
+        ? trip.userSelection.interests.join(", ")
+        : trip?.userSelection?.interests || "General",
     };
   }, [trip, destinationLabel]);
 
@@ -477,6 +982,19 @@ const ViewTrip = () => {
                     )}
                     {copied ? "Link Copied!" : "Share Trip"}
                   </button>
+
+                  <button
+                    onClick={exportToPDF}
+                    disabled={pdfDownloading}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-white/10 backdrop-blur-md px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white hover:bg-white hover:text-indigo-600 transition-colors border border-white/20 shadow-sm disabled:opacity-50"
+                  >
+                    {pdfDownloading ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Download className="w-3.5 h-3.5" />
+                    )}
+                    {pdfDownloading ? "Downloading..." : "Download PDF"}
+                  </button>
                 </div>
 
                 <div className="space-y-6 max-w-4xl">
@@ -502,7 +1020,7 @@ const ViewTrip = () => {
                     key={item.label}
                     className={cn(
                       "flex flex-col h-full rounded-[1.8rem] glass-card p-6 border border-white/60 bg-white/40 backdrop-blur-xl hover:shadow-xl hover:-translate-y-1 transition-all group",
-                      item.label === "Budget" && "sm:col-span-2"
+                      item.label === "Budget" && "sm:col-span-2",
                     )}
                   >
                     <div className="flex items-center gap-3 mb-4">
@@ -558,12 +1076,12 @@ const ViewTrip = () => {
                   rel="noopener noreferrer"
                   className="group block h-full"
                 >
-                  <article className="flex h-full flex-col overflow-hidden rounded-4xl glass-card hover:-translate-y-1">
+                  <article className="flex h-full flex-col overflow-hidden rounded-4xl glass-card hover:shadow-xl hover:-translate-y-1 transition-all">
                     <div className="relative h-56 w-full overflow-hidden">
                       <GetPhoto
                         locationItem={`${hotel.name}, ${hotel.address}`}
                         className="h-full w-full"
-                        imageClassName="h-full w-full object-cover group-hover:scale-110"
+                        imageClassName="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700"
                       />
                       <div className="absolute inset-0 bg-linear-to-t from-slate-900/60 via-transparent to-transparent" />
                       <span className="absolute top-4 right-4 rounded-full bg-white/90 backdrop-blur px-3.5 py-1.5 text-xs font-bold text-slate-900 shadow-sm">
@@ -622,124 +1140,273 @@ const ViewTrip = () => {
               </p>
             </div>
           ) : (
-            <Accordion
-              type="multiple"
-              className="space-y-6"
-              defaultValue={[itineraryDays[0]?.key]}
-            >
-              {itineraryDays.map((day) => (
-                <AccordionItem
-                  key={day.key}
-                  value={day.key}
-                  className="group overflow-hidden rounded-4xl glass-card data-[state=open]:ring-2 data-[state=open]:ring-indigo-100 data-[state=open]:bg-white/80"
-                >
-                  <AccordionTrigger
-                    showIcon={false}
-                    className="px-6 py-6 md:px-8 hover:no-underline transition-colors w-full"
+            <div className="w-full">
+              <Accordion
+                type="single"
+                className="space-y-6"
+                value={itineraryDays[activeDayIndex]?.key || "day-1"}
+                onValueChange={(val) => {
+                  if (val) {
+                    const idx = itineraryDays.findIndex((d) => d.key === val);
+                    if (idx !== -1) setActiveDayIndex(idx);
+                  }
+                }}
+              >
+                {itineraryDays.map((day) => (
+                  <AccordionItem
+                    key={day.key}
+                    value={day.key}
+                    className="group overflow-hidden rounded-4xl glass-card data-[state=open]:ring-2 data-[state=open]:ring-indigo-100 data-[state=open]:bg-white/80"
                   >
-                    <div className="flex w-full items-center justify-between gap-4">
-                      <div className="flex flex-col text-left flex-1 min-w-0">
-                        <div className="flex items-center gap-3 mb-2.5">
-                          <span className="inline-flex items-center justify-center rounded-lg bg-indigo-50 px-3 py-1 text-[11px] font-black uppercase tracking-widest text-indigo-600 shadow-inner">
-                            {day.label}
-                          </span>
-                          <span className="h-0.5 w-6 rounded-full bg-indigo-100" />
-                          <span className="text-xs font-bold uppercase tracking-widest text-slate-400">
-                            {day.activities.length} Stops
-                          </span>
-                        </div>
-
-                        <h4 className="text-2xl font-black tracking-tight text-slate-900 group-hover:text-indigo-600 transition-colors duration-300 truncate">
-                          {day.title}
-                        </h4>
-
-                        <div className="grid grid-rows-[0fr] group-data-[state=closed]:grid-rows-[1fr] transition-[grid-template-rows] duration-500 ease-in-out mt-1">
-                          <div className="overflow-hidden">
-                            <p className="mt-1 text-sm font-medium text-slate-500 truncate flex items-center gap-1.5 opacity-0 group-data-[state=closed]:opacity-100 transition-opacity duration-500 delay-100">
-                              <span className="inline-flex items-center gap-1 text-indigo-600">
-                                <MapPin className="w-3.5 h-3.5" />
-                                Includes:
-                              </span>
-                              {day.activities.map((a) => a.title).join(" • ")}
-                            </p>
+                    <AccordionTrigger
+                      showIcon={false}
+                      className="px-6 py-6 md:px-8 hover:no-underline transition-colors w-full"
+                    >
+                      <div className="flex w-full items-center justify-between gap-4">
+                        <div className="flex flex-col text-left flex-1 min-w-0">
+                          <div className="flex items-center gap-3 mb-2.5">
+                            <span className="inline-flex items-center justify-center rounded-lg bg-indigo-50 px-3 py-1 text-[11px] font-black uppercase tracking-widest text-indigo-600 shadow-inner">
+                              {day.label}
+                            </span>
+                            <span className="h-0.5 w-6 rounded-full bg-indigo-100" />
+                            <span className="text-xs font-bold uppercase tracking-widest text-slate-400">
+                              {day.activities.length} Stops
+                            </span>
                           </div>
-                        </div>
-                      </div>
 
-                      <div className="hidden sm:flex shrink-0">
-                        <div className="rounded-full bg-slate-50 border border-slate-200 px-5 py-2 text-sm font-bold text-slate-600 shadow-sm group-hover:border-indigo-200 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-all duration-300 group-data-[state=open]:bg-indigo-600 group-data-[state=open]:text-white group-data-[state=open]:border-indigo-600 group-data-[state=open]:shadow-md">
-                          <span className="group-data-[state=open]:hidden">
-                            View Day
-                          </span>
-                          <span className="hidden group-data-[state=open]:inline">
-                            Close
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </AccordionTrigger>
+                          <h4 className="text-2xl font-black tracking-tight text-slate-900 group-hover:text-indigo-600 transition-colors duration-300 truncate">
+                            {day.title}
+                          </h4>
 
-                  <AccordionContent className="px-6 md:px-8">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-6 pb-10 border-t border-indigo-100/50 mt-2">
-                      {day.activities.map((activity) => (
-                        <div
-                          key={activity.id}
-                          className="group/card relative flex flex-col h-full overflow-hidden rounded-4xl glass-card hover:-translate-y-1"
-                        >
-                          <div className="relative h-48 w-full overflow-hidden p-2 pb-0">
-                            <GetPhoto
-                              locationItem={`${activity.title}, ${summary.location}`}
-                              className="h-full w-full rounded-3xl"
-                              imageClassName="h-full w-full object-cover group-hover/card:scale-110"
-                            />
-                            <div className="absolute top-4 right-4">
-                              <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur px-3 py-1.5 text-xs font-bold text-slate-900 shadow-sm">
-                                <Clock3 className="w-3.5 h-3.5 text-indigo-600" />
-                                {activity.time}
-                              </span>
+                          <div className="grid grid-rows-[0fr] group-data-[state=closed]:grid-rows-[1fr] transition-[grid-template-rows] duration-500 ease-in-out mt-1">
+                            <div className="overflow-hidden">
+                              <p className="mt-1 text-sm font-medium text-slate-500 truncate flex items-center gap-1.5 opacity-0 group-data-[state=closed]:opacity-100 transition-opacity duration-500 delay-100">
+                                <span className="inline-flex items-center gap-1 text-indigo-600">
+                                  <MapPin className="w-3.5 h-3.5" />
+                                  Includes:
+                                </span>
+                                {day.activities.map((a) => a.title).join(" • ")}
+                              </p>
                             </div>
                           </div>
+                        </div>
 
-                          <div className="flex flex-1 flex-col p-6 gap-3">
-                            <a
-                              href={getGoogleMapsUrl(
-                                activity.title,
-                                summary.location,
-                              )}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="block focus:outline-none"
-                            >
-                              <h5 className="text-lg font-bold text-slate-900 leading-tight flex items-center gap-2 group-hover/card:text-indigo-600 transition-colors">
-                                <span>{activity.title}</span>
-                                <div className="p-1.5 rounded-full bg-slate-50 group-hover/card:bg-indigo-50 shrink-0 transition-colors">
-                                  <Navigation className="w-4 h-4 text-slate-400 group-hover/card:text-indigo-600 transition-colors" />
-                                </div>
-                              </h5>
-                            </a>
-
-                            {activity.estDuration && (
-                              <span className="w-fit inline-flex items-center gap-1.5 rounded-lg bg-indigo-50/80 text-indigo-700 px-2.5 py-1.5 text-xs font-bold">
-                                <Hourglass className="w-3.5 h-3.5" />
-                                {activity.estDuration} min duration
-                              </span>
-                            )}
-
-                            {activity.description && (
-                              <p className="text-sm text-slate-500 font-medium leading-relaxed line-clamp-3 mt-1">
-                                {activity.description}
-                              </p>
-                            )}
+                        <div className="hidden sm:flex shrink-0">
+                          <div className="rounded-full bg-slate-50 border border-slate-200 px-5 py-2 text-sm font-bold text-slate-600 shadow-sm group-hover:border-indigo-200 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-all duration-300 group-data-[state=open]:bg-indigo-600 group-data-[state=open]:text-white group-data-[state=open]:border-indigo-600 group-data-[state=open]:shadow-md">
+                            <span className="group-data-[state=open]:hidden">
+                              View Day
+                            </span>
+                            <span className="hidden group-data-[state=open]:inline">
+                              Close
+                            </span>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
+                      </div>
+                    </AccordionTrigger>
+
+                    <AccordionContent className="px-6 md:px-8">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-6 pb-10 border-t border-indigo-100/50 mt-2">
+                        {day.activities.map((activity) => (
+                          <div
+                            key={activity.id}
+                            className="group/card relative flex flex-col h-full overflow-hidden rounded-4xl glass-card hover:shadow-xl hover:-translate-y-1 transition-all"
+                          >
+                            <div className="relative h-48 w-full overflow-hidden p-2 pb-0">
+                              <GetPhoto
+                                locationItem={`${activity.title}, ${summary.location}`}
+                                className="h-full w-full rounded-3xl"
+                                imageClassName="h-full w-full object-cover group-hover/card:scale-110 transition-transform duration-700"
+                              />
+                              <div className="absolute top-4 right-4">
+                                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur px-3 py-1.5 text-xs font-bold text-slate-900 shadow-sm">
+                                  <Clock3 className="w-3.5 h-3.5 text-indigo-600" />
+                                  {activity.time}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="flex flex-1 flex-col p-6 gap-3">
+                              <a
+                                href={getGoogleMapsUrl(
+                                  activity.title,
+                                  summary.location,
+                                )}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="block focus:outline-none"
+                              >
+                                <h5 className="text-lg font-bold text-slate-900 leading-tight flex items-center gap-2 group-hover/card:text-indigo-600 transition-colors">
+                                  <span>{activity.title}</span>
+                                  <div className="p-1.5 rounded-full bg-slate-50 group-hover/card:bg-indigo-50 shrink-0 transition-colors">
+                                    <Navigation className="w-4 h-4 text-slate-400 group-hover/card:text-indigo-600 transition-colors" />
+                                  </div>
+                                </h5>
+                              </a>
+
+                              {activity.estDuration && (
+                                <span className="w-fit inline-flex items-center gap-1.5 rounded-lg bg-indigo-50/80 text-indigo-700 px-2.5 py-1.5 text-xs font-bold">
+                                  <Hourglass className="w-3.5 h-3.5" />
+                                  {activity.estDuration} min duration
+                                </span>
+                              )}
+
+                              {activity.description && (
+                                <p className="text-sm text-slate-500 font-medium leading-relaxed line-clamp-3 mt-1">
+                                  {activity.description}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </div>
           )}
         </section>
+
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-4 font-sans select-none">
+          {chatOpen && (
+            <div className="w-96 max-w-[calc(100vw-2rem)] h-[580px] max-h-[calc(100vh-8rem)] rounded-4xl border border-white/40 bg-white/80 backdrop-blur-xl shadow-[0_24px_60px_-15px_rgba(79,70,229,0.15)] flex flex-col overflow-hidden animate-in slide-in-from-bottom-6 fade-in duration-300 ease-out">
+              <div className="p-5 bg-linear-to-b from-indigo-50/60 to-transparent border-b border-indigo-100/30 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-indigo-500 via-indigo-600 to-violet-600 shadow-md text-white shadow-indigo-200">
+                    <BotMessageSquare className="w-5 h-5" />
+                    <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-slate-800 tracking-tight">
+                      Trip Assistant
+                    </h4>
+                    <p className="text-[10px] text-indigo-600/80 font-bold uppercase tracking-wider">
+                      Trip Buddy Intelligence
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setChatOpen(false)}
+                  className="h-8 w-8 rounded-lg flex items-center justify-center border border-slate-200/60 bg-white hover:bg-slate-50 text-slate-400 hover:text-slate-600 active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-4 bg-linear-to-b from-transparent to-slate-50/30">
+                {chatHistory.map((msg, index) => {
+                  const isUser = msg.role === "user";
+                  return (
+                    <div
+                      key={index}
+                      className={cn(
+                        "flex items-start gap-3",
+                        isUser ? "flex-row-reverse" : "flex-row",
+                      )}
+                    >
+                      {!isUser && (
+                        <div className="h-7 w-7 rounded-lg shrink-0 flex items-center justify-center text-xs font-bold bg-white border border-indigo-100 shadow-xs text-indigo-600">
+                          <BotMessageSquare className="w-4 h-4" />
+                        </div>
+                      )}
+
+                      <div
+                        className={cn(
+                          "max-w-[78%] px-4 py-3 text-sm font-medium leading-relaxed tracking-tight shadow-xs",
+                          isUser
+                            ? "rounded-2xl rounded-tr-xs bg-indigo-600 text-white shadow-indigo-100/50"
+                            : "rounded-2xl rounded-tl-xs bg-white border border-slate-100 text-slate-700",
+                        )}
+                      >
+                        {msg.content}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {aiTyping && (
+                  <div className="flex items-start gap-3">
+                    <div className="h-7 w-7 rounded-lg shrink-0 flex items-center justify-center text-xs font-bold bg-white border border-indigo-100 shadow-xs text-indigo-600">
+                      <BotMessageSquare className="w-4 h-4" />
+                    </div>
+                    <div className="rounded-2xl rounded-tl-xs bg-white border border-slate-100 px-4 py-3 shadow-xs flex items-center gap-1">
+                      <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-bounce [animation-delay:-0.3s]" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-bounce [animation-delay:-0.15s]" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-bounce" />
+                    </div>
+                  </div>
+                )}
+
+                {chatHistory.length === 1 && !aiTyping && (
+                  <div className="pt-2 space-y-2 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest pl-1">
+                      Suggested Controls
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {[
+                        "☕ Add coffee on Day 2 morning",
+                        "🏨 Swap premium stay suggestions",
+                        "🗺️ Rearrange activities on Day 1",
+                      ].map((promptText) => (
+                        <button
+                          key={promptText}
+                          type="button"
+                          onClick={() => setInputText(promptText.substring(2))}
+                          className="text-xs font-semibold text-slate-600 bg-white hover:bg-indigo-50/30 border border-slate-200/70 hover:border-indigo-200/50 rounded-xl px-3 py-2 text-left transition-all cursor-pointer shadow-xs"
+                        >
+                          {promptText}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <div ref={chatEndRef} />
+              </div>
+
+              <form
+                onSubmit={handleSendMessage}
+                className="p-3 bg-white border-t border-slate-100 flex items-center gap-2"
+              >
+                <input
+                  type="text"
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  placeholder="Ask assistant to refine route..."
+                  disabled={aiTyping}
+                  className="flex-1 h-11 px-3.5 rounded-xl border border-slate-200/80 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm font-medium text-slate-800 placeholder-slate-400/90 transition-all"
+                />
+
+                <button
+                  type="submit"
+                  disabled={!inputText.trim() || aiTyping}
+                  className="h-11 w-11 rounded-xl bg-indigo-600 text-white flex items-center justify-center hover:bg-indigo-700 active:scale-95 transition-all shadow-md shadow-indigo-100 shrink-0 cursor-pointer disabled:opacity-30 disabled:scale-100 disabled:cursor-not-allowed disabled:shadow-none"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </form>
+            </div>
+          )}
+
+          <button
+            onClick={() => setChatOpen(!chatOpen)}
+            className={cn(
+              "h-14 w-14 rounded-2xl flex items-center justify-center text-white shadow-xl active:scale-95 transition-all cursor-pointer relative group border border-indigo-500/20",
+              chatOpen
+                ? "bg-slate-900 shadow-slate-900/10"
+                : "bg-linear-to-br from-indigo-500 via-indigo-600 to-indigo-700 shadow-indigo-600/20",
+            )}
+          >
+            <BotMessageSquare className={cn("w-5 h-5 transition-transform duration-300", chatOpen && "rotate-12 scale-110")} />
+            {!chatOpen && (
+              <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75" />
+                <span className="relative flex rounded-full h-3.5 w-3.5 bg-indigo-500 items-center justify-center text-[8px] font-black text-white">
+                  !
+                </span>
+              </span>
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );
