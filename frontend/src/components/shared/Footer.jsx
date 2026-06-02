@@ -52,6 +52,18 @@ const Footer = () => {
                 </a>
               </li>
               <li>
+                <a href="/v2/my-trips" onClick={(e) => {
+                  e.preventDefault();
+                  if (getStoredUser()) {
+                    navigate("/v2/my-trips");
+                  } else {
+                    window.dispatchEvent(new Event("open-login-dialog"));
+                  }
+                }} className="hover:text-indigo-600 transition-colors cursor-pointer">
+                  My Trips
+                </a>
+              </li>
+              <li>
                 <Link to="/explore" className="hover:text-indigo-600 transition-colors">
                   Destinations
                 </Link>
