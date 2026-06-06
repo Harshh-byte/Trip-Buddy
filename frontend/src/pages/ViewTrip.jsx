@@ -28,10 +28,11 @@ import {
   Loader2,
   Send,
   X,
-  User,
   BotMessageSquare,
 } from "lucide-react";
 import SEO from "../components/shared/SEO";
+import { ROAMIE_CONFIG } from "../services/roamieConfig";
+import { applyTripPatch } from "../services/roamiePatch";
 import {
   GetPlaceDetails,
   PHOTO_REF_URL,
@@ -263,8 +264,7 @@ const ViewTrip = () => {
   const [chatHistory, setChatHistory] = useState([
     {
       role: "model",
-      content:
-        "Hello! I'm your AI Trip Assistant. Ask me to customize your itinerary, add stops, swap hotels, or provide local tips!",
+      content: ROAMIE_CONFIG.welcomeMessage,
     },
   ]);
   const [aiTyping, setAiTyping] = useState(false);
@@ -276,6 +276,30 @@ const ViewTrip = () => {
       chatEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [chatHistory, aiTyping]);
+
+  useEffect(() => {
+    if (chatOpen) {
+      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+
+      const preventDefault = (e) => {
+        const chatContainer = document.querySelector(".fixed.bottom-6.right-6.z-50");
+        if (chatContainer && !chatContainer.contains(/** @type {Node} */ (e.target))) {
+          if (e.cancelable) {
+            e.preventDefault();
+          }
+        }
+      };
+
+      document.addEventListener("touchmove", preventDefault, { passive: false });
+
+      return () => {
+        document.body.style.overflow = "";
+        document.documentElement.style.overflow = "";
+        document.removeEventListener("touchmove", preventDefault);
+      };
+    }
+  }, [chatOpen]);
 
   const updateTripDataInFirestore = async (newTripData) => {
     try {
@@ -344,29 +368,10 @@ const ViewTrip = () => {
         parts: [{ text: trimmed }],
       });
 
-      const systemPrompt = `You are Trip Buddy's AI Travel Assistant. Your goal is to help the user modify, customize, and answer questions about their current trip itinerary.
-
-Current Trip Data:
-${JSON.stringify(trip?.tripData)}
-
-User Selection:
-${JSON.stringify(trip?.userSelection)}
-
-Instructions:
-1. You can answer questions about the destinations, hotels, or activities.
-2. You can add, remove, or modify activities, days, hotels, or recommendations based on the user's request.
-3. If the user wants to make a change, you MUST generate the fully updated tripData object (representing the complete itinerary) and return it in the "updatedTripData" field. The updated tripData MUST preserve the original structure, including fields like "trip_summary", "hotel_options" (or "hotels"), "itinerary" (or "day_wise_plan"), etc.
-4. When adding new activities or hotels, try to include estimated geographic coordinates (latitude and longitude) under the "geo_coordinates" field (e.g. { "lat": 28.6139, "lng": 77.209 }) based on standard coordinates of the place, so that they can be plotted on the map.
-5. If no changes to the itinerary are requested (e.g., the user is just asking a question or chatting), set the "updatedTripData" field to null.
-6. Always return a valid JSON object matching the following schema:
-{
-  "message": "Your text response or explanation of the changes made",
-  "updatedTripData": <updated_trip_data_object_or_null>
-}
-Do not include any markdown wrappers (like \`\`\`json). Return raw JSON only.`;
+      const systemPrompt = ROAMIE_CONFIG.getSystemPrompt(trip?.tripData, trip?.userSelection);
 
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`,
+        ROAMIE_CONFIG.getApiUrl(geminiApiKey),
         {
           method: "POST",
           headers: {
@@ -400,8 +405,11 @@ Do not include any markdown wrappers (like \`\`\`json). Return raw JSON only.`;
         { role: "model", content: parsed.message },
       ]);
 
-      if (parsed.updatedTripData) {
-        await updateTripDataInFirestore(parsed.updatedTripData);
+      if (parsed.patch) {
+        const patchedData = applyTripPatch(trip?.tripData, parsed.patch);
+        if (patchedData) {
+          await updateTripDataInFirestore(patchedData);
+        }
       }
     } catch (error) {
       console.error("Chat error:", error);
@@ -1278,10 +1286,10 @@ Do not include any markdown wrappers (like \`\`\`json). Return raw JSON only.`;
                   </div>
                   <div>
                     <h4 className="text-sm font-bold text-slate-800 tracking-tight">
-                      Trip Assistant
+                      {ROAMIE_CONFIG.title}
                     </h4>
                     <p className="text-[10px] text-indigo-600/80 font-bold uppercase tracking-wider">
-                      Trip Buddy Intelligence
+                      {ROAMIE_CONFIG.subtitle}
                     </p>
                   </div>
                 </div>
@@ -1343,11 +1351,7 @@ Do not include any markdown wrappers (like \`\`\`json). Return raw JSON only.`;
                       Suggested Controls
                     </p>
                     <div className="flex flex-wrap gap-1.5">
-                      {[
-                        "☕ Add coffee on Day 2 morning",
-                        "🏨 Swap premium stay suggestions",
-                        "🗺️ Rearrange activities on Day 1",
-                      ].map((promptText) => (
+                      {ROAMIE_CONFIG.suggestedPrompts.map((promptText) => (
                         <button
                           key={promptText}
                           type="button"
