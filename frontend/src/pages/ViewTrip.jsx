@@ -4,6 +4,7 @@ import { doc, getDoc, onSnapshot, writeBatch } from "firebase/firestore";
 import { toast } from "sonner";
 import { useSearchParams } from "react-router-dom";
 import { auth, db } from "../services/firebaseConfig";
+import { onAuthStateChanged } from "firebase/auth";
 import { cn } from "../lib/utils";
 import {
   ArrowLeft,
@@ -29,6 +30,7 @@ import {
   Send,
   X,
   BotMessageSquare,
+  Zap,
 } from "lucide-react";
 import SEO from "../components/shared/SEO";
 import { ROAMIE_CONFIG } from "../services/roamieConfig";
@@ -248,7 +250,31 @@ const formatFullDate = (value) => {
 const ViewTrip = () => {
   const { tripId } = useParams();
   const navigate = useNavigate();
+  const [currentUser, setCurrentUser] = useState(auth.currentUser);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+    });
+    return () => unsubscribe();
+  }, []);
+
   const [trip, setTrip] = useState(/** @type {any} */ (null));
+
+  const isOwner = useMemo(() => {
+    if (!trip) return false;
+
+    const localTrip = readLocalTrip(tripId || "");
+    if (localTrip) return true;
+
+    if (currentUser) {
+      if (trip.userId && currentUser.uid === trip.userId) return true;
+      if (trip.userEmail && currentUser.email === trip.userEmail) return true;
+    }
+
+    return false;
+  }, [trip, tripId, currentUser]);
+
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const [searchParams] = useSearchParams();
@@ -276,30 +302,6 @@ const ViewTrip = () => {
       chatEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [chatHistory, aiTyping]);
-
-  useEffect(() => {
-    if (chatOpen) {
-      document.body.style.overflow = "hidden";
-      document.documentElement.style.overflow = "hidden";
-
-      const preventDefault = (e) => {
-        const chatContainer = document.querySelector(".fixed.bottom-6.right-6.z-50");
-        if (chatContainer && !chatContainer.contains(/** @type {Node} */ (e.target))) {
-          if (e.cancelable) {
-            e.preventDefault();
-          }
-        }
-      };
-
-      document.addEventListener("touchmove", preventDefault, { passive: false });
-
-      return () => {
-        document.body.style.overflow = "";
-        document.documentElement.style.overflow = "";
-        document.removeEventListener("touchmove", preventDefault);
-      };
-    }
-  }, [chatOpen]);
 
   const updateTripDataInFirestore = async (newTripData) => {
     try {
@@ -336,7 +338,6 @@ const ViewTrip = () => {
         description: "Your route map and itinerary have been refreshed.",
       });
     } catch (error) {
-      console.error("Failed to update trip in Firestore:", error);
       toast.error("Failed to sync trip updates. Please try again.");
     }
   };
@@ -354,7 +355,7 @@ const ViewTrip = () => {
     try {
       const geminiApiKey = import.meta.env.VITE_GEMINI_API_KEY;
       if (!geminiApiKey) {
-        throw new Error("Gemini API key is not configured.");
+        throw new Error("Assistant service is not configured.");
       }
 
       const contentsForApi = chatHistory
@@ -412,7 +413,6 @@ const ViewTrip = () => {
         }
       }
     } catch (error) {
-      console.error("Chat error:", error);
       setChatHistory((prev) => [
         ...prev,
         {
@@ -503,7 +503,7 @@ const ViewTrip = () => {
         try {
           doc.addImage(logoBase64, "PNG", 20, y + 3, 16, 16);
         } catch (e) {
-          console.error("Failed to add image to PDF", e);
+          // Silent fallback if image adding fails
         }
       }
 
@@ -755,7 +755,7 @@ const ViewTrip = () => {
       const fileName = `${destinationLabel.split(",")[0].trim().replace(/\s+/g, "_")}_Itinerary.pdf`;
       doc.save(fileName);
     } catch (error) {
-      console.error("PDF generation failed:", error);
+      // Silent error handling
     } finally {
       setPdfDownloading(false);
     }
@@ -979,30 +979,40 @@ const ViewTrip = () => {
                     Back to Planner
                   </button>
 
-                  <button
-                    onClick={handleShare}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-white/10 backdrop-blur-md px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white hover:bg-white hover:text-indigo-600 transition-colors border border-white/20 shadow-sm"
-                  >
-                    {copied ? (
-                      <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
-                    ) : (
-                      <Share2 className="w-3.5 h-3.5" />
-                    )}
-                    {copied ? "Link Copied!" : "Share Trip"}
-                  </button>
+                  <div className="relative group">
+                    <button
+                      onClick={handleShare}
+                      className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-full bg-white/10 backdrop-blur-md text-white hover:bg-white hover:text-indigo-600 transition-colors border border-white/20 shadow-sm cursor-pointer"
+                    >
+                      {copied ? (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
+                      ) : (
+                        <Share2 className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2.5 py-1.5 bg-slate-950/90 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-wider rounded-xl shadow-lg border border-white/10 opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100 pointer-events-none transition-all duration-200 z-30 whitespace-nowrap">
+                      {copied ? "Link Copied!" : "Share Trip"}
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-slate-950/90" />
+                    </div>
+                  </div>
 
-                  <button
-                    onClick={exportToPDF}
-                    disabled={pdfDownloading}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-white/10 backdrop-blur-md px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white hover:bg-white hover:text-indigo-600 transition-colors border border-white/20 shadow-sm disabled:opacity-50"
-                  >
-                    {pdfDownloading ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <Download className="w-3.5 h-3.5" />
-                    )}
-                    {pdfDownloading ? "Downloading..." : "Download PDF"}
-                  </button>
+                  <div className="relative group">
+                    <button
+                      onClick={exportToPDF}
+                      disabled={pdfDownloading}
+                      className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-full bg-white/10 backdrop-blur-md text-white hover:bg-white hover:text-indigo-600 transition-colors border border-white/20 shadow-sm disabled:opacity-50 cursor-pointer"
+                    >
+                      {pdfDownloading ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Download className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2.5 py-1.5 bg-slate-950/90 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-wider rounded-xl shadow-lg border border-white/10 opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100 pointer-events-none transition-all duration-200 z-30 whitespace-nowrap">
+                      {pdfDownloading ? "Downloading..." : "Download PDF"}
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-slate-950/90" />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-6 max-w-4xl">
@@ -1275,142 +1285,144 @@ const ViewTrip = () => {
           )}
         </section>
 
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-4 font-sans select-none">
-          {chatOpen && (
-            <div className="w-96 max-w-[calc(100vw-2rem)] h-[580px] max-h-[calc(100vh-8rem)] rounded-4xl border border-white/40 bg-white/80 backdrop-blur-xl shadow-[0_24px_60px_-15px_rgba(79,70,229,0.15)] flex flex-col overflow-hidden animate-in slide-in-from-bottom-6 fade-in duration-300 ease-out">
-              <div className="p-5 bg-linear-to-b from-indigo-50/60 to-transparent border-b border-indigo-100/30 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-indigo-500 via-indigo-600 to-violet-600 shadow-md text-white shadow-indigo-200">
-                    <BotMessageSquare className="w-5 h-5" />
-                    <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
+        {isOwner && (
+          <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-4 font-sans select-none">
+            {chatOpen && (
+              <div className="w-96 max-w-[calc(100vw-2rem)] h-[580px] max-h-[calc(100vh-8rem)] rounded-4xl border border-white/40 bg-white/80 backdrop-blur-xl shadow-[0_24px_60px_-15px_rgba(79,70,229,0.15)] flex flex-col overflow-hidden animate-in slide-in-from-bottom-6 fade-in duration-300 ease-out">
+                <div className="p-5 bg-linear-to-b from-indigo-50/60 to-transparent border-b border-indigo-100/30 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-indigo-500 via-indigo-600 to-violet-600 shadow-md text-white shadow-indigo-200">
+                      <BotMessageSquare className="w-5 h-5" />
+                      <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-800 tracking-tight">
+                        {ROAMIE_CONFIG.title}
+                      </h4>
+                      <p className="text-[10px] text-indigo-600/80 font-bold uppercase tracking-wider">
+                        {ROAMIE_CONFIG.subtitle}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-slate-800 tracking-tight">
-                      {ROAMIE_CONFIG.title}
-                    </h4>
-                    <p className="text-[10px] text-indigo-600/80 font-bold uppercase tracking-wider">
-                      {ROAMIE_CONFIG.subtitle}
-                    </p>
-                  </div>
+                  <button
+                    onClick={() => setChatOpen(false)}
+                    className="h-8 w-8 rounded-lg flex items-center justify-center border border-slate-200/60 bg-white hover:bg-slate-50 text-slate-400 hover:text-slate-600 active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
-                <button
-                  onClick={() => setChatOpen(false)}
-                  className="h-8 w-8 rounded-lg flex items-center justify-center border border-slate-200/60 bg-white hover:bg-slate-50 text-slate-400 hover:text-slate-600 active:scale-95 transition-all shadow-xs shrink-0 cursor-pointer"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
 
-              <div className="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-4 bg-linear-to-b from-transparent to-slate-50/30">
-                {chatHistory.map((msg, index) => {
-                  const isUser = msg.role === "user";
-                  return (
-                    <div
-                      key={index}
-                      className={cn(
-                        "flex items-start gap-3",
-                        isUser ? "flex-row-reverse" : "flex-row",
-                      )}
-                    >
-                      {!isUser && (
-                        <div className="h-7 w-7 rounded-lg shrink-0 flex items-center justify-center text-xs font-bold bg-white border border-indigo-100 shadow-xs text-indigo-600">
-                          <BotMessageSquare className="w-4 h-4" />
-                        </div>
-                      )}
-
+                <div className="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-4 bg-linear-to-b from-transparent to-slate-50/30">
+                  {chatHistory.map((msg, index) => {
+                    const isUser = msg.role === "user";
+                    return (
                       <div
+                        key={index}
                         className={cn(
-                          "max-w-[78%] px-4 py-3 text-sm font-medium leading-relaxed tracking-tight shadow-xs",
-                          isUser
-                            ? "rounded-2xl rounded-tr-xs bg-indigo-600 text-white shadow-indigo-100/50"
-                            : "rounded-2xl rounded-tl-xs bg-white border border-slate-100 text-slate-700",
+                          "flex items-start gap-3",
+                          isUser ? "flex-row-reverse" : "flex-row",
                         )}
                       >
-                        {msg.content}
+                        {!isUser && (
+                          <div className="h-7 w-7 rounded-lg shrink-0 flex items-center justify-center text-xs font-bold bg-white border border-indigo-100 shadow-xs text-indigo-600">
+                            <BotMessageSquare className="w-4 h-4" />
+                          </div>
+                        )}
+
+                        <div
+                          className={cn(
+                            "max-w-[78%] px-4 py-3 text-sm font-medium leading-relaxed tracking-tight shadow-xs",
+                            isUser
+                              ? "rounded-2xl rounded-tr-xs bg-indigo-600 text-white shadow-indigo-100/50"
+                              : "rounded-2xl rounded-tl-xs bg-white border border-slate-100 text-slate-700",
+                          )}
+                        >
+                          {msg.content}
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {aiTyping && (
+                    <div className="flex items-start gap-3">
+                      <div className="h-7 w-7 rounded-lg shrink-0 flex items-center justify-center text-xs font-bold bg-white border border-indigo-100 shadow-xs text-indigo-600">
+                        <BotMessageSquare className="w-4 h-4" />
+                      </div>
+                      <div className="rounded-2xl rounded-tl-xs bg-white border border-slate-100 px-4 py-3 shadow-xs flex items-center gap-1">
+                        <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-bounce [animation-delay:-0.3s]" />
+                        <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-bounce [animation-delay:-0.15s]" />
+                        <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-bounce" />
                       </div>
                     </div>
-                  );
-                })}
+                  )}
 
-                {aiTyping && (
-                  <div className="flex items-start gap-3">
-                    <div className="h-7 w-7 rounded-lg shrink-0 flex items-center justify-center text-xs font-bold bg-white border border-indigo-100 shadow-xs text-indigo-600">
-                      <BotMessageSquare className="w-4 h-4" />
+                  {chatHistory.length === 1 && !aiTyping && (
+                    <div className="pt-2 space-y-2 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                      <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest pl-1">
+                        Suggested Controls
+                      </p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {ROAMIE_CONFIG.suggestedPrompts.map((promptText) => (
+                          <button
+                            key={promptText}
+                            type="button"
+                            onClick={() => setInputText(promptText.substring(2))}
+                            className="text-xs font-semibold text-slate-600 bg-white hover:bg-indigo-50/30 border border-slate-200/70 hover:border-indigo-200/50 rounded-xl px-3 py-2 text-left transition-all cursor-pointer shadow-xs"
+                          >
+                            {promptText}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                    <div className="rounded-2xl rounded-tl-xs bg-white border border-slate-100 px-4 py-3 shadow-xs flex items-center gap-1">
-                      <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-bounce [animation-delay:-0.3s]" />
-                      <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-bounce [animation-delay:-0.15s]" />
-                      <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-bounce" />
-                    </div>
-                  </div>
-                )}
+                  )}
+                  <div ref={chatEndRef} />
+                </div>
 
-                {chatHistory.length === 1 && !aiTyping && (
-                  <div className="pt-2 space-y-2 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                    <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest pl-1">
-                      Suggested Controls
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {ROAMIE_CONFIG.suggestedPrompts.map((promptText) => (
-                        <button
-                          key={promptText}
-                          type="button"
-                          onClick={() => setInputText(promptText.substring(2))}
-                          className="text-xs font-semibold text-slate-600 bg-white hover:bg-indigo-50/30 border border-slate-200/70 hover:border-indigo-200/50 rounded-xl px-3 py-2 text-left transition-all cursor-pointer shadow-xs"
-                        >
-                          {promptText}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                <div ref={chatEndRef} />
-              </div>
-
-              <form
-                onSubmit={handleSendMessage}
-                className="p-3 bg-white border-t border-slate-100 flex items-center gap-2"
-              >
-                <input
-                  type="text"
-                  value={inputText}
-                  onChange={(e) => setInputText(e.target.value)}
-                  placeholder="Ask assistant to refine route..."
-                  disabled={aiTyping}
-                  className="flex-1 h-11 px-3.5 rounded-xl border border-slate-200/80 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm font-medium text-slate-800 placeholder-slate-400/90 transition-all"
-                />
-
-                <button
-                  type="submit"
-                  disabled={!inputText.trim() || aiTyping}
-                  className="h-11 w-11 rounded-xl bg-indigo-600 text-white flex items-center justify-center hover:bg-indigo-700 active:scale-95 transition-all shadow-md shadow-indigo-100 shrink-0 cursor-pointer disabled:opacity-30 disabled:scale-100 disabled:cursor-not-allowed disabled:shadow-none"
+                <form
+                  onSubmit={handleSendMessage}
+                  className="p-3 bg-white border-t border-slate-100 flex items-center gap-2"
                 >
-                  <Send className="w-4 h-4" />
-                </button>
-              </form>
-            </div>
-          )}
+                  <input
+                    type="text"
+                    value={inputText}
+                    onChange={(e) => setInputText(e.target.value)}
+                    placeholder="Ask assistant to refine route..."
+                    disabled={aiTyping}
+                    className="flex-1 h-11 px-3.5 rounded-xl border border-slate-200/80 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm font-medium text-slate-800 placeholder-slate-400/90 transition-all"
+                  />
 
-          <button
-            onClick={() => setChatOpen(!chatOpen)}
-            className={cn(
-              "h-14 w-14 rounded-2xl flex items-center justify-center text-white shadow-xl active:scale-95 transition-all cursor-pointer relative group border border-indigo-500/20",
-              chatOpen
-                ? "bg-slate-900 shadow-slate-900/10"
-                : "bg-linear-to-br from-indigo-500 via-indigo-600 to-indigo-700 shadow-indigo-600/20",
+                  <button
+                    type="submit"
+                    disabled={!inputText.trim() || aiTyping}
+                    className="h-11 w-11 rounded-xl bg-indigo-600 text-white flex items-center justify-center hover:bg-indigo-700 active:scale-95 transition-all shadow-md shadow-indigo-100 shrink-0 cursor-pointer disabled:opacity-30 disabled:scale-100 disabled:cursor-not-allowed disabled:shadow-none"
+                  >
+                    <Send className="w-4 h-4" />
+                  </button>
+                </form>
+              </div>
             )}
-          >
-            <BotMessageSquare className={cn("w-5 h-5 transition-transform duration-300", chatOpen && "rotate-12 scale-110")} />
-            {!chatOpen && (
-              <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75" />
-                <span className="relative flex rounded-full h-3.5 w-3.5 bg-indigo-500 items-center justify-center text-[8px] font-black text-white">
-                  !
+
+            <button
+              onClick={() => setChatOpen(!chatOpen)}
+              className={cn(
+                "h-14 w-14 rounded-2xl flex items-center justify-center text-white shadow-xl active:scale-95 transition-all cursor-pointer relative group border border-indigo-500/20",
+                chatOpen
+                  ? "bg-slate-900 shadow-slate-900/10"
+                  : "bg-linear-to-br from-indigo-500 via-indigo-600 to-indigo-700 shadow-indigo-600/20",
+              )}
+            >
+              <BotMessageSquare className={cn("w-5 h-5 transition-transform duration-300", chatOpen && "rotate-12 scale-110")} />
+              {!chatOpen && (
+                <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75" />
+                  <span className="relative flex rounded-full h-3.5 w-3.5 bg-indigo-600 items-center justify-center text-white border border-white/20 shadow-sm">
+                    <Zap className="w-2 h-2 fill-white text-white" />
+                  </span>
                 </span>
-              </span>
-            )}
-          </button>
-        </div>
+              )}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
