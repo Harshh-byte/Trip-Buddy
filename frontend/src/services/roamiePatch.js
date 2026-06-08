@@ -109,7 +109,6 @@ export const applyTripPatch = (currentTripData, patch) => {
     }
     
     default:
-      console.warn("Unknown patch type received from AI:", patch.type);
       return null;
   }
   
