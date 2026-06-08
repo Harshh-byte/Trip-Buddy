@@ -37,7 +37,7 @@ const AdminSettings = () => {
       setAdminUser(getStoredAdminUser());
       toast.success("Avatar refreshed & pinned!");
     } catch (err) {
-      toast.error("Failed to refresh avatar");
+      toast.error("Failed to refresh avatar.");
     } finally {
       setIsRefreshing(false);
     }
@@ -50,9 +50,13 @@ const AdminSettings = () => {
     try {
       await updateAdminAvatarSettings(adminUser.uid, newStatus);
       setAdminUser(getStoredAdminUser());
-      toast.success(newStatus ? "Avatar pinned (fixed)" : "Avatar will rotate on next login");
+      toast.success(
+        newStatus
+          ? "Avatar pinned. Dynamic updates are now disabled."
+          : "Dynamic avatar rotation enabled. Changes will take effect upon next login."
+      );
     } catch (err) {
-      toast.error("Failed to update avatar settings");
+      toast.error("Failed to update avatar settings.");
     } finally {
       setIsPinning(false);
     }
@@ -68,9 +72,9 @@ const AdminSettings = () => {
       await updateAdminName(adminUser.uid, newName.trim());
       setAdminUser(getStoredAdminUser());
       setIsEditingName(false);
-      toast.success("Name updated");
+      toast.success("Name updated.");
     } catch (err) {
-      toast.error("Update failed");
+      toast.error("Update failed.");
     } finally {
       setIsSaving(false);
     }
@@ -162,7 +166,11 @@ const AdminSettings = () => {
                     ? "bg-slate-900 text-white border-slate-900 shadow-md"
                     : "bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200"
                 }`}
-                title={adminUser?.isAvatarFixed ? "Avatar is pinned and will not change" : "Avatar is automatic and rotates on login"}
+                title={
+                  adminUser?.isAvatarFixed
+                    ? "Avatar is locked and will remain static"
+                    : "Avatar rotation is active; updates will occur upon next login"
+                }
               >
                 {adminUser?.isAvatarFixed ? (
                   <>
