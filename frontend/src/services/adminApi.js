@@ -38,11 +38,22 @@ export const loginAdmin = async (email, password) => {
     );
   }
 
+  const userDocData = userSnap.data();
+  let currentPicture = userDocData.picture || "";
+  const isAvatarFixed = userDocData.isAvatarFixed ?? false;
+
+  if (!isAvatarFixed) {
+    const randomSeed = Math.random().toString(36).substring(7);
+    currentPicture = `https://api.dicebear.com/7.x/lorelei/svg?seed=${randomSeed}`;
+    await updateDoc(userDocRef, { picture: currentPicture, photoURL: currentPicture });
+  }
+
   const userData = {
     uid: user.uid,
     email: user.email,
-    name: userSnap.data().name || "Administrator",
-    picture: userSnap.data().picture || "",
+    name: userDocData.name || "Administrator",
+    picture: currentPicture,
+    isAvatarFixed: isAvatarFixed,
     isAdmin: true,
   };
 
@@ -97,9 +108,10 @@ export const seedAdminUser = async (email, password, secretKey, name) => {
       uid: user.uid,
       email: user.email,
       name: name || "Admin",
-      picture: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name || "admin")}`,
+      picture: `https://api.dicebear.com/7.x/lorelei/svg?seed=${encodeURIComponent(name || "admin")}`,
       provider: "email",
       isAdmin: true,
+      isAvatarFixed: false,
       lastLoginAt: serverTimestamp(),
       createdAt: serverTimestamp(),
     },
@@ -110,7 +122,8 @@ export const seedAdminUser = async (email, password, secretKey, name) => {
     uid: user.uid,
     email: user.email,
     name: name || "Admin",
-    picture: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name || "admin")}`,
+    picture: `https://api.dicebear.com/7.x/lorelei/svg?seed=${encodeURIComponent(name || "admin")}`,
+    isAvatarFixed: false,
     isAdmin: true,
   };
 
@@ -222,12 +235,35 @@ export const deleteTrip = async (tripId) => {
  */
 export const updateAdminPicture = async (userId, newPicture) => {
   const ref = doc(db, "users", userId);
-  await updateDoc(ref, { picture: newPicture, photoURL: newPicture });
+  await updateDoc(ref, { 
+    picture: newPicture, 
+    photoURL: newPicture,
+    isAvatarFixed: true 
+  });
 
   const admin = getStoredAdminUser();
   if (admin && admin.uid === userId) {
     admin.picture = newPicture;
     admin.photoURL = newPicture;
+    admin.isAvatarFixed = true;
+    localStorage.setItem("admin_user", JSON.stringify(admin));
+    localStorage.setItem("user", JSON.stringify(admin));
+    dispatchAuthUserChanged();
+    window.dispatchEvent(new Event("storage"));
+  }
+};
+
+/**
+ * @param {string} userId
+ * @param {boolean} isFixed
+ */
+export const updateAdminAvatarSettings = async (userId, isFixed) => {
+  const ref = doc(db, "users", userId);
+  await updateDoc(ref, { isAvatarFixed: isFixed });
+
+  const admin = getStoredAdminUser();
+  if (admin && admin.uid === userId) {
+    admin.isAvatarFixed = isFixed;
     localStorage.setItem("admin_user", JSON.stringify(admin));
     localStorage.setItem("user", JSON.stringify(admin));
     dispatchAuthUserChanged();

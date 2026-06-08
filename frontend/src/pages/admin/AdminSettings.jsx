@@ -3,6 +3,7 @@ import {
   getStoredAdminUser,
   updateAdminName,
   updateAdminPicture,
+  updateAdminAvatarSettings,
 } from "../../services/adminApi";
 import {
   User,
@@ -13,6 +14,7 @@ import {
   Edit3,
   Check,
   X as CloseIcon,
+  Pin,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -23,19 +25,36 @@ const AdminSettings = () => {
   const [newName, setNewName] = useState(adminUser?.name || "");
   const [isSaving, setIsSaving] = useState(false);
 
+  const [isPinning, setIsPinning] = useState(false);
+
   const handleRandomAvatar = async () => {
     setIsRefreshing(true);
     const randomSeed = Math.random().toString(36).substring(7);
-    const newUrl = `https://api.dicebear.com/7.x/avataaars/svg?seed=${randomSeed}`;
+    const newUrl = `https://api.dicebear.com/7.x/lorelei/svg?seed=${randomSeed}`;
 
     try {
       await updateAdminPicture(adminUser.uid, newUrl);
       setAdminUser(getStoredAdminUser());
-      toast.success("Avatar refreshed!");
+      toast.success("Avatar refreshed & pinned!");
     } catch (err) {
       toast.error("Failed to refresh avatar");
     } finally {
       setIsRefreshing(false);
+    }
+  };
+
+  const handleToggleFixedAvatar = async () => {
+    if (isPinning) return;
+    setIsPinning(true);
+    const newStatus = !adminUser?.isAvatarFixed;
+    try {
+      await updateAdminAvatarSettings(adminUser.uid, newStatus);
+      setAdminUser(getStoredAdminUser());
+      toast.success(newStatus ? "Avatar pinned (fixed)" : "Avatar will rotate on next login");
+    } catch (err) {
+      toast.error("Failed to update avatar settings");
+    } finally {
+      setIsPinning(false);
     }
   };
 
@@ -76,7 +95,7 @@ const AdminSettings = () => {
               src={
                 adminUser?.photoURL ||
                 adminUser?.picture ||
-                `https://api.dicebear.com/7.x/avataaars/svg?seed=${adminUser?.name || "admin"}`
+                `https://api.dicebear.com/7.x/lorelei/svg?seed=${adminUser?.name || "admin"}`
               }
               alt="Profile"
               className={`w-32 h-32 rounded-3xl border-4 border-white object-cover shadow-xl transition-all duration-500 ${isRefreshing ? "opacity-50 scale-95 blur-[2px]" : "group-hover:scale-105"}`}
@@ -131,10 +150,30 @@ const AdminSettings = () => {
               )}
             </div>
             <p className="text-slate-500 font-medium">{adminUser?.email}</p>
-            <div className="pt-2">
+            <div className="pt-3 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-3">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-indigo-600 text-[11px] font-black uppercase tracking-[0.2em] text-white shadow-lg shadow-indigo-200">
                 <Shield className="w-3.5 h-3.5" /> Administrator
               </div>
+              <button
+                onClick={handleToggleFixedAvatar}
+                disabled={isPinning}
+                className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all duration-300 border cursor-pointer ${
+                  adminUser?.isAvatarFixed
+                    ? "bg-slate-900 text-white border-slate-900 shadow-md"
+                    : "bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200"
+                }`}
+                title={adminUser?.isAvatarFixed ? "Avatar is pinned and will not change" : "Avatar is automatic and rotates on login"}
+              >
+                {adminUser?.isAvatarFixed ? (
+                  <>
+                    <Pin className="w-3.5 h-3.5 text-indigo-400 animate-pulse" /> Fixed Avatar
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 text-slate-400" /> Auto-Rotating
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>
