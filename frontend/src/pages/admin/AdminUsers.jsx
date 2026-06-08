@@ -200,7 +200,7 @@ const AdminUsers = () => {
                       src={
                         user.photoURL ||
                         user.picture ||
-                        `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.displayName}`
+                        `https://api.dicebear.com/7.x/lorelei/svg?seed=${user.displayName}`
                       }
                       alt=""
                       className="w-8 h-8 rounded-full border border-slate-200"

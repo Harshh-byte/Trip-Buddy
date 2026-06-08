@@ -143,7 +143,7 @@ const AdminLayout = () => {
               src={
                 adminUser?.photoURL ||
                 adminUser?.picture ||
-                `https://api.dicebear.com/7.x/avataaars/svg?seed=${adminUser?.name || "admin"}`
+                `https://api.dicebear.com/7.x/lorelei/svg?seed=${adminUser?.name || "admin"}`
               }
               alt="Admin"
               className="w-10 h-10 rounded-xl border border-slate-200 object-cover shrink-0 shadow-sm transition-all duration-300"

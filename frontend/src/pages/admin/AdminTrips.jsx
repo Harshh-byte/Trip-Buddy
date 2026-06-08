@@ -126,7 +126,7 @@ const AdminTrips = () => {
           ownerPicture:
             owner.photoURL ||
             owner.picture ||
-            `https://api.dicebear.com/7.x/avataaars/svg?seed=${owner.name || t?.userId || "guest"}`,
+            `https://api.dicebear.com/7.x/lorelei/svg?seed=${owner.name || t?.userId || "guest"}`,
         };
       }),
     [trips, usersMap],

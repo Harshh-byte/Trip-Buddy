@@ -29,7 +29,7 @@ const saveUserProfile = async (firebaseUser, provider = "google") => {
         picture: 
           provider === "google" 
             ? (firebaseUser?.photoURL || "") 
-            : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(firebaseUser.displayName || firebaseUser.email || firebaseUser.uid)}`,
+            : `https://api.dicebear.com/7.x/lorelei/svg?seed=${encodeURIComponent(firebaseUser.displayName || firebaseUser.email || firebaseUser.uid)}`,
         provider: provider,
         lastLoginAt: serverTimestamp(),
         createdAt: serverTimestamp(),
@@ -59,7 +59,7 @@ const finalizeLogin = (firebaseUser, profileSynced, provider, onSuccess) => {
     picture: 
       provider === "google" 
         ? (firebaseUser.photoURL || "") 
-        : `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(firebaseUser.displayName || firebaseUser.email || firebaseUser.uid)}`,
+        : `https://api.dicebear.com/7.x/lorelei/svg?seed=${encodeURIComponent(firebaseUser.displayName || firebaseUser.email || firebaseUser.uid)}`,
     uid: firebaseUser.uid,
     firebaseSynced: true,
     profileSynced,
@@ -126,7 +126,7 @@ export const useEmailAuth = ({ onSuccess, onError }) => {
         );
         await updateProfile(result.user, {
           displayName: name,
-          photoURL: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name)}`,
+          photoURL: `https://api.dicebear.com/7.x/lorelei/svg?seed=${encodeURIComponent(name)}`,
         });
         const profileSynced = await saveUserProfile(result.user, "email");
         finalizeLogin(result.user, profileSynced, "email", onSuccess);
