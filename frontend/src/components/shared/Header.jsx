@@ -80,7 +80,7 @@ const Header = () => {
             <div className="bg-indigo-600 p-2 rounded-sm group-hover:rotate-12 transition-all duration-500">
               <Plane className="w-5 h-5 text-white" />
             </div>
-            <span className="font-black text-base tracking-tighter text-slate-900 group-hover:text-indigo-600 transition-colors">
+            <span className="font-black text-xl tracking-tighter text-slate-900">
               Trip{" "}<span className="text-indigo-600">Buddy</span>
             </span>
           </Link>

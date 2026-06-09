@@ -33,7 +33,7 @@ const Footer = () => {
               <div className="bg-indigo-600 p-2 rounded-sm">
                 <Plane className="w-5 h-5 text-white" />
               </div>
-              <h4 className="font-bold tracking-tight text-slate-900">
+              <h4 className="font-black tracking-tighter text-slate-900 text-xl">
                 Trip{" "}<span className="text-indigo-600">Buddy</span>
               </h4>
             </div>
