@@ -384,6 +384,27 @@ const CreateTrip = () => {
                                   boxShadow:
                                     "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)",
                                 }),
+                                menuList: (base) => ({
+                                  ...base,
+                                  maxHeight: "220px",
+                                  overflowY: "auto",
+                                  scrollbarWidth: "thin",
+                                  scrollbarColor: "rgba(79, 70, 229, 0.4) transparent",
+                                  "&::-webkit-scrollbar": {
+                                    width: "6px",
+                                    height: "6px",
+                                  },
+                                  "&::-webkit-scrollbar-track": {
+                                    background: "transparent",
+                                  },
+                                  "&::-webkit-scrollbar-thumb": {
+                                    background: "rgba(79, 70, 229, 0.4)",
+                                    borderRadius: "9999px",
+                                  },
+                                  "&::-webkit-scrollbar-thumb:hover": {
+                                    background: "rgba(79, 70, 229, 0.7)",
+                                  },
+                                }),
                                 option: (base, state) => ({
                                   ...base,
                                   backgroundColor: state.isFocused
