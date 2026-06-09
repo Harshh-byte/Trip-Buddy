@@ -11,6 +11,7 @@ import {
   Home,
   User,
   UsersRound,
+  FerrisWheel,
 } from "lucide-react";
 
 export const BUDGET_OPTIONS = [
@@ -102,6 +103,12 @@ export const TRAVELER_OPTIONS = [
 ];
 
 export const INTEREST_OPTIONS = [
+  {
+    id: "General",
+    label: "General",
+    desc: "Sightseeing, landmarks, and balanced activities",
+    icon: <FerrisWheel className="w-6 h-6" />,
+  },
   {
     id: "Adventure",
     label: "Adventure",
