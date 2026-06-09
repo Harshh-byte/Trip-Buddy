@@ -283,6 +283,7 @@ const ViewTrip = () => {
   const [loadingStep, setLoadingStep] = useState(0);
   const [progress, setProgress] = useState(0);
   const [pdfDownloading, setPdfDownloading] = useState(false);
+  const [apiDone, setApiDone] = useState(false);
   const [activeDayIndex, setActiveDayIndex] = useState(0);
 
   const [chatOpen, setChatOpen] = useState(false);
@@ -770,8 +771,33 @@ const ViewTrip = () => {
 
     const progressInterval = setInterval(() => {
       setProgress((prev) => {
-        const increment = (95 - prev) * 0.04;
-        return prev + increment;
+        if (apiDone) {
+          const next = prev + 8;
+          if (next >= 100) {
+            clearInterval(progressInterval);
+            setTimeout(() => {
+              setLoading(false);
+            }, 150);
+            return 100;
+          }
+          return next;
+        }
+
+        // Simulating slow but steady and non-stagnant loading increments
+        let increment = 0;
+        if (prev < 35) {
+          increment = 1.2 + Math.random() * 1.8;
+        } else if (prev < 70) {
+          increment = 0.5 + Math.random() * 1.0;
+        } else if (prev < 90) {
+          increment = 0.2 + Math.random() * 0.4;
+        } else if (prev < 98) {
+          increment = 0.05 + Math.random() * 0.1;
+        } else {
+          increment = 0.005; // Never fully stalls, keeps animating
+        }
+
+        return Math.min(prev + increment, 99);
       });
     }, 100);
 
@@ -779,7 +805,7 @@ const ViewTrip = () => {
       clearInterval(stepInterval);
       clearInterval(progressInterval);
     };
-  }, [loading]);
+  }, [loading, apiDone]);
 
   useEffect(() => {
     const fetchTrip = async () => {
@@ -810,11 +836,11 @@ const ViewTrip = () => {
       if (foundTrip) {
         setTrip(foundTrip);
         sessionStorage.removeItem(TRIP_GENERATING_FLAG_KEY);
+        setApiDone(true);
       } else {
         navigate("/v2/create-trip");
+        setLoading(false);
       }
-
-      setLoading(false);
     };
 
     fetchTrip();
@@ -943,12 +969,16 @@ const ViewTrip = () => {
             </div>
           </div>
 
-          <div className="relative z-10 w-full bg-slate-200/60 h-2.5 rounded-full overflow-hidden shadow-inner">
+          <div className="relative z-10 w-full bg-slate-200/60 h-2.5 rounded-full overflow-hidden shadow-inner mb-4">
             <div
               className="absolute top-0 left-0 h-full bg-linear-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-300 ease-out"
-              style={{ width: `${Math.min(progress, 99)}%` }}
+              style={{ width: `${Math.min(progress, 100)}%` }}
             />
           </div>
+
+          <p className="relative z-10 text-sm font-bold text-slate-400/80">
+            {Math.round(progress)}%
+          </p>
         </div>
       </div>
     );
@@ -979,11 +1009,11 @@ const ViewTrip = () => {
               <div className="absolute inset-0 p-6 md:p-10 flex flex-col justify-between">
                 <div className="flex flex-wrap items-center gap-3">
                   <button
-                    onClick={() => navigate("/v2/create-trip")}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-white/10 backdrop-blur-md px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white hover:bg-white hover:text-indigo-600 transition-colors border border-white/20 shadow-sm"
+                    onClick={() => navigate(-1)}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-white/10 backdrop-blur-md px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white hover:bg-white hover:text-indigo-600 transition-colors border border-white/20 shadow-sm cursor-pointer"
                   >
                     <ArrowLeft className="w-3.5 h-3.5" />
-                    Back to Planner
+                    BACK
                   </button>
 
                   <div className="relative group">

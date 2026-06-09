@@ -10,6 +10,7 @@ import {
   Tickets,
   UserStar,
   Compass,
+  MoveRight,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import CountUp from "react-countup";
@@ -26,7 +27,7 @@ const Hero = () => {
 
   return (
     <div className="flex flex-col">
-      <section className="min-h-screen bg-mesh pt-32 pb-12 px-6 flex items-center relative overflow-hidden">
+      <section className="min-h-screen bg-mesh pt-44 sm:pt-48 lg:pt-32 pb-12 px-6 flex items-center relative overflow-hidden">
         <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-500/10 rounded-full blur-[120px] animate-pulse" />
         <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-fuchsia-500/10 rounded-full blur-[120px] animate-pulse [animation-delay:2s]" />
         <div className="absolute top-[20%] left-[10%] w-[30%] h-[30%] bg-blue-400/5 rounded-full blur-[100px] animate-pulse [animation-delay:4s]" />
@@ -43,7 +44,7 @@ const Hero = () => {
               </span>
             </div>
 
-            <h1 className="text-6xl md:text-8xl font-black text-[#1A1A1A] tracking-tight leading-[0.95]">
+            <h1 className="text-5xl sm:text-6xl md:text-8xl font-black text-[#1A1A1A] tracking-tight leading-[0.95]">
               Design Your <br />
               <span className="text-gradient">Dream Getaway</span>
             </h1>
@@ -54,11 +55,25 @@ const Hero = () => {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4">
+              <button
+                onClick={() => navigate("/v2/create-trip")}
+                className="group flex items-center justify-center gap-2.5 px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-lg rounded-2xl shadow-xl shadow-indigo-100 hover:shadow-indigo-200 hover:scale-[1.02] active:scale-95 transition-all duration-300 w-full sm:w-auto cursor-pointer"
+              >
+                <span>Start Planning</span>
+                <MoveRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-2" />
+              </button>
+              <button
+                onClick={() => navigate("/explore")}
+                className="group flex items-center justify-center gap-2.5 px-8 py-4 bg-white hover:bg-slate-50 text-slate-800 font-bold text-lg rounded-2xl border border-slate-200 shadow-sm hover:scale-[1.02] active:scale-95 transition-all duration-300 w-full sm:w-auto cursor-pointer"
+              >
+                <Compass className="w-5 h-5 text-indigo-600 group-hover:animate-[spin_4s_linear_infinite]" />
+                <span>Explore Guides</span>
+              </button>
             </div>
           </div>
 
-          <div className="relative group animate-in fade-in slide-in-from-right-8 duration-1000 hidden lg:block">
-            <div className="glass-card rounded-4xl p-8 transform transition-transform group-hover:-rotate-1 relative overflow-hidden">
+          <div className="relative group animate-in fade-in slide-in-from-right-8 duration-1000 block mt-16 lg:mt-0">
+            <div className="glass-card rounded-4xl p-6 sm:p-8 transform transition-transform group-hover:-rotate-1 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl"></div>
               <div className="flex items-center gap-2 mb-6 border-b border-gray-100 pb-4">
                 <div className="bg-indigo-50 p-2 rounded-lg">
@@ -72,8 +87,8 @@ const Hero = () => {
 
               <div className="space-y-4">
                 <div className="flex gap-4 p-4 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="w-20 h-20 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
-                    <Bus size={32} />
+                  <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 shrink-0">
+                    <Bus className="w-6 h-6 sm:w-8 sm:h-8" />
                   </div>
                   <div className="flex-1 text-left">
                     <h5 className="font-bold text-gray-900 text-sm">
@@ -95,8 +110,8 @@ const Hero = () => {
                 </div>
 
                 <div className="flex gap-4 p-4 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="w-20 h-20 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
-                    <TentTree size={32} />
+                  <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 shrink-0">
+                    <TentTree className="w-6 h-6 sm:w-8 sm:h-8" />
                   </div>
                   <div className="flex-1 text-left">
                     <h5 className="font-bold text-gray-900 text-sm">
@@ -119,7 +134,7 @@ const Hero = () => {
               </div>
             </div>
 
-            <div className="absolute -bottom-6 -left-6 bg-white p-4 rounded-2xl shadow-xl border border-gray-100 flex items-center gap-3">
+            <div className="absolute -bottom-6 left-2 sm:-left-6 bg-white p-4 rounded-2xl shadow-xl border border-gray-100 flex items-center gap-3">
               <div className="h-10 w-10 bg-indigo-50 rounded-full flex items-center justify-center">
                 <Sparkles className="text-indigo-600 w-5 h-5 fill-indigo-50" />
               </div>
