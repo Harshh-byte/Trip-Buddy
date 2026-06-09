@@ -231,9 +231,6 @@ const CreateTrip = () => {
       await setDoc(doc(db, "Trip_requests", docId), requestPayload);
 
       toast.dismiss(loadingToastId);
-      toast.success("Request received", {
-        description: "Our AI is crafting your dream trip.",
-      });
 
       sessionStorage.removeItem(TRIP_GENERATING_FLAG_KEY);
       navigate(`/v2/view-trip?requestId=${docId}`);
@@ -267,7 +264,7 @@ const CreateTrip = () => {
         url="https://trip-buddy-n6b3.onrender.com/v2/create-trip"
       />
 
-      <div className="max-w-4xl mx-auto relative z-10">
+      <div className="max-w-6xl mx-auto relative z-10">
         <div className="text-center mb-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
           <h1 className="text-4xl md:text-7xl font-black text-slate-900 tracking-tighter leading-[1.1]">
             Design your next <br />
@@ -472,14 +469,6 @@ const CreateTrip = () => {
                                     : "border-gray-200 text-gray-400 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100",
                                 )}
                               >
-                                <CalendarDays
-                                  className={cn(
-                                    "mr-2 h-4 w-4",
-                                    startDateValue
-                                      ? "text-indigo-600"
-                                      : "text-gray-400",
-                                  )}
-                                />
                                 {startDateValue ? (
                                   format(startDateValue, "PPP")
                                 ) : (
@@ -614,26 +603,38 @@ const CreateTrip = () => {
                             onClick={() =>
                               !loading && handleInputChange("budget", item.label)
                             }
+                            role="button"
+                            tabIndex={0}
+                            aria-pressed={formData.budget === item.label}
+                            onKeyDown={(event) => {
+                              if (loading) return;
+                              if (event.key === "Enter" || event.key === " ") {
+                                event.preventDefault();
+                                handleInputChange("budget", item.label);
+                              }
+                            }}
                             className={cn(
-                              "group p-6 border-2 rounded-3xl transition-all duration-300 text-left relative overflow-hidden",
-                              loading
-                                ? "opacity-50 cursor-not-allowed"
-                                : "cursor-pointer hover:shadow-xl hover:-translate-y-1",
+                              "group p-6 border-2 rounded-2xl cursor-pointer transition-all duration-200 text-left hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:ring-4 focus-visible:ring-indigo-100",
                               formData.budget === item.label
-                                ? "border-indigo-600 bg-indigo-50/50 shadow-indigo-100"
-                                : "border-slate-100 bg-white hover:border-indigo-100",
+                                ? "border-indigo-600 bg-indigo-50 shadow-lg"
+                                : "border-gray-100 bg-white hover:border-indigo-200",
+                              loading && "opacity-50 cursor-not-allowed",
                             )}
                           >
-                            {formData.budget === item.label && (
-                              <div className="absolute top-4 right-4 h-2 w-2 rounded-full bg-indigo-600 animate-ping" />
-                            )}
-                            <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-white border border-slate-100 shadow-sm text-3xl group-hover:scale-110 transition-transform">
+                            <div
+                              className={cn(
+                                "mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl transition-colors",
+                                formData.budget === item.label
+                                  ? "bg-white text-indigo-600"
+                                  : "bg-indigo-50 text-indigo-600 group-hover:bg-indigo-100",
+                              )}
+                            >
                               {item.icon}
                             </div>
-                            <h4 className="font-bold text-slate-900 text-lg">
+                            <h4 className="font-bold text-gray-800">
                               {item.label}
                             </h4>
-                            <p className="mt-2 text-sm text-slate-500 font-medium leading-relaxed">
+                            <p className="mt-1 text-sm text-gray-500">
                               {item.desc}
                             </p>
                           </div>
@@ -650,7 +651,7 @@ const CreateTrip = () => {
                           Pick the activities that define your perfect adventure.
                         </p>
                       </div>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         {INTEREST_OPTIONS.map((item) => {
                           const isSelected = formData.interests.includes(item.label);
                           return (
@@ -663,30 +664,43 @@ const CreateTrip = () => {
                                   : [...formData.interests, item.label];
                                 handleInputChange("interests", newInterests);
                               }}
+                              role="button"
+                              tabIndex={0}
+                              aria-pressed={isSelected}
+                              onKeyDown={(event) => {
+                                if (loading) return;
+                                if (event.key === "Enter" || event.key === " ") {
+                                  event.preventDefault();
+                                  const newInterests = isSelected
+                                    ? formData.interests.filter((i) => i !== item.label)
+                                    : [...formData.interests, item.label];
+                                  handleInputChange("interests", newInterests);
+                                }
+                              }}
                               className={cn(
-                                "group p-4 border-2 rounded-2xl transition-all duration-200 text-center cursor-pointer relative overflow-hidden",
+                                "group p-6 border-2 rounded-2xl cursor-pointer transition-all duration-200 text-left hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:ring-4 focus-visible:ring-indigo-100",
                                 isSelected
-                                  ? "border-indigo-600 bg-indigo-600 text-white shadow-lg shadow-indigo-200"
-                                  : "border-slate-100 bg-white text-slate-600 hover:border-indigo-200 hover:bg-indigo-50/30",
+                                  ? "border-indigo-600 bg-indigo-50 shadow-lg"
+                                  : "border-gray-100 bg-white hover:border-indigo-200",
                               )}
                             >
-                              <div className={cn(
-                                "mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl transition-colors",
-                                isSelected
-                                  ? "bg-white/20 text-white"
-                                  : "bg-indigo-50 text-indigo-600 group-hover:bg-indigo-100"
-                              )}>
+                              <div
+                                className={cn(
+                                  "mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl transition-colors",
+                                  isSelected
+                                    ? "bg-white text-indigo-600"
+                                    : "bg-indigo-50 text-indigo-600 group-hover:bg-indigo-100",
+                                )}
+                              >
                                 {item.icon}
                               </div>
-                              <h4 className="font-bold text-sm">{item.label}</h4>
-                              {isSelected && (
-                                <div className="absolute top-2 right-2">
-                                  <div className="bg-white/20 rounded-full p-0.5">
-                                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}>
-                                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                    </svg>
-                                  </div>
-                                </div>
+                              <h4 className="font-bold text-gray-800">
+                                {item.label}
+                              </h4>
+                              {item.desc && (
+                                <p className="mt-1 text-sm text-gray-500">
+                                  {item.desc}
+                                </p>
                               )}
                             </div>
                           );

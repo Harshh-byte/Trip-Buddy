@@ -829,9 +829,16 @@ const ViewTrip = () => {
         if (snapshot.exists()) {
           const data = snapshot.data();
           if (data.status === "completed" && data.tripId) {
+            toast.success("Trip generated successfully!", {
+              description: "Your custom travel itinerary is ready.",
+              icon: <CheckCircle2 className="w-4 h-4 text-emerald-500" />,
+            });
             navigate(`/v2/view-trip/${data.tripId}`, { replace: true });
           } else if (data.status === "error") {
             setLoading(false);
+            toast.error("Generation Failed", {
+              description: data.error || "An error occurred while crafting your trip. Please try again.",
+            });
             navigate("/v2/create-trip");
           }
         }
