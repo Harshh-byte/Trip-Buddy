@@ -275,10 +275,6 @@ const MyTrips = () => {
       <div className="max-w-7xl mx-auto relative z-10">
         <div className="glass-card rounded-[3rem] p-8 md:p-12 mb-12 flex flex-col md:flex-row md:items-center md:justify-between gap-8 border border-white/40 shadow-2xl animate-in fade-in slide-in-from-top-4 duration-1000">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-[10px] font-black uppercase tracking-widest text-indigo-600">
-              <Sparkles className="w-3 h-3" />
-              Travel Explorer
-            </div>
             <h1 className="text-4xl md:text-6xl font-black tracking-tighter text-slate-900 leading-none">
               Your <span className="text-indigo-600">Journeys</span>
             </h1>

@@ -4,10 +4,10 @@ import {
   CalendarDays,
   MapPin,
   ChevronLeft,
-  Sparkles,
-  ChevronRight,
   Loader2,
   TentTree,
+  LandPlot,
+  ChevronsRight,
 } from "lucide-react";
 import { format } from "date-fns";
 import { BUDGET_OPTIONS, TRAVELER_OPTIONS, INTEREST_OPTIONS } from "../assets/data";
@@ -737,13 +737,13 @@ const CreateTrip = () => {
                       </>
                     ) : step === 3 ? (
                       <>
-                        <Sparkles className="w-5 h-5" />
+                        <LandPlot className="w-5 h-5" />
                         <span>Generate Trip</span>
                       </>
                     ) : (
                       <>
                         <span>Continue</span>
-                        <ChevronRight className="w-5 h-5" />
+                        <ChevronsRight className="w-5 h-5" />
                       </>
                     )}
                   </button>

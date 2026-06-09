@@ -56,7 +56,7 @@ export const onTripRequestCreated = onDocumentCreated(
       });
 
       const DYNAMIC_PROMPT = `
-      Generate a detailed travel plan tailored specifically to the user's selected interests.
+      Generate a detailed travel plan tailored specifically to the user's selected interests and traveler group composition.
       Details:
       - Location: ${formData.destinationLabel}
       - Duration: ${formData.noOfDays} Days
@@ -67,7 +67,14 @@ export const onTripRequestCreated = onDocumentCreated(
       Crucial Customization Rules:
       - Heavily tailor the itinerary activities ("plan") and hotel recommendations ("hotel_options") to align with and lean into the selected interests.
       - For instance, if "Food" is selected, prioritize culinary tours, local street food markets, and highly-rated dining spots. If "Adventure" is selected, focus on outdoor excursions, hikes, and active thrills. If "Relaxation" is selected, prioritize spas, beaches, and slow-paced/leisurely schedules.
-      - Blend these interests naturally into the daily schedule while respecting the location, group composition, and budget level.
+
+      - Also heavily tailor the itinerary and hotels based on the Group/traveler type:
+        - If Group is "1 Person" (Solo): Focus on social hotspots, hostels or highly-rated single-friendly boutique hotels, flexible/self-guided exploration, and single-ticket entry experiences.
+        - If Group is "2 People" (Couple): Focus on romantic views, intimate or fine dining experiences, cozy boutique/romantic hotels, and scenery.
+        - If Group is "3 to 5 People" (Family): Focus on kid-friendly pace, educational landmarks, parks, and hotels offering spacious/suite rooms with family amenities.
+        - If Group is "5+ People" (Friends): Focus on group-friendly tours/activities, group dining tables, vibrant nightlife, active group/team thrills, and spacious or adjacent accommodations.
+
+      - Blend these interests and group needs naturally into the daily schedule while respecting the location and budget level.
 
       ${AI_RESPONSE_CONTRACT}
     `.trim();

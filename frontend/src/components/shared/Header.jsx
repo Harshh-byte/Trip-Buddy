@@ -89,7 +89,7 @@ const Header = () => {
         {/* Right: User Actions */}
         <div className="flex items-center gap-3">
           <Button
-            className="hidden lg:flex h-10 px-6 items-center gap-2 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black transition-all hover:scale-105 active:scale-95"
+            className="hidden sm:flex h-10 px-6 items-center gap-2 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black transition-all hover:scale-105 active:scale-95 cursor-pointer"
             onClick={handleCreateTripClick}
           >
             <Sparkles className="w-4 h-4" />
@@ -154,7 +154,7 @@ const Header = () => {
             ) : (
               <Button
                 variant="default"
-                className="h-10 px-6 rounded-2xl bg-slate-900 flex items-center gap-2 font-black shadow-lg text-white transition-all hover:scale-105"
+                className="h-10 px-6 rounded-2xl bg-slate-900 flex items-center gap-2 font-black shadow-lg text-white transition-all hover:scale-105 cursor-pointer"
                 onClick={() => setOpenDialog(true)}
               >
                 <User className="w-4 h-4" />
