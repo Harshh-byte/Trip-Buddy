@@ -21,6 +21,7 @@ import {
   Map,
 } from "lucide-react";
 import SEO from "../components/shared/SEO";
+import { cn } from "../lib/utils";
 import {
   GetPlaceDetails,
   PHOTO_REF_URL,
@@ -65,16 +66,54 @@ const GuideDetails = () => {
   // @ts-ignore
   const [countryName, setCountryName] = useState(stateData.countryName || "");
   const [loading, setLoading] = useState(true);
+  const [progress, setProgress] = useState(0);
+  const [apiDone, setApiDone] = useState(false);
   const [error, setError] = useState(null);
   const [loadingStep, setLoadingStep] = useState(0);
 
   useEffect(() => {
     if (!loading) return;
-    const interval = setInterval(() => {
+
+    const stepInterval = setInterval(() => {
       setLoadingStep((prev) => (prev + 1) % LOADING_STEPS.length);
-    }, 2000);
-    return () => clearInterval(interval);
-  }, [loading]);
+    }, 2500);
+
+    const progressInterval = setInterval(() => {
+      setProgress((prev) => {
+        if (apiDone) {
+          const next = prev + 8;
+          if (next >= 100) {
+            clearInterval(progressInterval);
+            setTimeout(() => {
+              setLoading(false);
+            }, 150);
+            return 100;
+          }
+          return next;
+        }
+
+        let increment = 0;
+        if (prev < 35) {
+          increment = 1.2 + Math.random() * 1.8;
+        } else if (prev < 70) {
+          increment = 0.5 + Math.random() * 1.0;
+        } else if (prev < 90) {
+          increment = 0.2 + Math.random() * 0.4;
+        } else if (prev < 98) {
+          increment = 0.05 + Math.random() * 0.1;
+        } else {
+          increment = 0.005; // Never fully stalls, keeps animating
+        }
+
+        return Math.min(prev + increment, 99);
+      });
+    }, 100);
+
+    return () => {
+      clearInterval(stepInterval);
+      clearInterval(progressInterval);
+    };
+  }, [loading, apiDone]);
 
   const [description, setDescription] = useState("");
   const [coverImage, setCoverImage] = useState("");
@@ -129,6 +168,8 @@ const GuideDetails = () => {
   useEffect(() => {
     const fetchGuideContent = async () => {
       setLoading(true);
+      setApiDone(false);
+      setProgress(0);
       setError(null);
 
       let currentName = destinationName;
@@ -174,7 +215,7 @@ const GuideDetails = () => {
       if (currentCountry) {
         try {
           const countryRes = await fetch(
-            `https://restcountries.com/v3.1/name/${encodeURIComponent(currentCountry)}?fullText=true`,
+            `https://corsproxy.io/?https://restcountries.com/v3.1/name/${encodeURIComponent(currentCountry)}?fullText=true`,
           );
           if (countryRes.ok) {
             const countryData = await countryRes.json();
@@ -323,7 +364,7 @@ Do not wrap in markdown codeblocks. Return raw JSON text only.
         }
       }
 
-      setLoading(false);
+      setApiDone(true);
     };
 
     fetchGuideContent();
@@ -346,11 +387,12 @@ Do not wrap in markdown codeblocks. Return raw JSON text only.
               return (
                 <div
                   key={index}
-                  className={`absolute inset-0 flex items-center justify-center transition-all duration-1000 ease-in-out ${
+                  className={cn(
+                    "absolute inset-0 flex items-center justify-center transition-all duration-1000 ease-in-out",
                     isActive
                       ? "opacity-100 transform translate-y-0 scale-100"
-                      : "opacity-0 transform translate-y-4 scale-75"
-                  }`}
+                      : "opacity-0 transform translate-y-4 scale-75",
+                  )}
                 >
                   <Icon className="w-11 h-11 text-white drop-shadow-md" />
                 </div>
@@ -362,7 +404,7 @@ Do not wrap in markdown codeblocks. Return raw JSON text only.
             Crafting Guide...
           </h3>
 
-          <div className="relative z-10 h-6 overflow-hidden mb-4 w-full">
+          <div className="relative z-10 h-6 overflow-hidden mb-8 w-full">
             <div
               className="transition-transform duration-700 ease-in-out flex flex-col items-center"
               style={{ transform: `translateY(-${loadingStep * 24}px)` }}
@@ -377,6 +419,17 @@ Do not wrap in markdown codeblocks. Return raw JSON text only.
               ))}
             </div>
           </div>
+
+          <div className="relative z-10 w-full bg-slate-200/60 h-2.5 rounded-full overflow-hidden shadow-inner mb-4">
+            <div
+              className="absolute top-0 left-0 h-full bg-linear-to-r from-indigo-500 to-purple-500 rounded-full transition-all duration-300 ease-out"
+              style={{ width: `${Math.min(progress, 100)}%` }}
+            />
+          </div>
+
+          <p className="relative z-10 text-sm font-bold text-slate-400/80">
+            {Math.round(progress)}%
+          </p>
         </div>
       </div>
     );

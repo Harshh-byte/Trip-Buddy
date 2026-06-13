@@ -71,22 +71,20 @@ const Header = () => {
   return (
     <header className="fixed top-10 inset-x-0 mx-auto w-[92%] max-w-5xl bg-white/10 backdrop-blur-3xl rounded-[2.5rem] px-8 py-4 z-50 shadow-2xl shadow-black/5 border border-slate-900/10">
       <div className="flex items-center justify-between w-full">
-        {/* Left: Logo */}
         <div className="flex items-center">
           <Link
             to={"/"}
-            className="flex items-center gap-x-2.5 cursor-pointer group"
+            className="flex items-center gap-x-2.5 cursor-pointer group select-none"
           >
             <div className="bg-indigo-600 p-2 rounded-sm group-hover:rotate-12 transition-all duration-500">
               <Plane className="w-5 h-5 text-white" />
             </div>
-            <span className="font-black text-xl tracking-tighter text-slate-900">
+            <span className="font-black text-xl tracking-tighter text-slate-900 select-none">
               Trip{" "}<span className="text-indigo-600">Buddy</span>
             </span>
           </Link>
         </div>
 
-        {/* Right: User Actions */}
         <div className="flex items-center gap-3">
           <Button
             className="hidden sm:flex h-10 px-6 items-center gap-2 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black transition-all hover:scale-105 active:scale-95 cursor-pointer"
