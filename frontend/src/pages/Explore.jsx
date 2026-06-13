@@ -573,7 +573,7 @@ const Explore = () => {
 
             try {
               const countriesRes = await fetch(
-                `https://restcountries.com/v3.1/name/${encodeURIComponent(dest.country)}?fullText=true`,
+                `https://corsproxy.io/?https://restcountries.com/v3.1/name/${encodeURIComponent(dest.country)}?fullText=true`,
               );
               if (countriesRes.ok) {
                 const countriesData = await countriesRes.json();
@@ -693,7 +693,6 @@ const Explore = () => {
                 key={i}
                 className="bg-white rounded-[2.5rem] overflow-hidden border border-slate-200 shadow-sm flex flex-col"
               >
-                {/* Image & Header Overlay Skeleton */}
                 <div className="aspect-video relative overflow-hidden">
                   <Skeleton
                     variant="rectangular"
@@ -701,7 +700,6 @@ const Explore = () => {
                     width="100%"
                     height="100%"
                   />
-                  {/* Tag */}
                   <div className="absolute top-6 left-6 z-10">
                     <Skeleton
                       variant="rounded"
@@ -712,7 +710,6 @@ const Explore = () => {
                       sx={{ bgcolor: "rgba(0, 0, 0, 0.12)" }}
                     />
                   </div>
-                  {/* Country & Name */}
                   <div className="absolute bottom-6 left-6 right-6 z-10 space-y-2">
                     <Skeleton
                       variant="rounded"
@@ -733,10 +730,8 @@ const Explore = () => {
                   </div>
                 </div>
 
-                {/* Card Body Skeleton */}
                 <div className="p-8 flex-1 flex flex-col justify-between">
                   <div className="space-y-4">
-                    {/* Description Text Lines */}
                     <div className="space-y-2">
                       <Skeleton
                         variant="rounded"
@@ -761,15 +756,9 @@ const Explore = () => {
                       />
                     </div>
 
-                    {/* Country Metadata: Languages and Currency */}
                     <div className="flex items-center justify-between py-3 border-y border-slate-100">
                       <div className="flex items-center gap-1.5 w-1/3">
-                        <Skeleton
-                          variant="circular"
-                          animation="wave"
-                          width={16}
-                          height={16}
-                        />
+                        <Languages className="w-4 h-4 text-slate-300 animate-pulse shrink-0" />
                         <Skeleton
                           variant="rounded"
                           animation="wave"
@@ -779,12 +768,7 @@ const Explore = () => {
                         />
                       </div>
                       <div className="flex items-center gap-1.5 w-1/3 justify-end">
-                        <Skeleton
-                          variant="circular"
-                          animation="wave"
-                          width={16}
-                          height={16}
-                        />
+                        <Wallet className="w-4 h-4 text-slate-300 animate-pulse shrink-0" />
                         <Skeleton
                           variant="rounded"
                           animation="wave"
@@ -796,7 +780,6 @@ const Explore = () => {
                     </div>
                   </div>
 
-                  {/* Read Guide Button Placeholder */}
                   <div className="mt-6">
                     <Skeleton
                       variant="rectangular"
@@ -890,7 +873,6 @@ const Explore = () => {
                     {dest.description || dest.fallbackDesc}
                   </p>
 
-                  {/* Country Metadata Details */}
                   {(dest.language || dest.currencyName) && (
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-slate-500 py-3 border-y border-slate-100">
                       {dest.language && (
