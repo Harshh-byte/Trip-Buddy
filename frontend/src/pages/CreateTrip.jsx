@@ -733,7 +733,7 @@ const CreateTrip = () => {
                     {loading ? (
                       <>
                         <Loader2 className="animate-spin w-5 h-5" />
-                        <span>Crafting Itinerary...</span>
+                        <span>Generating...</span>
                       </>
                     ) : step === 3 ? (
                       <>
