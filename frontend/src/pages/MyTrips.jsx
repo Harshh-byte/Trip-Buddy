@@ -249,6 +249,10 @@ const MyTrips = () => {
 
         setPendingRequests(requestData);
       } catch (error) {
+        console.error("Failed to load dashboard data:", error);
+        toast.error("Dashboard Load Error", {
+          description: "We couldn't load your saved itineraries. Please try refreshing the page.",
+        });
         setTrips([]);
         setPendingRequests([]);
       } finally {

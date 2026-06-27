@@ -251,10 +251,12 @@ const ViewTrip = () => {
   const { tripId } = useParams();
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(auth.currentUser);
+  const [authLoading, setAuthLoading] = useState(true);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
+      setAuthLoading(false);
     });
     return () => unsubscribe();
   }, []);
@@ -303,6 +305,7 @@ const ViewTrip = () => {
       chatEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [chatHistory, aiTyping]);
+
 
   const updateTripDataInFirestore = async (newTripData) => {
     try {
@@ -808,6 +811,8 @@ const ViewTrip = () => {
   }, [loading, apiDone]);
 
   useEffect(() => {
+    if (authLoading) return;
+
     const fetchTrip = async () => {
       if (!tripId) {
         if (requestId) {
@@ -824,13 +829,18 @@ const ViewTrip = () => {
           const docSnap = await getDoc(doc(db, "Trips", tripId));
           if (docSnap.exists()) {
             foundTrip = docSnap.data();
-          } else if (auth.currentUser?.uid) {
+          } else if (currentUser?.uid) {
             const userTripSnap = await getDoc(
-              doc(db, "users", auth.currentUser.uid, "trips", tripId),
+              doc(db, "users", currentUser.uid, "trips", tripId),
             );
             if (userTripSnap.exists()) foundTrip = userTripSnap.data();
           }
-        } catch (e) {}
+        } catch (e) {
+          console.error("Error fetching trip:", e);
+          toast.error("Failed to load itinerary details", {
+            description: "There was a problem syncing with the server. Please try again.",
+          });
+        }
       }
 
       if (foundTrip) {
@@ -838,16 +848,27 @@ const ViewTrip = () => {
         sessionStorage.removeItem(TRIP_GENERATING_FLAG_KEY);
         setApiDone(true);
       } else {
+        toast.error("Itinerary Not Found", {
+          description: "We couldn't locate the requested travel itinerary, or you don't have access to it.",
+        });
         navigate("/v2/create-trip");
         setLoading(false);
       }
     };
 
     fetchTrip();
-  }, [tripId, requestId, navigate]);
+  }, [tripId, requestId, navigate, authLoading, currentUser]);
 
   useEffect(() => {
-    if (!requestId || tripId) return;
+    if (!requestId || tripId || authLoading) return;
+
+    if (!currentUser) {
+      toast.error("Access Denied", {
+        description: "Please sign in to view this trip request.",
+      });
+      navigate("/v2/create-trip");
+      return;
+    }
 
     const unsubscribe = onSnapshot(
       doc(db, "Trip_requests", requestId),
@@ -862,17 +883,60 @@ const ViewTrip = () => {
             navigate(`/v2/view-trip/${data.tripId}`, { replace: true });
           } else if (data.status === "error") {
             setLoading(false);
-            toast.error("Generation Failed", {
-              description: data.error || "An error occurred while crafting your trip. Please try again.",
-            });
+            const errStr = String(data.error || "").toLowerCase();
+            const isHighDemand =
+              errStr.includes("429") ||
+              errStr.includes("quota") ||
+              errStr.includes("limit") ||
+              errStr.includes("exhausted") ||
+              errStr.includes("503") ||
+              errStr.includes("overloaded");
+
+            if (isHighDemand) {
+              toast.error("High Server Demand", {
+                description: "The personalization service is currently experiencing high volume. Please wait a moment and try again.",
+              });
+            } else {
+              toast.error("Generation Failed", {
+                description: "We encountered an unexpected issue while crafting your itinerary. Please try again.",
+              });
+            }
             navigate("/v2/create-trip");
           }
+        } else {
+          setLoading(false);
+          toast.error("Itinerary Request Not Found", {
+            description: "The request for this itinerary could not be found.",
+          });
+          navigate("/v2/create-trip");
         }
       },
+      (error) => {
+        console.error("Firestore onSnapshot error:", error);
+        setLoading(false);
+        toast.error("Sync Connection Failed", {
+          description: "Unable to establish connection to track your itinerary creation. Please try again.",
+        });
+        navigate("/v2/create-trip");
+      }
     );
 
     return () => unsubscribe();
-  }, [requestId, tripId, navigate]);
+  }, [requestId, tripId, navigate, authLoading, currentUser]);
+
+  useEffect(() => {
+    if (!requestId || tripId || !loading) return;
+
+    const timeout = setTimeout(() => {
+      setLoading(false);
+      toast.error("Generation Timeout", {
+        description: "Crafting your luxury itinerary is taking longer than expected. Please try again.",
+      });
+      navigate("/v2/create-trip");
+    }, 60000); // 60 seconds
+
+    return () => clearTimeout(timeout);
+  }, [requestId, tripId, loading, navigate]);
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -1330,7 +1394,6 @@ const ViewTrip = () => {
                   <div className="flex items-center gap-3">
                     <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-indigo-500 via-indigo-600 to-violet-600 shadow-md text-white shadow-indigo-200">
                       <BotMessageSquare className="w-5 h-5" />
-                      <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
                     </div>
                     <div>
                       <h4 className="text-sm font-bold text-slate-800 tracking-tight">
