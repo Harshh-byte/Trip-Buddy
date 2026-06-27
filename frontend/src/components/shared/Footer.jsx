@@ -25,7 +25,7 @@ const Footer = () => {
   };
 
   return (
-    <footer className="bg-white border-t border-gray-100 pt-16 pb-8 px-6 mt-auto">
+    <footer className="bg-white border-t border-gray-100 pt-16 pb-8 px-6 mt-auto select-none">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           <div className="col-span-1 md:col-span-1 space-y-4 text-left">
@@ -33,9 +33,9 @@ const Footer = () => {
               <div className="bg-indigo-600 p-2 rounded-sm">
                 <Plane className="w-5 h-5 text-white" />
               </div>
-              <h4 className="font-black tracking-tighter text-slate-900 text-xl">
-                Trip{" "}<span className="text-indigo-600">Buddy</span>
-              </h4>
+              <span className="font-black tracking-tighter text-slate-900 text-xl select-none">
+                Trip <span className="text-indigo-600">Buddy</span>
+              </span>
             </div>
             <p className="text-gray-500 text-sm leading-relaxed">
               Your intelligent travel companion. We turn your bucket list into
@@ -47,24 +47,35 @@ const Footer = () => {
             <h4 className="font-bold text-[#1A1A1A] mb-4">Product</h4>
             <ul className="space-y-2 text-sm text-gray-500">
               <li>
-                <a href="/v2/create-trip" onClick={handleAIPlannerClick} className="hover:text-indigo-600 transition-colors cursor-pointer">
+                <a
+                  href="/v2/create-trip"
+                  onClick={handleAIPlannerClick}
+                  className="hover:text-indigo-600 transition-colors cursor-pointer"
+                >
                   AI Planner
                 </a>
               </li>
               <li>
-                <a href="/v2/my-trips" onClick={(e) => {
-                  e.preventDefault();
-                  if (getStoredUser()) {
-                    navigate("/v2/my-trips");
-                  } else {
-                    window.dispatchEvent(new Event("open-login-dialog"));
-                  }
-                }} className="hover:text-indigo-600 transition-colors cursor-pointer">
+                <a
+                  href="/v2/my-trips"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (getStoredUser()) {
+                      navigate("/v2/my-trips");
+                    } else {
+                      window.dispatchEvent(new Event("open-login-dialog"));
+                    }
+                  }}
+                  className="hover:text-indigo-600 transition-colors cursor-pointer"
+                >
                   My Trips
                 </a>
               </li>
               <li>
-                <Link to="/explore" className="hover:text-indigo-600 transition-colors">
+                <Link
+                  to="/explore"
+                  className="hover:text-indigo-600 transition-colors"
+                >
                   Destinations
                 </Link>
               </li>
@@ -75,12 +86,22 @@ const Footer = () => {
             <h4 className="font-bold text-[#1A1A1A] mb-4">Support</h4>
             <ul className="space-y-2 text-sm text-gray-500">
               <li>
-                <Link to="/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 transition-colors">
+                <Link
+                  to="/privacy"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-indigo-600 transition-colors"
+                >
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link to="/terms" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-600 transition-colors">
+                <Link
+                  to="/terms"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-indigo-600 transition-colors"
+                >
                   Terms of Service
                 </Link>
               </li>

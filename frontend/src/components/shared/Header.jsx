@@ -87,13 +87,13 @@ const Header = () => {
 
         <div className="flex items-center gap-3">
           <Button
-            className="hidden sm:flex h-10 px-6 items-center gap-2 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black transition-all hover:scale-105 active:scale-95 cursor-pointer"
+            className="hidden sm:flex h-10 px-6 items-center gap-2 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black transition-all hover:scale-105 active:scale-95 cursor-pointer select-none"
             onClick={handleCreateTripClick}
           >
             <Sparkles className="w-4 h-4" />
             Plan Trip
           </Button>
-
+ 
           <div className="flex items-center">
             {user ? (
               <DropdownMenu modal={false}>
@@ -105,7 +105,7 @@ const Header = () => {
                     <img
                       src={user?.picture}
                       alt={user?.name}
-                      className="h-full w-full object-cover"
+                      className="h-full w-full object-cover select-none"
                       referrerPolicy="no-referrer"
                     />
                   </Button>

@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import SEO from "../components/shared/SEO";
 import { cn } from "../lib/utils";
+import { toast } from "sonner";
 import {
   GetPlaceDetails,
   PHOTO_REF_URL,
@@ -129,8 +130,12 @@ const GuideDetails = () => {
     // @ts-ignore
     stateData.currencySymbol || "",
   );
-  // @ts-ignore
-  const [language, setLanguage] = useState(stateData.language || "");
+  const [language, setLanguage] = useState(
+    // @ts-ignore
+    stateData.language && stateData.language.length < 25
+      ? stateData.language
+      : "",
+  );
   const [capital, setCapital] = useState("");
   const [attractions, setAttractions] = useState(/** @type {any[]} */ ([]));
   const [blogData, setBlogData] = useState(null);
@@ -188,9 +193,22 @@ const GuideDetails = () => {
 
           if (!currentCountry && wikiData.description) {
             const desc = wikiData.description;
-            const match = desc.match(/in\s+([A-Za-z\s]+)$/);
-            if (match && match[1]) {
-              currentCountry = match[1].trim();
+            let extracted = "";
+            if (desc.includes(",")) {
+              const parts = desc.split(",");
+              const lastPart = parts[parts.length - 1].trim();
+              if (/^[A-Za-z\s]+$/.test(lastPart)) {
+                extracted = lastPart;
+              }
+            }
+            if (!extracted) {
+              const match = desc.match(/(?:in|of)\s+(?:the\s+)?([A-Za-z\s]+)$/i);
+              if (match && match[1]) {
+                extracted = match[1].trim();
+              }
+            }
+            if (extracted) {
+              currentCountry = extracted;
               setCountryName(currentCountry);
             }
           }
@@ -207,7 +225,7 @@ const GuideDetails = () => {
 
       let fetchedFlag = flag;
       let fetchedFlagUrl = flagUrl;
-      let fetchedLanguage = language;
+      let fetchedLanguage = (language && language.length < 25) ? language : "";
       let fetchedCurrencyName = currencyName;
       let fetchedCurrencySymbol = currencySymbol;
       let fetchedCapital = "";
@@ -298,7 +316,26 @@ const GuideDetails = () => {
 
       if (cachedBlog) {
         try {
-          setBlogData(JSON.parse(cachedBlog));
+          const parsed = JSON.parse(cachedBlog);
+          setBlogData(parsed);
+
+          if (parsed.country_name) {
+            setCountryName((prev) => prev || parsed.country_name);
+          }
+          if (parsed.country_capital || parsed.capital_city) {
+            setCapital((prev) => prev || parsed.country_capital || parsed.capital_city);
+          }
+          if (parsed.country_language) {
+            setLanguage((prev) => prev || parsed.country_language);
+          } else if (parsed.language && parsed.language.length < 25) {
+            setLanguage((prev) => prev || parsed.language);
+          }
+          if (parsed.country_currency_name || parsed.currency_name) {
+            setCurrencyName((prev) => prev || parsed.country_currency_name || parsed.currency_name);
+          }
+          if (parsed.country_currency_symbol || parsed.currency_symbol) {
+            setCurrencySymbol((prev) => prev || parsed.country_currency_symbol || parsed.currency_symbol);
+          }
         } catch (e) {
           localStorage.removeItem(cacheKey);
         }
@@ -310,6 +347,11 @@ const GuideDetails = () => {
 Generate a comprehensive, engaging travel blog guide for the destination "${currentName}, ${currentCountry}".
 Return ONLY a valid JSON object matching this schema:
 {
+  "country_name": "The name of the country where this destination is located.",
+  "country_capital": "The capital city of that country.",
+  "country_language": "The primary official language spoken in that country.",
+  "country_currency_name": "The name of the local currency used.",
+  "country_currency_symbol": "The symbol of the local currency.",
   "introduction": "An engaging, descriptive introduction paragraph about the city.",
   "book_accommodations": "A paragraph with tips on the best neighborhoods/areas to stay, accommodation styles, and booking advice.",
   "transportation": "A paragraph explaining how to get around the city (public transit, walking, ride-sharing, ticketing tips).",
@@ -357,10 +399,60 @@ Do not wrap in markdown codeblocks. Return raw JSON text only.
                 const parsed = JSON.parse(rawText.trim());
                 setBlogData(parsed);
                 localStorage.setItem(cacheKey, JSON.stringify(parsed));
+
+                if (parsed.country_name) {
+                  setCountryName((prev) => prev || parsed.country_name);
+                }
+                if (parsed.country_capital) {
+                  setCapital((prev) => prev || parsed.country_capital);
+                }
+                if (parsed.country_language) {
+                  setLanguage((prev) => prev || parsed.country_language);
+                } else if (parsed.language && parsed.language.length < 25) {
+                  setLanguage((prev) => prev || parsed.language);
+                }
+                if (parsed.country_currency_name) {
+                  setCurrencyName((prev) => prev || parsed.country_currency_name);
+                }
+                if (parsed.country_currency_symbol) {
+                  setCurrencySymbol((prev) => prev || parsed.country_currency_symbol);
+                }
+              } else {
+                toast.error("Personalization Issue", {
+                  description: "Could not refine the guide details. Loading default travel tips.",
+                });
+              }
+            } else {
+              if (response.status === 429 || response.status === 503) {
+                toast.error("High Server Demand", {
+                  description: "The personalization service is currently experiencing high volume. Loading default travel tips.",
+                });
+              } else {
+                toast.error("Personalization Offline", {
+                  description: "The personalization service is temporarily offline. Loading default travel tips.",
+                });
               }
             }
           }
         } catch (aiErr) {
+          console.error("AI Generation Error:", aiErr);
+          const errStr = String(aiErr?.message || aiErr || "").toLowerCase();
+          const isHighDemand =
+            errStr.includes("429") ||
+            errStr.includes("quota") ||
+            errStr.includes("limit") ||
+            errStr.includes("exhausted") ||
+            errStr.includes("503");
+
+          if (isHighDemand) {
+            toast.error("High Server Demand", {
+              description: "The personalization service is currently experiencing high volume. Loading default travel tips.",
+            });
+          } else {
+            toast.error("Personalization Error", {
+              description: "Failed to generate custom guide. Loading default travel tips.",
+            });
+          }
         }
       }
 
@@ -499,7 +591,9 @@ Do not wrap in markdown codeblocks. Return raw JSON text only.
     {
       id: "language",
       title: "Language & Communication",
-      content: activeBlog.language,
+      content: (activeBlog.language && activeBlog.language.length > 25)
+        ? activeBlog.language
+        : (activeBlog.language_info || activeBlog.language),
       icon: Languages,
       iconColor: "text-cyan-500",
       bgColor: "bg-cyan-50/50",
