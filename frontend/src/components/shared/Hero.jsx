@@ -21,6 +21,10 @@ import {
   AccordionTrigger,
 } from "../../../@/components/ui/accordion";
 import { FAQ_DATA } from "../../assets/data";
+import Squares from "../ui/Squares";
+import SplitText from "../ui/SplitText";
+import ShinyText from "../ui/ShinyText";
+import SpotlightCard from "../ui/SpotlightCard";
 
 const Hero = () => {
   const navigate = useNavigate();
@@ -28,9 +32,18 @@ const Hero = () => {
   return (
     <div className="flex flex-col">
       <section className="min-h-screen bg-mesh pt-44 sm:pt-48 lg:pt-32 pb-12 px-6 flex items-center relative overflow-hidden">
-        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-500/10 rounded-full blur-[120px] animate-pulse" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-fuchsia-500/10 rounded-full blur-[120px] animate-pulse [animation-delay:2s]" />
-        <div className="absolute top-[20%] left-[10%] w-[30%] h-[30%] bg-blue-400/5 rounded-full blur-[100px] animate-pulse [animation-delay:4s]" />
+        <div className="absolute inset-0 z-0">
+          <Squares
+            speed={0.3}
+            squareSize={40}
+            direction="diagonal"
+            borderColor="rgba(99, 102, 241, 0.05)"
+            hoverFillColor="rgba(99, 102, 241, 0.08)"
+          />
+        </div>
+        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-500/10 rounded-full blur-[120px] animate-pulse pointer-events-none" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-fuchsia-500/10 rounded-full blur-[120px] animate-pulse [animation-delay:2s] pointer-events-none" />
+        <div className="absolute top-[20%] left-[10%] w-[30%] h-[30%] bg-blue-400/5 rounded-full blur-[100px] animate-pulse [animation-delay:4s] pointer-events-none" />
 
         <div className="max-w-7xl mx-auto w-full grid lg:grid-cols-2 gap-12 lg:gap-8 items-center z-10">
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-1000">
@@ -39,14 +52,18 @@ const Hero = () => {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-indigo-500" />
               </span>
-              <span className="text-xs font-bold uppercase tracking-wider text-indigo-900/70">
-                AI-Powered Travel Agent v2.0
-              </span>
+              <ShinyText
+                text="AI-Powered Travel Agent v2.0"
+                className="text-xs font-bold uppercase tracking-wider text-indigo-900/70"
+                speed={4}
+              />
             </div>
 
             <h1 className="text-5xl sm:text-6xl md:text-8xl font-black text-[#1A1A1A] tracking-tight leading-[0.95]">
-              Design Your <br />
-              <span className="text-gradient">Dream Getaway</span>
+              <SplitText text="Design Your" delay={45} /> <br />
+              <span className="text-gradient">
+                <SplitText text="Dream Getaway" delay={45} />
+              </span>
             </h1>
 
             <p className="text-lg md:text-xl text-gray-500 leading-relaxed max-w-lg font-medium">
@@ -73,7 +90,10 @@ const Hero = () => {
           </div>
 
           <div className="relative group animate-in fade-in slide-in-from-right-8 duration-1000 block mt-16 lg:mt-0">
-            <div className="glass-card rounded-4xl p-6 sm:p-8 transform transition-transform group-hover:-rotate-1 relative overflow-hidden">
+            <SpotlightCard
+              className="glass-card rounded-4xl p-6 sm:p-8 transform transition-transform group-hover:-rotate-1 relative overflow-hidden"
+              spotlightColor="rgba(99, 102, 241, 0.12)"
+            >
               <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-3xl"></div>
               <div className="flex items-center gap-2 mb-6 border-b border-gray-100 pb-4">
                 <div className="bg-indigo-50 p-2 rounded-lg">
@@ -132,7 +152,7 @@ const Hero = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </SpotlightCard>
 
             <div className="absolute -bottom-6 left-2 sm:-left-6 bg-white p-4 rounded-2xl shadow-xl border border-gray-100 flex items-center gap-3">
               <div className="h-10 w-10 bg-indigo-50 rounded-full flex items-center justify-center">
@@ -195,9 +215,10 @@ const Features = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
           {features.map((feature, index) => (
-            <div
+            <SpotlightCard
               key={index}
-              className="group p-10 rounded-[2.5rem] glass-card text-left"
+              className="group p-10 rounded-[2.5rem] glass-card text-left h-full"
+              spotlightColor="rgba(99, 102, 241, 0.08)"
             >
               <div
                 className={`${feature.bgColor} w-16 h-16 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform`}
@@ -210,7 +231,7 @@ const Features = () => {
               <p className="text-gray-500 leading-relaxed text-lg">
                 {feature.description}
               </p>
-            </div>
+            </SpotlightCard>
           ))}
         </div>
 
