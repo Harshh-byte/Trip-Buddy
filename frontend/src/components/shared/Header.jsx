@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Plane, User, LogOut, Map, Sparkles } from "lucide-react";
+import { Plane, User, LogOut, Map, Sparkles, Gem } from "lucide-react";
 import { Button } from "../ui/button";
 import LoginDialog from "./LoginDialog";
 import { googleLogout } from "@react-oauth/google";
 import { AUTH_USER_CHANGED_EVENT } from "../../lib/authEvents";
+import { auth, db } from "../../services/firebaseConfig";
+import { doc, onSnapshot } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,9 +32,34 @@ const getStoredUser = () => {
 const Header = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [user, setUser] = useState(getStoredUser());
+  const [isPremium, setIsPremium] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
+    let unsubSnapshot = null;
+    const unsubAuth = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser?.uid) {
+        unsubSnapshot = onSnapshot(
+          doc(db, "users", firebaseUser.uid),
+          (docSnap) => {
+            if (docSnap.exists()) {
+              setIsPremium(docSnap.data().isPremium === true);
+            } else {
+              setIsPremium(false);
+            }
+          },
+          (err) => {
+            console.error("Header profile snapshot error:", err);
+          }
+        );
+      } else {
+        setIsPremium(false);
+        if (unsubSnapshot) {
+          unsubSnapshot();
+          unsubSnapshot = null;
+        }
+      }
+    });
     const handleStorageChange = () => {
       setUser(getStoredUser());
     };
@@ -44,6 +72,8 @@ const Header = () => {
       window.removeEventListener("storage", handleStorageChange);
       window.removeEventListener(AUTH_USER_CHANGED_EVENT, handleStorageChange);
       window.removeEventListener("open-login-dialog", handleOpenLoginDialog);
+      unsubAuth();
+      if (unsubSnapshot) unsubSnapshot();
     };
   }, []);
 
@@ -100,7 +130,11 @@ const Header = () => {
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="relative size-11 shrink-0 rounded-2xl p-0 overflow-hidden border-2 border-white ring-2 ring-transparent hover:ring-indigo-100 data-[state=open]:ring-indigo-200 transition-all duration-300 shadow-md"
+                    className={`relative size-11 shrink-0 rounded-2xl p-0 overflow-hidden border-2 ring-2 ring-transparent transition-all duration-300 shadow-md ${
+                      isPremium
+                        ? "border-amber-400 hover:ring-amber-100 data-[state=open]:ring-amber-200"
+                        : "border-white hover:ring-indigo-100 data-[state=open]:ring-indigo-200"
+                    }`}
                   >
                     <img
                       src={user?.picture}
@@ -108,6 +142,11 @@ const Header = () => {
                       className="h-full w-full object-cover select-none"
                       referrerPolicy="no-referrer"
                     />
+                    {isPremium && (
+                      <div className="absolute -bottom-0.5 -right-0.5 bg-amber-500 rounded-tl-lg p-0.5 border-t border-l border-amber-300">
+                        <Gem className="w-2.5 h-2.5 text-white" />
+                      </div>
+                    )}
                   </Button>
                 </DropdownMenuTrigger>
 
@@ -118,9 +157,16 @@ const Header = () => {
                 >
                   <DropdownMenuLabel className="font-normal mb-2" inset={false}>
                     <div className="flex flex-col space-y-1 p-2">
-                      <p className="text-sm font-black text-slate-900 leading-none">
-                        {user?.name}
-                      </p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-sm font-black text-slate-900 leading-none">
+                          {user?.name}
+                        </p>
+                        {isPremium && (
+                          <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-50 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-600 border border-amber-200">
+                            PRO
+                          </span>
+                        )}
+                      </div>
                       <p className="text-xs font-medium text-slate-500 truncate">
                         {user?.email}
                       </p>

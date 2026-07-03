@@ -16,7 +16,6 @@ import {
   Compass,
   Loader2,
   Route,
-  Sparkles,
   Trash2,
   Users,
   Lock,
@@ -264,7 +263,7 @@ const MyTrips = () => {
   }, []);
 
   return (
-    <section className="min-h-screen bg-mesh pt-32 pb-20 px-4 md:px-6 relative overflow-hidden">
+    <section className="min-h-screen bg-mesh pt-28 md:pt-32 pb-16 px-4 md:px-6 relative overflow-hidden">
       <div className="absolute top-10 right-0 w-125 h-125 bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-125 h-125 bg-violet-500/5 rounded-full blur-[120px] pointer-events-none" />
 

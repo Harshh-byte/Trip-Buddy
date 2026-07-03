@@ -57,7 +57,7 @@ export const FAQ_DATA = [
   {
     question: "How does Trip Buddy create personalized recommendations?",
     answer:
-      "By taking into account your unique preferences, tastes, and requirements, ensuring that every aspect of your trip is tailored to meet your specific needs.",
+      "Trip Buddy analyzes your destination, budget, duration, companions, and interests. Using advanced AI models, it generates a custom-tailored travel plan, prioritizing efficiency and relevant options for your trip style.",
   },
   {
     question: "How do I find my trips in My Trips?",
@@ -68,6 +68,11 @@ export const FAQ_DATA = [
     question: "How accurate are the travel suggestions?",
     answer:
       "Our AI uses real-time data and travel trends, though we always recommend checking local opening hours before your visit.",
+  },
+  {
+    question: "Can I download or share my itineraries?",
+    answer:
+      "Absolutely! You can download a high-quality PDF of your itinerary for offline use, or copy a shareable link to easily send your trip details to friends and family.",
   },
 ];
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Languages, Wallet } from "lucide-react";
+import { ArrowRight, Languages, Wallet, MapPinCheckInside } from "lucide-react";
 import SEO from "../components/shared/SEO";
 import Skeleton from "@mui/material/Skeleton";
 import {
@@ -669,7 +669,7 @@ const Explore = () => {
 
   if (loading || forceSkeleton) {
     return (
-      <div className="min-h-screen bg-slate-50 pt-44 pb-20 px-4 md:px-6 font-sans animate-in fade-in duration-300">
+      <div className="min-h-screen bg-slate-50 pt-28 md:pt-32 pb-16 px-4 md:px-6 font-sans animate-in fade-in duration-300">
         <SEO
           title="Explore Destinations"
           description="Discover your next adventure with Trip Buddy's curated destinations."
@@ -801,7 +801,7 @@ const Explore = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-44 pb-20 px-4 md:px-6 font-sans">
+    <div className="min-h-screen bg-slate-50 pt-28 md:pt-32 pb-16 px-4 md:px-6 font-sans">
       <SEO
         title="Explore Destinations"
         description="Discover your next adventure with Trip Buddy's curated destinations."
@@ -854,12 +854,14 @@ const Explore = () => {
                         alt=""
                         className="w-4 h-3 object-cover rounded-xs inline-block shadow-sm"
                       />
-                    ) : (
+                    ) : dest.flag ? (
                       <span className="text-base leading-none">
-                        {dest.flag || "📍"}
+                        {dest.flag}
                       </span>
+                    ) : (
+                      <MapPinCheckInside className="w-4 h-4 text-white fill-red-500 shrink-0" />
                     )}
-                    <span>{dest.country}</span>
+                    <span className="text-slate-200">{dest.country}</span>
                   </div>
                   <h3 className="text-2xl font-black tracking-tight">
                     {dest.name}

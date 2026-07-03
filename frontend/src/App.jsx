@@ -34,6 +34,7 @@ const App = () => {
   return (
     <div className="flex flex-col min-h-screen">
       <Toaster position="top-center" richColors />
+
       {!shouldHideHeader && <Header />}
       <main className="flex-1">
         <ScrollToTop />
@@ -43,6 +44,7 @@ const App = () => {
           <Route path="/v2/view-trip" element={<ViewTrip />} />
           <Route path="/v2/view-trip/:tripId" element={<ViewTrip />} />
           <Route path="/v2/my-trips" element={<MyTrips />} />
+          <Route path="/v2/payment-success" element={<PaymentSuccess />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsOfService />} />
           <Route path="/explore" element={<Explore />} />

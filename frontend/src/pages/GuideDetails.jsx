@@ -464,7 +464,7 @@ Do not wrap in markdown codeblocks. Return raw JSON text only.
 
   if (loading) {
     return (
-      <div className="min-h-screen pt-32 px-6 flex items-center justify-center bg-[radial-gradient(ellipse_at_top,var(--tw-gradient-stops))] from-indigo-50 via-slate-50 to-white">
+      <div className="min-h-screen pt-28 md:pt-32 px-4 md:px-6 flex items-center justify-center bg-[radial-gradient(ellipse_at_top,var(--tw-gradient-stops))] from-indigo-50 via-slate-50 to-white">
         <div className="w-full max-w-sm md:max-w-md p-8 md:p-12 bg-white/75 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/80 flex flex-col items-center text-center relative overflow-hidden">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-72 w-72 rounded-full bg-linear-to-br from-indigo-500/15 via-violet-400/10 to-transparent blur-3xl animate-pulse" />
 
@@ -617,7 +617,7 @@ Do not wrap in markdown codeblocks. Return raw JSON text only.
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 pt-32 pb-20 px-4 md:px-6 font-sans">
+    <div className="min-h-screen bg-slate-50 pt-28 md:pt-32 pb-16 px-4 md:px-6 font-sans">
       <SEO
         title={`${destinationName} Travel Guide | Trip Buddy`}
         description={`Explore the ultimate travel guide for ${destinationName}, ${countryName}. Discover key facts, language, currency details, and top local attractions.`}

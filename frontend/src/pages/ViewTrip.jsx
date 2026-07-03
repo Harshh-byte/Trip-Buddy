@@ -31,6 +31,14 @@ import {
   X,
   BotMessageSquare,
   Zap,
+  Plus,
+  Trash2,
+  Pencil,
+  ArrowUp,
+  ArrowDown,
+  Lock,
+  Unlock,
+  Check,
 } from "lucide-react";
 import SEO from "../components/shared/SEO";
 import { ROAMIE_CONFIG } from "../services/roamieConfig";
@@ -46,6 +54,19 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "../components/ui/accordion";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs";
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "../components/ui/tooltip";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from "../components/ui/dialog";
+
 
 let canUsePlacesPhotoLookup = true;
 const TRIP_GENERATING_FLAG_KEY = "tripbuddy:generating-trip";
@@ -177,7 +198,7 @@ const normalizeHotels = (tripData) => {
 const normalizeActivities = (planSource) => {
   return Array.isArray(planSource)
     ? planSource.map((item, idx) => ({
-        id: `stop-${idx}`,
+        id: item?.id || `stop-${idx}`,
         time: item?.time || item?.start_time || "Flexible",
         title: item?.title || item?.name || "Activity",
         description:
@@ -187,6 +208,7 @@ const normalizeActivities = (planSource) => {
           "A highly recommended stop on your journey.",
         estDuration: item?.est_duration_min || null,
         geo_coordinates: item?.geo_coordinates || item?.coordinates || null,
+        holderName: item?.holderName || item?.holder || null,
       }))
     : [];
 };
@@ -252,6 +274,7 @@ const ViewTrip = () => {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(auth.currentUser);
   const [authLoading, setAuthLoading] = useState(true);
+  const [isPremium, setIsPremium] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -277,8 +300,160 @@ const ViewTrip = () => {
     return false;
   }, [trip, tripId, currentUser]);
 
+  const canEdit = useMemo(() => {
+    if (!trip) return false;
+    if (isOwner) return true;
+    return trip.sharingMode === "edit";
+  }, [trip, isOwner]);
+
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [sharingDialogOpen, setSharingDialogOpen] = useState(false);
+  const [activityModalOpen, setActivityModalOpen] = useState(false);
+  const [activityModalMode, setActivityModalMode] = useState("add");
+  const [selectedDayIndex, setSelectedDayIndex] = useState(0);
+  const [selectedActivityIndex, setSelectedActivityIndex] = useState(0);
+  const [activityForm, setActivityForm] = useState({
+    time: "",
+    title: "",
+    description: "",
+    estDuration: "",
+    location: "",
+    holderName: "",
+  });
+
+  const [hotelModalOpen, setHotelModalOpen] = useState(false);
+  const [hotelModalMode, setHotelModalMode] = useState("add");
+  const [selectedHotelIndex, setSelectedHotelIndex] = useState(0);
+  const [hotelForm, setHotelForm] = useState({
+    name: "",
+    address: "",
+    price: "",
+    rating: "",
+    description: "",
+  });
+
+  const openActivityModal = (mode, dayIdx, actIdx = null, activity = null) => {
+    setActivityModalMode(mode);
+    setSelectedDayIndex(dayIdx);
+    if (mode === "edit" && activity) {
+      setSelectedActivityIndex(actIdx);
+      setActivityForm({
+        time: activity.time || "",
+        title: activity.title || "",
+        description: activity.description || "",
+        estDuration: activity.estDuration || "",
+        location: activity.location || "",
+        holderName: activity.holderName || "",
+      });
+    } else {
+      setActivityForm({
+        time: "10:00 AM",
+        title: "",
+        description: "",
+        estDuration: "60",
+        location: "",
+        holderName: "",
+      });
+    }
+    setActivityModalOpen(true);
+  };
+
+  const handleSaveActivity = (e) => {
+    e.preventDefault();
+    if (!activityForm.title.trim()) {
+      toast.error("Activity Title is required");
+      return;
+    }
+
+    const payload = {
+      dayIndex: selectedDayIndex,
+      newActivity: {
+        id: `activity-${Date.now()}`,
+        time: activityForm.time,
+        title: activityForm.title,
+        description: activityForm.description,
+        estDuration: activityForm.estDuration ? parseInt(activityForm.estDuration) : null,
+        geo_coordinates: null,
+        holderName: activityForm.holderName.trim(),
+      },
+      activityIndex: selectedActivityIndex,
+      updatedActivity: {
+        time: activityForm.time,
+        title: activityForm.title,
+        description: activityForm.description,
+        estDuration: activityForm.estDuration ? parseInt(activityForm.estDuration) : null,
+        holderName: activityForm.holderName.trim(),
+      }
+    };
+
+    if (activityModalMode === "add") {
+      handleModifyItinerary("ADD_ACTIVITY", payload);
+    } else {
+      handleModifyItinerary("EDIT_ACTIVITY", payload);
+    }
+
+    setActivityModalOpen(false);
+  };
+
+  const openHotelModal = (mode, hotelIdx = null, hotel = null) => {
+    setHotelModalMode(mode);
+    if (mode === "edit" && hotel) {
+      setSelectedHotelIndex(hotelIdx);
+      setHotelForm({
+        name: hotel.name || "",
+        address: hotel.address || "",
+        price: hotel.price || "",
+        rating: hotel.rating || "",
+        description: hotel.description || "",
+      });
+    } else {
+      setHotelForm({
+        name: "",
+        address: "",
+        price: "Pricing varies",
+        rating: "4.5",
+        description: "",
+      });
+    }
+    setHotelModalOpen(true);
+  };
+
+  const handleSaveHotel = (e) => {
+    e.preventDefault();
+    if (!hotelForm.name.trim()) {
+      toast.error("Hotel Name is required");
+      return;
+    }
+
+    const payload = {
+      hotelIndex: selectedHotelIndex,
+      newHotel: {
+        hotel_name: hotelForm.name,
+        address: hotelForm.address,
+        price: hotelForm.price,
+        rating: hotelForm.rating,
+        description: hotelForm.description,
+      },
+      updatedHotel: {
+        name: hotelForm.name,
+        hotel_name: hotelForm.name,
+        address: hotelForm.address,
+        price: hotelForm.price,
+        rating: hotelForm.rating,
+        description: hotelForm.description,
+      }
+    };
+
+    if (hotelModalMode === "add") {
+      handleModifyHotels("ADD_HOTEL", payload);
+    } else {
+      handleModifyHotels("EDIT_HOTEL", payload);
+    }
+
+    setHotelModalOpen(false);
+  };
+
   const [searchParams] = useSearchParams();
   const requestId = searchParams.get("requestId");
 
@@ -326,7 +501,7 @@ const ViewTrip = () => {
       batch.set(globalTripRef, updatedTrip, { merge: true });
 
       const targetUserId = trip.userId || auth.currentUser?.uid;
-      if (targetUserId) {
+      if (targetUserId && auth.currentUser?.uid === targetUserId) {
         const userTripRef = doc(
           db,
           "users",
@@ -342,12 +517,267 @@ const ViewTrip = () => {
         description: "Your route map and itinerary have been refreshed.",
       });
     } catch (error) {
-      toast.error("Failed to sync trip updates. Please try again.");
+      console.error(error);
+      const errMsg = error instanceof Error ? error.message : String(error);
+      toast.error("Failed to sync trip updates", {
+        description: `Please try again. Details: ${errMsg}`,
+      });
+    }
+  };
+
+  const handleModifyItinerary = async (action, payload) => {
+    if (!canEdit) {
+      toast.error("Permission Denied", {
+        description: "You do not have permission to edit this itinerary.",
+      });
+      return;
+    }
+
+    const updatedTripData = JSON.parse(JSON.stringify(trip.tripData));
+    
+    let itineraryKey = "itinerary";
+    if (updatedTripData.day_wise_plan) itineraryKey = "day_wise_plan";
+    else if (updatedTripData.days) itineraryKey = "days";
+    
+    if (!updatedTripData[itineraryKey]) {
+      updatedTripData[itineraryKey] = [];
+    }
+    const itinerary = updatedTripData[itineraryKey];
+
+    const getDayObj = (dayIdx) => {
+      if (Array.isArray(itinerary)) {
+        return itinerary[dayIdx];
+      } else if (itinerary && typeof itinerary === "object") {
+        const sortedKeys = Object.keys(itinerary).sort(
+          (a, b) =>
+            (Number(a.match(/\d+/)?.[0]) || 0) -
+            (Number(b.match(/\d+/)?.[0]) || 0)
+        );
+        const dayKey = sortedKeys[dayIdx];
+        return itinerary[dayKey];
+      }
+      return null;
+    };
+
+    const getActivitiesKey = (dayObj) => {
+      if (dayObj?.plan) return "plan";
+      if (dayObj?.activities) return "activities";
+      return "plan";
+    };
+
+    if (action === "EDIT_ACTIVITY") {
+      const { dayIndex, activityIndex, updatedActivity } = payload;
+      const dayObj = getDayObj(dayIndex);
+      if (dayObj) {
+        const actKey = getActivitiesKey(dayObj);
+        if (!dayObj[actKey]) dayObj[actKey] = [];
+        dayObj[actKey][activityIndex] = {
+          ...dayObj[actKey][activityIndex],
+          ...updatedActivity,
+        };
+      }
+    } else if (action === "DELETE_ACTIVITY") {
+      const { dayIndex, activityIndex } = payload;
+      const dayObj = getDayObj(dayIndex);
+      if (dayObj) {
+        const actKey = getActivitiesKey(dayObj);
+        if (dayObj[actKey]) {
+          dayObj[actKey].splice(activityIndex, 1);
+        }
+      }
+    } else if (action === "ADD_ACTIVITY") {
+      const { dayIndex, newActivity } = payload;
+      const dayObj = getDayObj(dayIndex);
+      if (dayObj) {
+        const actKey = getActivitiesKey(dayObj);
+        if (!dayObj[actKey]) dayObj[actKey] = [];
+        dayObj[actKey].push(newActivity);
+      }
+    } else if (action === "REORDER_ACTIVITY") {
+      const { dayIndex, activityIndex, direction } = payload;
+      const dayObj = getDayObj(dayIndex);
+      if (dayObj) {
+        const actKey = getActivitiesKey(dayObj);
+        const list = dayObj[actKey];
+        if (list && Array.isArray(list)) {
+          const newIdx = direction === "up" ? activityIndex - 1 : activityIndex + 1;
+          if (newIdx >= 0 && newIdx < list.length) {
+            const temp = list[activityIndex];
+            list[activityIndex] = list[newIdx];
+            list[newIdx] = temp;
+          }
+        }
+      }
+    } else if (action === "EDIT_DAY_TITLE") {
+      const { dayIndex, newTitle } = payload;
+      const dayObj = getDayObj(dayIndex);
+      if (dayObj) {
+        dayObj.title = newTitle;
+      }
+    } else if (action === "ADD_DAY") {
+      if (Array.isArray(itinerary)) {
+        itinerary.push({
+          title: `Day ${itinerary.length + 1}`,
+          plan: [],
+        });
+      } else if (itinerary && typeof itinerary === "object") {
+        const nextDayNum = Object.keys(itinerary).length + 1;
+        itinerary[`day_${nextDayNum}`] = {
+          title: `Day ${nextDayNum}`,
+          plan: [],
+        };
+      }
+    } else if (action === "DELETE_DAY") {
+      const { dayIndex } = payload;
+      if (Array.isArray(itinerary)) {
+        if (dayIndex >= 0 && dayIndex < itinerary.length) {
+          itinerary.splice(dayIndex, 1);
+          itinerary.forEach((day, i) => {
+            if (day.title?.startsWith("Day ")) {
+              day.title = `Day ${i + 1}`;
+            }
+          });
+        }
+      } else if (itinerary && typeof itinerary === "object") {
+        const sortedKeys = Object.keys(itinerary).sort(
+          (a, b) =>
+            (Number(a.match(/\d+/)?.[0]) || 0) -
+            (Number(b.match(/\d+/)?.[0]) || 0)
+        );
+        const dayKey = sortedKeys[dayIndex];
+        if (dayKey) {
+          delete itinerary[dayKey];
+          const sortedEntries = Object.entries(itinerary).sort(([a], [b]) => {
+            const numA = parseInt(a.replace(/\D/g, "")) || 0;
+            const numB = parseInt(b.replace(/\D/g, "")) || 0;
+            return numA - numB;
+          });
+          const rekeyed = {};
+          sortedEntries.forEach(([, val], i) => {
+            rekeyed[`day_${i + 1}`] = val;
+            if (val.title?.startsWith("Day ")) {
+              val.title = `Day ${i + 1}`;
+            }
+          });
+          updatedTripData[itineraryKey] = rekeyed;
+        }
+      }
+      
+      const newLength = Array.isArray(itinerary) ? itinerary.length : Object.keys(itinerary).length;
+      if (activeDayIndex >= newLength) {
+        setActiveDayIndex(Math.max(0, newLength - 1));
+      }
+    }
+
+    await updateTripDataInFirestore(updatedTripData);
+  };
+
+  const handleModifyHotels = async (action, payload) => {
+    if (!canEdit) {
+      toast.error("Permission Denied", {
+        description: "You do not have permission to edit hotels.",
+      });
+      return;
+    }
+
+    const updatedTripData = JSON.parse(JSON.stringify(trip.tripData));
+    
+    let hotelsKey = "hotel_options";
+    if (updatedTripData.hotels) hotelsKey = "hotels";
+    else if (updatedTripData.accommodations) hotelsKey = "accommodations";
+    
+    if (!updatedTripData[hotelsKey]) {
+      updatedTripData[hotelsKey] = [];
+    }
+    const hotelsList = updatedTripData[hotelsKey];
+
+    if (action === "ADD_HOTEL") {
+      const { newHotel } = payload;
+      hotelsList.push(newHotel);
+    } else if (action === "EDIT_HOTEL") {
+      const { hotelIndex, updatedHotel } = payload;
+      if (hotelIndex >= 0 && hotelIndex < hotelsList.length) {
+        hotelsList[hotelIndex] = {
+          ...hotelsList[hotelIndex],
+          ...updatedHotel,
+        };
+      }
+    } else if (action === "DELETE_HOTEL") {
+      const { hotelIndex } = payload;
+      if (hotelIndex >= 0 && hotelIndex < hotelsList.length) {
+        hotelsList.splice(hotelIndex, 1);
+      }
+    }
+
+    await updateTripDataInFirestore(updatedTripData);
+  };
+
+  const handleUpdateSharingMode = async (mode) => {
+    if (mode === "edit" && !isPremium) {
+      window.dispatchEvent(new Event("open-pricing-dialog"));
+      toast.error("Premium Feature Required", {
+        description: "Real-time collaborative editing requires a Premium lifetime upgrade.",
+      });
+      return;
+    }
+    if (!isOwner) {
+      toast.error("Access Denied", {
+        description: "Only the trip owner can update sharing settings.",
+      });
+      return;
+    }
+
+    try {
+      const updatedTrip = {
+        ...trip,
+        sharingMode: mode,
+      };
+
+      setTrip(updatedTrip);
+      localStorage.setItem(
+        getLocalTripKey(tripId || ""),
+        JSON.stringify(updatedTrip),
+      );
+
+      const batch = writeBatch(db);
+
+      const globalTripRef = doc(db, "Trips", tripId || "");
+      batch.set(globalTripRef, updatedTrip, { merge: true });
+
+      const targetUserId = trip.userId || auth.currentUser?.uid;
+      if (targetUserId && auth.currentUser?.uid === targetUserId) {
+        const userTripRef = doc(
+          db,
+          "users",
+          targetUserId,
+          "trips",
+          tripId || "",
+        );
+        batch.set(userTripRef, updatedTrip, { merge: true });
+      }
+
+      await batch.commit();
+      toast.success("Sharing settings updated!", {
+        description: `Your trip is now ${mode === "edit" ? "collaborative (anyone can edit)" : "read-only (anyone can view)"}.`,
+      });
+    } catch (e) {
+      console.error(e);
+      const errMsg = e instanceof Error ? e.message : String(e);
+      toast.error("Failed to update sharing settings", {
+        description: `Details: ${errMsg}`,
+      });
     }
   };
 
   const handleSendMessage = async (e) => {
     if (e) e.preventDefault();
+    if (!isPremium) {
+      window.dispatchEvent(new Event("open-pricing-dialog"));
+      toast.error("Premium Feature Required", {
+        description: "Roamie AI Chat Assistant is a Premium feature. Please upgrade.",
+      });
+      return;
+    }
     const trimmed = inputText.trim();
     if (!trimmed || aiTyping) return;
 
@@ -425,7 +855,10 @@ const ViewTrip = () => {
             "Sorry, I encountered an issue processing that request. Please try again.",
         },
       ]);
-      toast.error("Failed to process message.");
+      const errMsg = error instanceof Error ? error.message : String(error);
+      toast.error("Failed to process message", {
+        description: `Details: ${errMsg}`,
+      });
     } finally {
       setAiTyping(false);
     }
@@ -448,7 +881,7 @@ const ViewTrip = () => {
           } else {
             resolve(null);
           }
-        } catch (e) {
+        } catch {
           resolve(null);
         }
       };
@@ -468,12 +901,20 @@ const ViewTrip = () => {
       .replace(/[\u2013\u2014]/g, "-")
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
+      // eslint-disable-next-line no-control-regex
       .replace(/[^\x00-\x7F]/g, "")
       .replace(/\s+/g, " ")
       .trim();
   };
 
   const exportToPDF = async () => {
+    if (!isPremium) {
+      window.dispatchEvent(new Event("open-pricing-dialog"));
+      toast.error("Premium Feature Required", {
+        description: "PDF downloads require a Premium lifetime upgrade. Please upgrade.",
+      });
+      return;
+    }
     setPdfDownloading(true);
     try {
       const { jsPDF } = await import("jspdf");
@@ -506,7 +947,7 @@ const ViewTrip = () => {
       if (logoBase64) {
         try {
           doc.addImage(logoBase64, "PNG", 20, y + 3, 16, 16);
-        } catch (e) {
+        } catch {
           // Silent fallback if image adding fails
         }
       }
@@ -758,7 +1199,7 @@ const ViewTrip = () => {
 
       const fileName = `${destinationLabel.split(",")[0].trim().replace(/\s+/g, "_")}_Itinerary.pdf`;
       doc.save(fileName);
-    } catch (error) {
+    } catch {
       // Silent error handling
     } finally {
       setPdfDownloading(false);
@@ -813,50 +1254,59 @@ const ViewTrip = () => {
   useEffect(() => {
     if (authLoading) return;
 
-    const fetchTrip = async () => {
-      if (!tripId) {
-        if (requestId) {
-          setLoading(true);
-          return;
-        }
-        navigate("/v2/create-trip");
+    if (!tripId) {
+      if (requestId) {
         return;
       }
+      navigate("/v2/create-trip");
+      return;
+    }
 
-      let foundTrip = readLocalTrip(tripId);
-      if (!foundTrip) {
-        try {
-          const docSnap = await getDoc(doc(db, "Trips", tripId));
-          if (docSnap.exists()) {
-            foundTrip = docSnap.data();
-          } else if (currentUser?.uid) {
-            const userTripSnap = await getDoc(
-              doc(db, "users", currentUser.uid, "trips", tripId),
-            );
-            if (userTripSnap.exists()) foundTrip = userTripSnap.data();
+    const tripRef = doc(db, "Trips", tripId);
+
+    const unsubscribe = onSnapshot(
+      tripRef,
+      async (docSnap) => {
+        if (docSnap.exists()) {
+          setTrip(docSnap.data());
+          sessionStorage.removeItem(TRIP_GENERATING_FLAG_KEY);
+          setApiDone(true);
+        } else {
+          let foundTrip = readLocalTrip(tripId);
+          if (!foundTrip && currentUser?.uid) {
+            try {
+              const userTripSnap = await getDoc(
+                doc(db, "users", currentUser.uid, "trips", tripId),
+              );
+              if (userTripSnap.exists()) foundTrip = userTripSnap.data();
+            } catch (e) {
+              console.error("Error fetching user trip fallback:", e);
+            }
           }
-        } catch (e) {
-          console.error("Error fetching trip:", e);
-          toast.error("Failed to load itinerary details", {
-            description: "There was a problem syncing with the server. Please try again.",
-          });
+
+          if (foundTrip) {
+            setTrip(foundTrip);
+            sessionStorage.removeItem(TRIP_GENERATING_FLAG_KEY);
+            setApiDone(true);
+          } else {
+            toast.error("Itinerary Not Found", {
+              description: "We couldn't locate the requested travel itinerary.",
+            });
+            navigate("/v2/create-trip");
+            setLoading(false);
+          }
         }
-      }
-
-      if (foundTrip) {
-        setTrip(foundTrip);
-        sessionStorage.removeItem(TRIP_GENERATING_FLAG_KEY);
-        setApiDone(true);
-      } else {
-        toast.error("Itinerary Not Found", {
-          description: "We couldn't locate the requested travel itinerary, or you don't have access to it.",
+      },
+      (error) => {
+        console.error("onSnapshot error:", error);
+        const errMsg = error instanceof Error ? error.message : String(error);
+        toast.error("Sync Error", {
+          description: `There was a problem syncing itinerary details in real-time. Details: ${errMsg}`,
         });
-        navigate("/v2/create-trip");
-        setLoading(false);
       }
-    };
+    );
 
-    fetchTrip();
+    return () => unsubscribe();
   }, [tripId, requestId, navigate, authLoading, currentUser]);
 
   useEffect(() => {
@@ -914,8 +1364,9 @@ const ViewTrip = () => {
       (error) => {
         console.error("Firestore onSnapshot error:", error);
         setLoading(false);
+        const errMsg = error instanceof Error ? error.message : String(error);
         toast.error("Sync Connection Failed", {
-          description: "Unable to establish connection to track your itinerary creation. Please try again.",
+          description: `Unable to establish connection to track your itinerary creation. Details: ${errMsg}`,
         });
         navigate("/v2/create-trip");
       }
@@ -944,36 +1395,27 @@ const ViewTrip = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const destinationLabel = useMemo(() => {
-    const dest = trip?.userSelection?.destination;
-    return typeof dest?.label === "string"
-      ? dest.label
-      : dest?.value || "Your Destination";
-  }, [trip]);
+  const destinationLabel = typeof trip?.userSelection?.destination?.label === "string"
+    ? trip.userSelection.destination.label
+    : trip?.userSelection?.destination?.value || "Your Destination";
 
-  const summary = useMemo(() => {
-    const base = trip?.tripData?.trip_summary || {};
-    return {
-      location: base?.location || destinationLabel,
-      duration:
-        base?.duration ||
-        (trip?.userSelection?.noOfDays
-          ? `${trip.userSelection.noOfDays} Days`
-          : "Custom Duration"),
-      budget: base?.budget_note || "Budget flexible",
-      travelers: trip?.userSelection?.travelers || "Solo/Group",
-      startDate: formatFullDate(trip?.userSelection?.startDate || ""),
-      interests: Array.isArray(trip?.userSelection?.interests)
-        ? trip.userSelection.interests.join(", ")
-        : trip?.userSelection?.interests || "General",
-    };
-  }, [trip, destinationLabel]);
+  const summary = {
+    location: trip?.tripData?.trip_summary?.location || destinationLabel,
+    duration:
+      trip?.tripData?.trip_summary?.duration ||
+      (trip?.userSelection?.noOfDays
+        ? `${trip.userSelection.noOfDays} Days`
+        : "Custom Duration"),
+    budget: trip?.tripData?.trip_summary?.budget_note || "Budget flexible",
+    travelers: trip?.userSelection?.travelers || "Solo/Group",
+    startDate: formatFullDate(trip?.userSelection?.startDate || ""),
+    interests: Array.isArray(trip?.userSelection?.interests)
+      ? trip.userSelection.interests.join(", ")
+      : trip?.userSelection?.interests || "General",
+  };
 
-  const hotels = useMemo(() => normalizeHotels(trip?.tripData), [trip]);
-  const itineraryDays = useMemo(
-    () => normalizeItineraryDays(trip?.tripData),
-    [trip],
-  );
+  const hotels = normalizeHotels(trip?.tripData);
+  const itineraryDays = normalizeItineraryDays(trip?.tripData);
 
   const statCards = [
     { label: "Duration", value: summary.duration, icon: CalendarDays },
@@ -985,7 +1427,7 @@ const ViewTrip = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen pt-32 px-6 flex items-center justify-center bg-[radial-gradient(ellipse_at_top,var(--tw-gradient-stops))] from-indigo-50 via-slate-50 to-white">
+      <div className="min-h-screen pt-36 md:pt-40 px-4 md:px-6 flex items-center justify-center bg-[radial-gradient(ellipse_at_top,var(--tw-gradient-stops))] from-indigo-50 via-slate-50 to-white">
         <div className="w-full max-w-sm md:max-w-md p-8 md:p-12 bg-white/75 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/80 flex flex-col items-center text-center relative overflow-hidden">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-72 w-72 rounded-full bg-linear-to-br from-indigo-500/15 via-violet-400/10 to-transparent blur-3xl animate-pulse" />
 
@@ -1051,7 +1493,7 @@ const ViewTrip = () => {
   if (!trip) return null;
 
   return (
-    <div className="min-h-screen pt-32 pb-20 px-4 md:px-6 bg-mesh">
+    <div className="min-h-screen pt-36 md:pt-40 pb-16 px-4 md:px-6 bg-mesh">
       <SEO
         title={`Trip to ${destinationLabel}`}
         description={`Explore our curated AI itinerary for ${destinationLabel}. Includes recommended hotels, daily activities, and travel tips.`}
@@ -1071,50 +1513,173 @@ const ViewTrip = () => {
               <div className="absolute inset-0 bg-linear-to-t from-slate-950/90 via-slate-900/40 to-slate-900/10" />
 
               <div className="absolute inset-0 p-6 md:p-10 flex flex-col justify-between">
-                <div className="flex flex-wrap items-center gap-3">
-                  <button
-                    onClick={() => navigate(-1)}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-white/10 backdrop-blur-md px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white hover:bg-white hover:text-indigo-600 transition-colors border border-white/20 shadow-sm cursor-pointer"
-                  >
-                    <ArrowLeft className="w-3.5 h-3.5" />
-                    BACK
-                  </button>
+                <TooltipProvider>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => navigate(-1)}
+                          className="inline-flex items-center gap-1.5 rounded-full bg-white/10 backdrop-blur-md px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white hover:bg-white hover:text-indigo-600 transition-colors border border-white/20 shadow-sm cursor-pointer"
+                        >
+                          <ArrowLeft className="w-3.5 h-3.5" />
+                          BACK
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">Go Back</TooltipContent>
+                    </Tooltip>
 
-                  <div className="relative group">
-                    <button
-                      onClick={handleShare}
-                      className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-full bg-white/10 backdrop-blur-md text-white hover:bg-white hover:text-indigo-600 transition-colors border border-white/20 shadow-sm cursor-pointer"
-                    >
-                      {copied ? (
-                        <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
-                      ) : (
-                        <Share2 className="w-3.5 h-3.5" />
-                      )}
-                    </button>
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2.5 py-1.5 bg-slate-950/90 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-wider rounded-xl shadow-lg border border-white/10 opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100 pointer-events-none transition-all duration-200 z-30 whitespace-nowrap">
-                      {copied ? "Link Copied!" : "Share Trip"}
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-slate-950/90" />
-                    </div>
-                  </div>
+                    <Dialog open={sharingDialogOpen} onOpenChange={setSharingDialogOpen}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <DialogTrigger asChild>
+                            <button
+                              className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-full bg-white/10 backdrop-blur-md text-white hover:bg-white hover:text-indigo-600 transition-colors border border-white/20 shadow-sm cursor-pointer"
+                            >
+                              <Share2 className="w-3.5 h-3.5" />
+                            </button>
+                          </DialogTrigger>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom">Share Itinerary</TooltipContent>
+                      </Tooltip>
 
-                  <div className="relative group">
-                    <button
-                      onClick={exportToPDF}
-                      disabled={pdfDownloading}
-                      className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-full bg-white/10 backdrop-blur-md text-white hover:bg-white hover:text-indigo-600 transition-colors border border-white/20 shadow-sm disabled:opacity-50 cursor-pointer"
-                    >
-                      {pdfDownloading ? (
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                      ) : (
-                        <Download className="w-3.5 h-3.5" />
-                      )}
-                    </button>
-                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2.5 py-1.5 bg-slate-950/90 backdrop-blur-md text-white text-[10px] font-bold uppercase tracking-wider rounded-xl shadow-lg border border-white/10 opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100 pointer-events-none transition-all duration-200 z-30 whitespace-nowrap">
-                      {pdfDownloading ? "Downloading..." : "Download PDF"}
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-slate-950/90" />
-                    </div>
+                      <DialogContent className="sm:max-w-md rounded-3xl p-6 bg-white/95 backdrop-blur-md border border-slate-200/80 shadow-2xl">
+                        <DialogHeader>
+                          <DialogTitle className="text-2xl font-black font-outfit text-slate-900 flex items-center gap-2">
+                            <Share2 className="w-6 h-6 text-indigo-600" />
+                            Share Itinerary
+                          </DialogTitle>
+                          <DialogDescription className="text-slate-500 font-medium font-outfit">
+                            Configure access and copy the link to collaborate with other travelers.
+                          </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="space-y-6 py-4">
+                          {isOwner ? (
+                            <div className="space-y-3">
+                              <label className="text-sm font-bold text-slate-700 font-outfit">
+                                Collaboration Access
+                              </label>
+                              <div className="grid grid-cols-2 gap-3">
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateSharingMode("view")}
+                                  className={`flex items-center justify-center gap-2 p-3.5 rounded-2xl border text-sm font-bold font-outfit transition-all cursor-pointer ${
+                                    trip?.sharingMode !== "edit"
+                                      ? "bg-indigo-50 border-indigo-200 text-indigo-700 shadow-sm"
+                                      : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                                  }`}
+                                >
+                                  <Lock className="w-4 h-4" />
+                                  View Only
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleUpdateSharingMode("edit")}
+                                  className={`flex items-center justify-center gap-2 p-3.5 rounded-2xl border text-sm font-bold font-outfit transition-all cursor-pointer ${
+                                    trip?.sharingMode === "edit"
+                                      ? "bg-emerald-50 border-emerald-200 text-emerald-700 shadow-sm"
+                                      : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+                                  }`}
+                                >
+                                  <Unlock className="w-4 h-4" />
+                                  Collaborative
+                                  {!isPremium && <Sparkles className="w-3 h-3 text-amber-500 fill-amber-500 shrink-0" />}
+                                </button>
+                              </div>
+                              <p className="text-xs text-slate-400 font-medium leading-relaxed min-h-[36px]">
+                                {trip?.sharingMode === "edit"
+                                  ? "Anyone with this link will be able to add, edit, or delete items on this itinerary in real-time."
+                                  : "Anyone with this link can view the itinerary. Only you can make edits."}
+                              </p>
+                            </div>
+                          ) : (
+                            <div className="p-4 rounded-2xl border flex items-center gap-3 bg-slate-50/50 border-slate-200">
+                              {trip?.sharingMode === "edit" ? (
+                                <>
+                                  <div className="p-2 bg-emerald-100 rounded-xl">
+                                    <Unlock className="w-5 h-5 text-emerald-600" />
+                                  </div>
+                                  <div>
+                                    <h5 className="font-bold text-slate-900 text-sm">Collaborative Access</h5>
+                                    <p className="text-xs text-slate-500 font-medium">You are allowed to edit this itinerary collaboratively.</p>
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="p-2 bg-indigo-100 rounded-xl">
+                                    <Lock className="w-5 h-5 text-indigo-600" />
+                                  </div>
+                                  <div>
+                                    <h5 className="font-bold text-slate-900 text-sm">Read-Only Mode</h5>
+                                    <p className="text-xs text-slate-500 font-medium">Only the trip owner can edit this itinerary.</p>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          )}
+
+                          <div className="space-y-2">
+                            <label className="text-sm font-bold text-slate-700 font-outfit">
+                              Shareable Link
+                            </label>
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="text"
+                                readOnly
+                                value={window.location.href}
+                                className="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-xs font-semibold text-slate-600 focus:outline-none"
+                              />
+                              <button
+                                type="button"
+                                onClick={handleShare}
+                                className="inline-flex h-10 items-center justify-center rounded-2xl bg-indigo-600 hover:bg-indigo-700 px-4 text-xs font-bold text-white transition-all shadow-md shadow-indigo-100 cursor-pointer"
+                              >
+                                {copied ? (
+                                  <>
+                                    <Check className="w-3.5 h-3.5 mr-1" />
+                                    Copied!
+                                  </>
+                                ) : (
+                                  "Copy"
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        <DialogFooter className="sm:justify-end">
+                          <DialogClose asChild>
+                            <button
+                              type="button"
+                              className="px-5 py-2.5 rounded-2xl border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-bold font-outfit cursor-pointer"
+                            >
+                              Close
+                            </button>
+                          </DialogClose>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={exportToPDF}
+                          disabled={pdfDownloading}
+                          className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-full bg-white/10 backdrop-blur-md text-white hover:bg-white hover:text-indigo-600 transition-colors border border-white/20 shadow-sm disabled:opacity-50 cursor-pointer"
+                        >
+                          {pdfDownloading ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Download className="w-3.5 h-3.5" />
+                          )}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        {pdfDownloading ? "Downloading..." : "Download PDF"}
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
-                </div>
+                </TooltipProvider>
 
                 <div className="space-y-6 max-w-4xl">
                   <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-xl px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-white font-black border border-white/20 shadow-lg">
@@ -1175,216 +1740,398 @@ const ViewTrip = () => {
           </div>
         </section>
 
-        {hotels.length > 0 && (
-          <section className="space-y-6">
-            <div className="flex items-center gap-3 px-2">
+        <Tabs defaultValue="itinerary" className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <div className="flex items-center justify-between border-b border-slate-200/50 pb-4">
+            <TabsList className="bg-slate-100/60 rounded-2xl p-1 gap-1">
+              <TabsTrigger value="itinerary" className="rounded-xl px-5 py-2 text-sm font-bold flex items-center gap-2">
+                <MapPinned className="w-4 h-4 text-indigo-600" />
+                <span>Daily Itinerary</span>
+              </TabsTrigger>
+              {(hotels.length > 0 || canEdit) && (
+                <TabsTrigger value="hotels" className="rounded-xl px-5 py-2 text-sm font-bold flex items-center gap-2">
+                  <Hotel className="w-4 h-4 text-indigo-600" />
+                  <span>Stays & Hotels</span>
+                </TabsTrigger>
+              )}
+            </TabsList>
+            <div className="text-xs font-bold text-slate-400 uppercase tracking-widest hidden md:block">
+              {itineraryDays.length} Days Planned {hotels.length > 0 && `• ${hotels.length} Stays Curated`}
+            </div>
+          </div>
+
+          <TabsContent value="itinerary" className="space-y-6 mt-0">
+            <div className="flex items-center gap-3 px-2 mb-4">
               <div className="p-2 bg-indigo-100 rounded-xl">
-                <Hotel className="w-6 h-6 text-indigo-600" />
+                <MapPinned className="w-6 h-6 text-indigo-600" />
               </div>
               <h3 className="text-3xl font-black tracking-tight text-slate-900">
-                Recommended Stays
+                Daily Itinerary
               </h3>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {hotels.map((hotel) => (
-                <a
-                  key={hotel.id}
-                  href={getGoogleMapsUrl(hotel.name, hotel.address)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group block h-full"
+            {itineraryDays.length === 0 ? (
+              <div className="rounded-4xl bg-indigo-50 border border-indigo-100 p-8 text-center">
+                <p className="text-indigo-900 font-medium">
+                  Your itinerary details are still being prepared. Check back soon!
+                </p>
+              </div>
+            ) : (
+              <div className="w-full">
+                <Accordion
+                  type="single"
+                  className="space-y-6"
+                  value={itineraryDays[activeDayIndex]?.key || "day-1"}
+                  onValueChange={(val) => {
+                    if (val) {
+                      const idx = itineraryDays.findIndex((d) => d.key === val);
+                      if (idx !== -1) {
+                        setActiveDayIndex(idx);
+                        setTimeout(() => {
+                          const element = document.getElementById(`day-item-${val}`);
+                          if (element) {
+                            const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+                            const header = document.querySelector("header");
+                            const headerHeight = header ? header.getBoundingClientRect().bottom : 100;
+                            const offsetPosition = elementPosition - headerHeight - 24;
+
+                            window.scrollTo({
+                              top: offsetPosition,
+                              behavior: "smooth",
+                            });
+                          }
+                        }, 250);
+                      }
+                    }
+                  }}
                 >
-                  <article className="flex h-full flex-col overflow-hidden rounded-4xl glass-card hover:shadow-xl hover:-translate-y-1 transition-all">
-                    <div className="relative h-56 w-full overflow-hidden">
-                      <GetPhoto
-                        locationItem={`${hotel.name}, ${hotel.address}`}
-                        className="h-full w-full"
-                        imageClassName="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700"
-                      />
-                      <div className="absolute inset-0 bg-linear-to-t from-slate-900/60 via-transparent to-transparent" />
-                      <span className="absolute top-4 right-4 rounded-full bg-white/90 backdrop-blur px-3.5 py-1.5 text-xs font-bold text-slate-900 shadow-sm">
-                        {formatPrice(hotel.price)}{" "}
-                        <span className="text-slate-500 font-medium">
-                          / night
-                        </span>
-                      </span>
-                    </div>
-
-                    <div className="flex flex-1 flex-col p-6 space-y-4">
-                      <div>
-                        <h4 className="text-lg font-bold text-slate-900 leading-tight flex items-center gap-2 group-hover:text-indigo-600 transition-colors">
-                          <span>{hotel.name}</span>
-                          <div className="p-1.5 rounded-full bg-slate-50 group-hover:bg-indigo-50 shrink-0 transition-colors">
-                            <Navigation className="w-4 h-4 text-slate-400 group-hover:text-indigo-600 transition-colors" />
-                          </div>
-                        </h4>
-                        <p className="mt-2 flex items-start gap-1.5 text-sm text-slate-500 font-medium">
-                          <MapPin className="w-4 h-4 shrink-0 text-slate-400 mt-0.5" />
-                          <span className="line-clamp-2">{hotel.address}</span>
-                        </p>
-                      </div>
-
-                      {hotel.rating && (
-                        <div className="inline-flex items-center gap-1.5 w-fit rounded-lg bg-amber-50 px-2.5 py-1 mt-auto">
-                          <Star className="w-4 h-4 fill-amber-400 text-amber-500" />
-                          <span className="text-sm font-bold text-amber-700">
-                            {hotel.rating} / 5
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </article>
-                </a>
-              ))}
-            </div>
-          </section>
-        )}
-
-        <section className="space-y-6">
-          <div className="flex items-center gap-3 px-2">
-            <div className="p-2 bg-indigo-100 rounded-xl">
-              <MapPinned className="w-6 h-6 text-indigo-600" />
-            </div>
-            <h3 className="text-3xl font-black tracking-tight text-slate-900">
-              Daily Itinerary
-            </h3>
-          </div>
-
-          {itineraryDays.length === 0 ? (
-            <div className="rounded-4xl bg-indigo-50 border border-indigo-100 p-8 text-center">
-              <p className="text-indigo-900 font-medium">
-                Your itinerary details are still being prepared. Check back
-                soon!
-              </p>
-            </div>
-          ) : (
-            <div className="w-full">
-              <Accordion
-                type="single"
-                className="space-y-6"
-                value={itineraryDays[activeDayIndex]?.key || "day-1"}
-                onValueChange={(val) => {
-                  if (val) {
-                    const idx = itineraryDays.findIndex((d) => d.key === val);
-                    if (idx !== -1) setActiveDayIndex(idx);
-                  }
-                }}
-              >
-                {itineraryDays.map((day) => (
-                  <AccordionItem
-                    key={day.key}
-                    value={day.key}
-                    className="group overflow-hidden rounded-4xl glass-card data-[state=open]:ring-2 data-[state=open]:ring-indigo-100 data-[state=open]:bg-white/80"
-                  >
-                    <AccordionTrigger
-                      showIcon={false}
-                      className="px-6 py-6 md:px-8 hover:no-underline transition-colors w-full"
+                  {itineraryDays.map((day, dayIndex) => (
+                    <AccordionItem
+                      key={day.key}
+                      value={day.key}
+                      id={`day-item-${day.key}`}
+                      className="group overflow-hidden rounded-4xl glass-card data-[state=open]:ring-2 data-[state=open]:ring-indigo-100 data-[state=open]:bg-white/80"
                     >
-                      <div className="flex w-full items-center justify-between gap-4">
-                        <div className="flex flex-col text-left flex-1 min-w-0">
-                          <div className="flex items-center gap-3 mb-2.5">
-                            <span className="inline-flex items-center justify-center rounded-lg bg-indigo-50 px-3 py-1 text-[11px] font-black uppercase tracking-widest text-indigo-600 shadow-inner">
-                              {day.label}
-                            </span>
-                            <span className="h-0.5 w-6 rounded-full bg-indigo-100" />
-                            <span className="text-xs font-bold uppercase tracking-widest text-slate-400">
-                              {day.activities.length} Stops
-                            </span>
-                          </div>
-
-                          <h4 className="text-2xl font-black tracking-tight text-slate-900 group-hover:text-indigo-600 transition-colors duration-300 truncate">
-                            {day.title}
-                          </h4>
-
-                          <div className="grid grid-rows-[0fr] group-data-[state=closed]:grid-rows-[1fr] transition-[grid-template-rows] duration-500 ease-in-out mt-1">
-                            <div className="overflow-hidden">
-                              <p className="mt-1 text-sm font-medium text-slate-500 truncate flex items-center gap-1.5 opacity-0 group-data-[state=closed]:opacity-100 transition-opacity duration-500 delay-100">
-                                <span className="inline-flex items-center gap-1 text-indigo-600">
-                                  <MapPin className="w-3.5 h-3.5" />
-                                  Includes:
-                                </span>
-                                {day.activities.map((a) => a.title).join(" • ")}
-                              </p>
+                      <AccordionTrigger
+                        showIcon={false}
+                        className="px-6 py-6 md:px-8 hover:no-underline transition-colors w-full"
+                      >
+                        <div className="flex w-full items-center justify-between gap-4">
+                          <div className="flex flex-col text-left flex-1 min-w-0">
+                            <div className="flex items-center gap-3 mb-2.5">
+                              <span className="inline-flex items-center justify-center rounded-lg bg-indigo-50 px-3 py-1 text-[11px] font-black uppercase tracking-widest text-indigo-600 shadow-inner">
+                                {day.label}
+                              </span>
+                              <span className="h-0.5 w-6 rounded-full bg-indigo-100" />
+                              <span className="text-xs font-bold uppercase tracking-widest text-slate-400">
+                                {day.activities.length} Stops
+                              </span>
                             </div>
-                          </div>
-                        </div>
 
-                        <div className="hidden sm:flex shrink-0">
-                          <div className="rounded-full bg-slate-50 border border-slate-200 px-5 py-2 text-sm font-bold text-slate-600 shadow-sm group-hover:border-indigo-200 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-all duration-300 group-data-[state=open]:bg-indigo-600 group-data-[state=open]:text-white group-data-[state=open]:border-indigo-600 group-data-[state=open]:shadow-md">
-                            <span className="group-data-[state=open]:hidden">
-                              View Day
-                            </span>
-                            <span className="hidden group-data-[state=open]:inline">
-                              Close
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </AccordionTrigger>
+                            <div className="flex items-center gap-2 group/title">
+                              <h4 className="text-2xl font-black tracking-tight text-slate-900 group-hover:text-indigo-600 transition-colors duration-300 truncate">
+                                {day.title}
+                              </h4>
+                              {canEdit && (
+                                <div className="flex items-center gap-1 opacity-0 group-hover/title:opacity-100 transition-opacity ml-2 shrink-0">
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      const newTitle = prompt("Enter new title for this day:", day.title);
+                                      if (newTitle && newTitle.trim()) {
+                                        handleModifyItinerary("EDIT_DAY_TITLE", { dayIndex, newTitle: newTitle.trim() });
+                                      }
+                                    }}
+                                    className="p-1 rounded-md hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 transition-colors cursor-pointer"
+                                  >
+                                    <Pencil className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              )}
+                            </div>
 
-                    <AccordionContent className="px-6 md:px-8">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-6 pb-10 border-t border-indigo-100/50 mt-2">
-                        {day.activities.map((activity) => (
-                          <div
-                            key={activity.id}
-                            className="group/card relative flex flex-col h-full overflow-hidden rounded-4xl glass-card hover:shadow-xl hover:-translate-y-1 transition-all"
-                          >
-                            <div className="relative h-48 w-full overflow-hidden p-2 pb-0">
-                              <GetPhoto
-                                locationItem={`${activity.title}, ${summary.location}`}
-                                className="h-full w-full rounded-3xl"
-                                imageClassName="h-full w-full object-cover group-hover/card:scale-110 transition-transform duration-700"
-                              />
-                              <div className="absolute top-4 right-4">
-                                <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur px-3 py-1.5 text-xs font-bold text-slate-900 shadow-sm">
-                                  <Clock3 className="w-3.5 h-3.5 text-indigo-600" />
-                                  {activity.time}
-                                </span>
+                            <div className="grid grid-rows-[0fr] group-data-[state=closed]:grid-rows-[1fr] transition-[grid-template-rows] duration-500 ease-in-out mt-1">
+                              <div className="overflow-hidden">
+                                <p className="mt-1 text-sm font-medium text-slate-500 truncate flex items-center gap-1.5 opacity-0 group-data-[state=closed]:opacity-100 transition-opacity duration-500 delay-100">
+                                  <span className="inline-flex items-center gap-1 text-indigo-600">
+                                    <MapPin className="w-3.5 h-3.5" />
+                                    Includes:
+                                  </span>
+                                  {day.activities.map((a) => a.title).join(" • ")}
+                                </p>
                               </div>
                             </div>
+                          </div>
 
-                            <div className="flex flex-1 flex-col p-6 gap-3">
-                              <a
-                                href={getGoogleMapsUrl(
-                                  activity.title,
-                                  summary.location,
-                                )}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="block focus:outline-none"
-                              >
-                                <h5 className="text-lg font-bold text-slate-900 leading-tight flex items-center gap-2 group-hover/card:text-indigo-600 transition-colors">
-                                  <span>{activity.title}</span>
-                                  <div className="p-1.5 rounded-full bg-slate-50 group-hover/card:bg-indigo-50 shrink-0 transition-colors">
-                                    <Navigation className="w-4 h-4 text-slate-400 group-hover/card:text-indigo-600 transition-colors" />
-                                  </div>
-                                </h5>
-                              </a>
-
-                              {activity.estDuration && (
-                                <span className="w-fit inline-flex items-center gap-1.5 rounded-lg bg-indigo-50/80 text-indigo-700 px-2.5 py-1.5 text-xs font-bold">
-                                  <Hourglass className="w-3.5 h-3.5" />
-                                  {activity.estDuration} min duration
-                                </span>
-                              )}
-
-                              {activity.description && (
-                                <p className="text-sm text-slate-500 font-medium leading-relaxed line-clamp-3 mt-1">
-                                  {activity.description}
-                                </p>
-                              )}
+                          <div className="hidden sm:flex shrink-0">
+                            <div className="rounded-full bg-slate-50 border border-slate-200 px-5 py-2 text-sm font-bold text-slate-600 shadow-sm group-hover:border-indigo-200 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-all duration-300 group-data-[state=open]:bg-indigo-600 group-data-[state=open]:text-white group-data-[state=open]:border-indigo-600 group-data-[state=open]:shadow-md">
+                              <span className="group-data-[state=open]:hidden">
+                                View Day
+                              </span>
+                              <span className="hidden group-data-[state=open]:inline">
+                                Close
+                              </span>
                             </div>
                           </div>
-                        ))}
+                        </div>
+                      </AccordionTrigger>
+
+                      <AccordionContent className="px-6 md:px-8">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pt-6 pb-10 border-t border-indigo-100/50 mt-2">
+                          {day.activities.map((activity, activityIdx) => (
+                            <div
+                              key={activity.id}
+                              className="group/card bg-white rounded-4xl border border-slate-200/80 shadow-sm hover:shadow-xl hover:-translate-y-1.5 flex flex-col h-full overflow-hidden transition-all duration-500"
+                            >
+                              <div className="relative h-48 w-full overflow-hidden">
+                                <GetPhoto
+                                  locationItem={`${activity.title}, ${summary.location}`}
+                                  className="h-full w-full"
+                                  imageClassName="h-full w-full object-cover group-hover/card:scale-110 transition-transform duration-700"
+                                />
+                                <div className="absolute top-4 right-4 pointer-events-none">
+                                  <span className="inline-flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur px-3 py-1.5 text-xs font-bold text-slate-900 shadow-sm border border-slate-100">
+                                    <Clock3 className="w-3.5 h-3.5 text-indigo-600" />
+                                    {activity.time}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="flex flex-1 flex-col p-6 gap-3 text-left">
+                                <a
+                                  href={getGoogleMapsUrl(activity.title, summary.location)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="block focus:outline-none"
+                                >
+                                  <h5 className="text-lg font-bold text-slate-900 leading-tight flex items-center gap-2 hover:text-indigo-600 transition-colors">
+                                    <span>{activity.title}</span>
+                                    <div className="p-1.5 rounded-full bg-slate-50 hover:bg-indigo-50 shrink-0 transition-colors">
+                                      <Navigation className="w-4 h-4 text-slate-400 hover:text-indigo-600 transition-colors" />
+                                    </div>
+                                  </h5>
+                                </a>
+
+                                {activity.estDuration && (
+                                  <span className="w-fit inline-flex items-center gap-1.5 rounded-lg bg-indigo-50/80 text-indigo-700 px-2.5 py-1.5 text-xs font-bold">
+                                    <Hourglass className="w-3.5 h-3.5" />
+                                    {activity.estDuration} min duration
+                                  </span>
+                                )}
+
+                                {activity.holderName && (
+                                  <span className="w-fit inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 text-emerald-700 px-2.5 py-1.5 text-xs font-bold">
+                                    <Users className="w-3.5 h-3.5 text-emerald-600" />
+                                    Holder: {activity.holderName}
+                                  </span>
+                                )}
+
+                                {activity.description && (
+                                  <p className="text-sm text-slate-500 font-medium leading-relaxed line-clamp-3 mt-1">
+                                    {activity.description}
+                                  </p>
+                                )}
+
+                                {canEdit && (
+                                  <div className="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between gap-2 shrink-0">
+                                    <div className="flex items-center gap-1">
+                                      <button
+                                        type="button"
+                                        disabled={activityIdx === 0}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleModifyItinerary("REORDER_ACTIVITY", { dayIndex, activityIndex: activityIdx, direction: "up" });
+                                        }}
+                                        className="p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-400 hover:text-indigo-600 disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer"
+                                      >
+                                        <ArrowUp className="w-3.5 h-3.5" />
+                                      </button>
+                                      <button
+                                        type="button"
+                                        disabled={activityIdx === day.activities.length - 1}
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleModifyItinerary("REORDER_ACTIVITY", { dayIndex, activityIndex: activityIdx, direction: "down" });
+                                        }}
+                                        className="p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-400 hover:text-indigo-600 disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer"
+                                      >
+                                        <ArrowDown className="w-3.5 h-3.5" />
+                                      </button>
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          openActivityModal("edit", dayIndex, activityIdx, activity);
+                                        }}
+                                        className="p-2 rounded-xl border border-slate-200 hover:bg-indigo-50 text-slate-500 hover:text-indigo-600 transition-colors cursor-pointer"
+                                      >
+                                        <Pencil className="w-3.5 h-3.5" />
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          if (confirm("Are you sure you want to delete this activity?")) {
+                                            handleModifyItinerary("DELETE_ACTIVITY", { dayIndex, activityIndex: activityIdx });
+                                          }
+                                        }}
+                                        className="p-2 rounded-xl border border-red-100 hover:bg-red-50 text-red-500 hover:text-red-600 transition-colors cursor-pointer"
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+
+                          {canEdit && (
+                            <button
+                              type="button"
+                              onClick={() => openActivityModal("add", dayIndex)}
+                              className="group/add bg-slate-50/50 hover:bg-indigo-50/30 rounded-4xl border border-dashed border-slate-300 hover:border-indigo-300 min-h-[300px] flex flex-col items-center justify-center p-8 gap-4 transition-all duration-500 cursor-pointer"
+                            >
+                              <div className="p-4 rounded-full bg-white border border-slate-200 shadow-sm group-hover/add:scale-110 group-hover/add:border-indigo-200 transition-transform">
+                                <Plus className="w-6 h-6 text-slate-400 group-hover/add:text-indigo-600" />
+                              </div>
+                              <div className="text-center">
+                                <h5 className="text-lg font-bold text-slate-700 group-hover/add:text-indigo-600">
+                                  Add Activity
+                                </h5>
+                                <p className="text-xs text-slate-400 font-medium max-w-[200px] mt-1">
+                                  Add a new custom activity or stop to this day's plan.
+                                </p>
+                              </div>
+                            </button>
+                          )}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+
+
+              </div>
+            )}
+          </TabsContent>
+
+          {(hotels.length > 0 || canEdit) && (
+            <TabsContent value="hotels" className="space-y-6 mt-0">
+              <div className="flex items-center gap-3 px-2 mb-4">
+                <div className="p-2 bg-indigo-100 rounded-xl">
+                  <Hotel className="w-6 h-6 text-indigo-600" />
+                </div>
+                <h3 className="text-3xl font-black tracking-tight text-slate-900">
+                  Recommended Stays
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {hotels.map((hotel, hotelIdx) => (
+                  <a
+                    key={hotel.id}
+                    href={getGoogleMapsUrl(hotel.name, hotel.address)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group block h-full focus:outline-none hover:-translate-y-2 transition-transform duration-500"
+                  >
+                    <div
+                      className="bg-white rounded-4xl border border-slate-200/80 shadow-sm group-hover:shadow-2xl flex flex-col h-full overflow-hidden transition-all duration-500"
+                    >
+                      <div className="relative h-[300px] w-full overflow-hidden">
+                        <GetPhoto
+                          locationItem={`${hotel.name}, ${hotel.address}`}
+                          className="h-full w-full"
+                          imageClassName="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700"
+                        />
+                        <div className="absolute top-4 right-4 pointer-events-none">
+                          <span className="rounded-full bg-white/95 backdrop-blur px-3.5 py-1.5 text-xs font-bold text-slate-900 shadow-sm border border-slate-100">
+                            {formatPrice(hotel.price)}{" "}
+                            <span className="text-slate-500 font-medium">/ night</span>
+                          </span>
+                        </div>
                       </div>
-                    </AccordionContent>
-                  </AccordionItem>
+                      <div className="flex flex-1 flex-col p-6 space-y-4 text-left">
+                        <div>
+                          <h4 className="text-lg font-bold text-slate-900 leading-tight flex items-center gap-2 group-hover:text-indigo-600 transition-colors">
+                            <span>{hotel.name}</span>
+                            <div className="p-1.5 rounded-full bg-slate-50 group-hover:bg-indigo-50 shrink-0 transition-colors">
+                              <Navigation className="w-4 h-4 text-slate-400 group-hover:text-indigo-600 transition-colors" />
+                            </div>
+                          </h4>
+                          <p className="mt-2 flex items-start gap-1.5 text-sm text-slate-500 font-medium">
+                            <MapPin className="w-4 h-4 shrink-0 text-slate-400 mt-0.5" />
+                            <span className="line-clamp-2">{hotel.address}</span>
+                          </p>
+                        </div>
+
+                        {hotel.rating && (
+                          <div className="inline-flex items-center gap-1.5 w-fit rounded-lg bg-amber-50 px-2.5 py-1 mt-auto">
+                            <Star className="w-4 h-4 fill-amber-400 text-amber-500" />
+                            <span className="text-sm font-bold text-amber-700">
+                              {hotel.rating} / 5
+                            </span>
+                          </div>
+                        )}
+
+                        {canEdit && (
+                          <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-2 shrink-0 mt-auto">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                openHotelModal("edit", hotelIdx, hotel);
+                              }}
+                              className="p-2 rounded-xl border border-slate-200 hover:bg-indigo-50 text-slate-500 hover:text-indigo-600 transition-colors cursor-pointer"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (confirm("Are you sure you want to delete this hotel stay?")) {
+                                  handleModifyHotels("DELETE_HOTEL", { hotelIndex: hotelIdx });
+                                }
+                              }}
+                              className="p-2 rounded-xl border border-red-100 hover:bg-red-50 text-red-500 hover:text-red-600 transition-colors cursor-pointer"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </a>
                 ))}
-              </Accordion>
-            </div>
+
+                {canEdit && (
+                  <button
+                    type="button"
+                    onClick={() => openHotelModal("add")}
+                    className="group/add bg-slate-50/50 hover:bg-indigo-50/30 rounded-4xl border border-dashed border-slate-300 hover:border-indigo-300 min-h-[350px] flex flex-col items-center justify-center p-8 gap-4 transition-all duration-500 cursor-pointer"
+                  >
+                    <div className="p-4 rounded-full bg-white border border-slate-200 shadow-sm group-hover/add:scale-110 group-hover/add:border-indigo-200 transition-transform">
+                      <Plus className="w-6 h-6 text-slate-400 group-hover/add:text-indigo-600" />
+                    </div>
+                    <div className="text-center">
+                      <h5 className="text-lg font-bold text-slate-700 group-hover/add:text-indigo-600">
+                        Add Stay Recommendation
+                      </h5>
+                      <p className="text-xs text-slate-400 font-medium max-w-[200px] mt-1">
+                        Recommend another stay or accommodation choice.
+                      </p>
+                    </div>
+                  </button>
+                )}
+              </div>
+            </TabsContent>
           )}
-        </section>
+        </Tabs>
 
         {isOwner && (
           <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-4 font-sans select-none">
@@ -1411,6 +2158,15 @@ const ViewTrip = () => {
                     <X className="w-4 h-4" />
                   </button>
                 </div>
+
+                {!isPremium && (
+                  <div className="bg-amber-50/90 border-b border-amber-100/50 px-5 py-3 flex items-center gap-2.5 shrink-0">
+                    <Sparkles className="w-4 h-4 text-amber-500 fill-amber-500 animate-pulse shrink-0" />
+                    <p className="text-[10px] font-bold text-amber-800 leading-normal text-left">
+                      Roamie AI Assistant is a Premium feature. <button type="button" onClick={() => window.dispatchEvent(new Event("open-pricing-dialog"))} className="underline font-black hover:text-amber-950 cursor-pointer">Upgrade now</button> to ask questions.
+                    </p>
+                  </div>
+                )}
 
                 <div className="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-4 bg-linear-to-b from-transparent to-slate-50/30">
                   {chatHistory.map((msg, index) => {
@@ -1523,6 +2279,186 @@ const ViewTrip = () => {
             </button>
           </div>
         )}
+
+        <Dialog open={activityModalOpen} onOpenChange={setActivityModalOpen}>
+          <DialogContent className="sm:max-w-md rounded-3xl p-6 bg-white/95 backdrop-blur-md border border-slate-200/80 shadow-2xl">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-black font-outfit text-slate-900 flex items-center gap-2">
+                <Sparkles className="w-6 h-6 text-indigo-600" />
+                {activityModalMode === "add" ? "Add Activity" : "Edit Activity"}
+              </DialogTitle>
+              <DialogDescription className="text-slate-500 font-medium font-outfit">
+                Enter the details of the itinerary stop below.
+              </DialogDescription>
+            </DialogHeader>
+
+            <form onSubmit={handleSaveActivity} className="space-y-4 py-2">
+              <div className="space-y-1.5 text-left">
+                <label className="text-xs font-black uppercase tracking-wider text-slate-500">Activity Title</label>
+                <input
+                  type="text"
+                  required
+                  value={activityForm.title}
+                  onChange={(e) => setActivityForm({ ...activityForm, title: e.target.value })}
+                  placeholder="E.g., Visit Golden Gate Bridge"
+                  className="w-full h-11 px-4 rounded-xl border border-slate-200/80 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm font-medium text-slate-800 transition-all"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5 text-left">
+                  <label className="text-xs font-black uppercase tracking-wider text-slate-500">Time</label>
+                  <input
+                    type="text"
+                    value={activityForm.time}
+                    onChange={(e) => setActivityForm({ ...activityForm, time: e.target.value })}
+                    placeholder="E.g., 10:00 AM"
+                    className="w-full h-11 px-4 rounded-xl border border-slate-200/80 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm font-medium text-slate-800 transition-all"
+                  />
+                </div>
+                <div className="space-y-1.5 text-left">
+                  <label className="text-xs font-black uppercase tracking-wider text-slate-500">Duration (mins)</label>
+                  <input
+                    type="number"
+                    value={activityForm.estDuration}
+                    onChange={(e) => setActivityForm({ ...activityForm, estDuration: e.target.value })}
+                    placeholder="E.g., 60"
+                    className="w-full h-11 px-4 rounded-xl border border-slate-200/80 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm font-medium text-slate-800 transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5 text-left">
+                <label className="text-xs font-black uppercase tracking-wider text-slate-500">Activity Holder Name</label>
+                <input
+                  type="text"
+                  value={activityForm.holderName}
+                  onChange={(e) => setActivityForm({ ...activityForm, holderName: e.target.value })}
+                  placeholder="E.g., John Doe"
+                  className="w-full h-11 px-4 rounded-xl border border-slate-200/80 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm font-medium text-slate-800 transition-all"
+                />
+              </div>
+
+              <div className="space-y-1.5 text-left">
+                <label className="text-xs font-black uppercase tracking-wider text-slate-500">Description</label>
+                <textarea
+                  value={activityForm.description}
+                  onChange={(e) => setActivityForm({ ...activityForm, description: e.target.value })}
+                  placeholder="Write a brief description of the plans or hidden details..."
+                  rows={3}
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200/80 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm transition-all resize-none font-medium text-slate-600"
+                />
+              </div>
+
+              <DialogFooter className="sm:justify-end gap-2 pt-2">
+                <DialogClose asChild>
+                  <button
+                    type="button"
+                    className="px-5 py-2.5 rounded-2xl border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-bold font-outfit cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                </DialogClose>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold font-outfit transition-all shadow-md shadow-indigo-100 cursor-pointer"
+                >
+                  Save Activity
+                </button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={hotelModalOpen} onOpenChange={setHotelModalOpen}>
+          <DialogContent className="sm:max-w-md rounded-3xl p-6 bg-white/95 backdrop-blur-md border border-slate-200/80 shadow-2xl">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-black font-outfit text-slate-900 flex items-center gap-2">
+                <Hotel className="w-6 h-6 text-indigo-600" />
+                {hotelModalMode === "add" ? "Add Stay Recommendation" : "Edit Stay Details"}
+              </DialogTitle>
+              <DialogDescription className="text-slate-500 font-medium font-outfit">
+                Enter the details of the recommended hotel stay.
+              </DialogDescription>
+            </DialogHeader>
+
+            <form onSubmit={handleSaveHotel} className="space-y-4 py-2">
+              <div className="space-y-1.5 text-left">
+                <label className="text-xs font-black uppercase tracking-wider text-slate-500">Hotel Name</label>
+                <input
+                  type="text"
+                  required
+                  value={hotelForm.name}
+                  onChange={(e) => setHotelForm({ ...hotelForm, name: e.target.value })}
+                  placeholder="E.g., Fairmont San Francisco"
+                  className="w-full h-11 px-4 rounded-xl border border-slate-200/80 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm font-medium text-slate-800 transition-all"
+                />
+              </div>
+
+              <div className="space-y-1.5 text-left">
+                <label className="text-xs font-black uppercase tracking-wider text-slate-500">Address / Location</label>
+                <input
+                  type="text"
+                  value={hotelForm.address}
+                  onChange={(e) => setHotelForm({ ...hotelForm, address: e.target.value })}
+                  placeholder="E.g., 950 Mason St, San Francisco, CA"
+                  className="w-full h-11 px-4 rounded-xl border border-slate-200/80 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm font-medium text-slate-800 transition-all"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5 text-left">
+                  <label className="text-xs font-black uppercase tracking-wider text-slate-500">Price (e.g., ₹8,500)</label>
+                  <input
+                    type="text"
+                    value={hotelForm.price}
+                    onChange={(e) => setHotelForm({ ...hotelForm, price: e.target.value })}
+                    placeholder="E.g., ₹8,500"
+                    className="w-full h-11 px-4 rounded-xl border border-slate-200/80 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm font-medium text-slate-800 transition-all"
+                  />
+                </div>
+                <div className="space-y-1.5 text-left">
+                  <label className="text-xs font-black uppercase tracking-wider text-slate-500">Rating (1-5)</label>
+                  <input
+                    type="text"
+                    value={hotelForm.rating}
+                    onChange={(e) => setHotelForm({ ...hotelForm, rating: e.target.value })}
+                    placeholder="E.g., 4.7"
+                    className="w-full h-11 px-4 rounded-xl border border-slate-200/80 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm font-medium text-slate-800 transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5 text-left">
+                <label className="text-xs font-black uppercase tracking-wider text-slate-500">Description</label>
+                <textarea
+                  value={hotelForm.description}
+                  onChange={(e) => setHotelForm({ ...hotelForm, description: e.target.value })}
+                  placeholder="Describe key highlights, room choices, or why this stay was curated..."
+                  rows={3}
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200/80 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm font-medium transition-all resize-non text-slate-600"
+                />
+              </div>
+
+              <DialogFooter className="sm:justify-end gap-2 pt-2">
+                <DialogClose asChild>
+                  <button
+                    type="button"
+                    className="px-5 py-2.5 rounded-2xl border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-bold font-outfit cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                </DialogClose>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold font-outfit transition-all shadow-md shadow-indigo-100 cursor-pointer"
+                >
+                  Save Hotel Stay
+                </button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
