@@ -229,6 +229,7 @@ body[data-scroll-locked] {
     background-clip: text;
   }
 
+
   .glass-card {
     background: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(12px);
@@ -309,9 +310,9 @@ body[data-scroll-locked] {
 .shiny-text {
   background: linear-gradient(
     120deg,
-    rgba(79, 70, 229, 0.3) 30%,
+    currentColor 35%,
     rgba(255, 255, 255, 1) 50%,
-    rgba(79, 70, 229, 0.3) 70%
+    currentColor 65%
   );
   background-size: 200% auto;
   background-clip: text;

@@ -14,8 +14,8 @@ const PrivacyPolicy = () => {
               <div className="bg-indigo-600 p-2 rounded-sm group-hover:rotate-12 transition-all duration-500">
                 <Plane className="w-5 h-5 text-white" />
               </div>
-              <span className="font-black text-base tracking-tighter text-slate-900 group-hover:text-indigo-600 transition-colors">
-                Trip Buddy
+              <span className="font-black tracking-tighter text-slate-900 text-xl select-none">
+                Trip <span className="text-indigo-600">Buddy</span>
               </span>
             </Link>
             <div className="h-5 w-px bg-slate-200" />
@@ -42,7 +42,11 @@ const PrivacyPolicy = () => {
               <h2 className="text-xl font-bold text-slate-900 mb-4">1. Information We Collect</h2>
               <p>
                 When you use Trip Buddy, we collect information that you provide to us, such as your name, email address, 
-                and travel preferences. We also collect data about the trips you generate and your interactions with our AI.
+                and travel preferences when creating an account or searching for trips. We also collect data about the trips you generate.
+              </p>
+              <p className="mt-2">
+                We also use browser cookies and local storage (such as browser local storage to save your generated trips and session status) 
+                to ensure a seamless and personalized planning experience.
               </p>
             </section>
 
@@ -50,7 +54,7 @@ const PrivacyPolicy = () => {
               <h2 className="text-xl font-bold text-slate-900 mb-4">2. How We Use Your Information</h2>
               <p>
                 We use your information to provide our services, personalize your travel itineraries, 
-                and improve our AI models. We do not sell your personal data to third parties.
+                and improve the trip recommendations. We do not sell your personal data to third parties.
               </p>
             </section>
 
@@ -58,20 +62,40 @@ const PrivacyPolicy = () => {
               <h2 className="text-xl font-bold text-slate-900 mb-4">3. Data Security</h2>
               <p>
                 We implement industry-standard security measures to protect your data. However, no method 
-                of transmission over the internet is 100% secure, and we cannot guarantee absolute security.
+                of transmission over the internet is 100% secure, and we cannot guarantee absolute security of your personal data.
               </p>
             </section>
 
             <section>
               <h2 className="text-xl font-bold text-slate-900 mb-4">4. Third-Party Services</h2>
               <p>
-                We use Secure Cloud Infrastructure for secure login services and database management, and Advanced Artificial Intelligence systems 
-                for itinerary generation. These services have their own security standards.
+                We integrate with secure external service providers to facilitate authentication, database storage, map and location searches, and artificial intelligence-based travel generation.
+              </p>
+              <p className="mt-2">
+                These third-party platforms have their own privacy policies and security standards.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-bold text-slate-900 mb-4">5. Your Data Rights</h2>
+              <p>
+                Depending on your location, you may have rights to access, correct, or delete the personal information we hold about you. 
+                If you wish to delete your account or any of your generated trips, you can manage your data directly from your profile or contact us.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-bold text-slate-900 mb-4">6. Contact Us</h2>
+              <p>
+                If you have any questions or concerns about this Privacy Policy or how your data is handled, please contact us at:
+              </p>
+              <p className="mt-2 font-semibold text-slate-900">
+                privacy@tripbuddy.io
               </p>
             </section>
 
             <section className="pt-8 border-t border-slate-100">
-              <p className="text-sm font-medium">Last updated: May 2026</p>
+              <p className="text-sm font-medium">Last updated: July 2026</p>
             </section>
           </div>
         </div>

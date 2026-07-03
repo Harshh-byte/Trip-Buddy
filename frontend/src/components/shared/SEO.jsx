@@ -1,13 +1,12 @@
 import { Helmet } from "react-helmet-async";
 
 /**
- * SEO component for managing document head meta tags dynamically.
  * @param {Object} props
- * @param {string} [props.title] - The title of the page.
- * @param {string} [props.description] - The description of the page.
- * @param {string} [props.keywords] - The keywords for the page.
- * @param {string} [props.image] - The image for social sharing.
- * @param {string} [props.url] - The URL of the page.
+ * @param {string} [props.title]
+ * @param {string} [props.description]
+ * @param {string} [props.keywords]
+ * @param {string} [props.image]
+ * @param {string} [props.url]
  */
 const SEO = ({
   title = "Trip Buddy | AI-Powered Travel Agent",

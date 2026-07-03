@@ -2,6 +2,8 @@ import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import admin from "firebase-admin";
 import { GoogleGenAI } from "@google/genai";
 import { Resend } from "resend";
+import { onCall, onRequest, HttpsError } from "firebase-functions/v2/https";
+import Stripe from "stripe";
 
 admin.initializeApp();
 
@@ -419,3 +421,105 @@ export const onTripRequestCreated = onDocumentCreated(
     }
   },
 );
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "REMOVED");
+
+export const createStripeCheckoutSession = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "User must be logged in to checkout.");
+  }
+  const uid = request.auth.uid;
+  const email = request.auth.token.email || "";
+  const { successUrl, cancelUrl } = request.data;
+
+  if (!successUrl || !cancelUrl) {
+    throw new HttpsError("invalid-argument", "successUrl and cancelUrl are required.");
+  }
+
+  try {
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: "TripBuddy Premium Upgrade",
+              description: "Lifetime access to Unlimited PDF Downloads, Group Collaborative Editing, and 24/7 AI Chat Assistant.",
+            },
+            unit_amount: 1900, // $19.00 USD
+          },
+          quantity: 1,
+        },
+      ],
+      mode: "payment",
+      success_url: successUrl + "?session_id={CHECKOUT_SESSION_ID}",
+      cancel_url: cancelUrl,
+      metadata: {
+        userId: uid,
+      },
+      customer_email: email,
+    });
+
+    return { url: session.url };
+  } catch (error) {
+    console.error("Stripe Checkout Error:", error);
+    throw new HttpsError("internal", error.message || "Failed to create Stripe session.");
+  }
+});
+
+export const verifyStripeSession = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "User must be logged in.");
+  }
+  const { sessionId } = request.data;
+  if (!sessionId) {
+    throw new HttpsError("invalid-argument", "sessionId is required.");
+  }
+
+  try {
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+    if (session.payment_status === "paid") {
+      const userId = session.metadata.userId;
+      
+      // Update Firestore user document
+      await db.collection("users").doc(userId).set(
+        {
+          isPremium: true,
+          premiumPurchasedAt: admin.firestore.FieldValue.serverTimestamp(),
+        },
+        { merge: true }
+      );
+      return { success: true };
+    }
+    return { success: false, status: session.payment_status };
+  } catch (error) {
+    console.error("Stripe Verification Error:", error);
+    throw new HttpsError("internal", error.message || "Failed to verify session.");
+  }
+});
+
+export const stripeWebhook = onRequest({ cors: true }, async (req, res) => {
+  let event = req.body;
+
+  try {
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object;
+      const userId = session.metadata?.userId;
+
+      if (userId) {
+        await db.collection("users").doc(userId).set(
+          {
+            isPremium: true,
+            premiumPurchasedAt: admin.firestore.FieldValue.serverTimestamp(),
+          },
+          { merge: true }
+        );
+      }
+    }
+    res.json({ received: true });
+  } catch (err) {
+    console.error("Stripe Webhook Error:", err);
+    res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+});

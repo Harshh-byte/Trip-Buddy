@@ -25,13 +25,16 @@ import Squares from "../ui/Squares";
 import SplitText from "../ui/SplitText";
 import ShinyText from "../ui/ShinyText";
 import SpotlightCard from "../ui/SpotlightCard";
+import StarBorder from "../ui/StarBorder";
+import BlurText from "../ui/BlurText";
+
 
 const Hero = () => {
   const navigate = useNavigate();
 
   return (
     <div className="flex flex-col">
-      <section className="min-h-screen bg-mesh pt-44 sm:pt-48 lg:pt-32 pb-12 px-6 flex items-center relative overflow-hidden">
+      <section className="min-h-screen bg-mesh pt-28 sm:pt-32 lg:pt-32 pb-16 px-6 flex items-center relative overflow-hidden">
         <div className="absolute inset-0 z-0">
           <Squares
             speed={0.3}
@@ -54,38 +57,48 @@ const Hero = () => {
               </span>
               <ShinyText
                 text="AI-Powered Travel Agent v2.0"
-                className="text-xs font-bold uppercase tracking-wider text-indigo-900/70"
+                className="text-xs font-bold uppercase tracking-wider text-indigo-900/70 select-none"
                 speed={4}
               />
             </div>
 
-            <h1 className="text-5xl sm:text-6xl md:text-8xl font-black text-[#1A1A1A] tracking-tight leading-[0.95]">
+            <h1 className="text-5xl sm:text-6xl md:text-8xl font-black text-[#1A1A1A] tracking-tight leading-[0.95] select-none">
               <SplitText text="Design Your" delay={45} /> <br />
-              <span className="text-gradient">
-                <SplitText text="Dream Getaway" delay={45} />
-              </span>
+              <span className="text-gradient">Dream Getaway</span>
             </h1>
 
-            <p className="text-lg md:text-xl text-gray-500 leading-relaxed max-w-lg font-medium">
-              Tell us where you want to go, and let our advanced AI craft the
-              perfect itinerary tailored to your budget and interests.
-            </p>
+            <BlurText
+              text="Tell us where you want to go, and let our advanced AI craft the perfect itinerary tailored to your budget and interests."
+              className="text-lg md:text-xl text-gray-500 leading-relaxed max-w-lg font-medium"
+              delay={0.015}
+              animateBy="words"
+              direction="bottom"
+            />
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <button
+              <StarBorder
                 onClick={() => navigate("/v2/create-trip")}
-                className="group flex items-center justify-center gap-2.5 px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-lg rounded-2xl shadow-xl shadow-indigo-100 hover:shadow-indigo-200 hover:scale-[1.02] active:scale-95 transition-all duration-300 w-full sm:w-auto cursor-pointer"
+                className="w-full sm:w-auto shadow-xl shadow-indigo-100 hover:shadow-indigo-200"
+                innerClassName="bg-indigo-600 hover:bg-indigo-700 text-white font-black text-lg px-8 py-4 rounded-2xl w-full sm:w-auto"
+                color="#ec4899"
               >
-                <span>Start Planning</span>
-                <MoveRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-2" />
-              </button>
-              <button
+                <span className="flex items-center justify-center gap-2.5">
+                  <span>Start Planning</span>
+                  <MoveRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-2" />
+                </span>
+              </StarBorder>
+
+              <StarBorder
                 onClick={() => navigate("/explore")}
-                className="group flex items-center justify-center gap-2.5 px-8 py-4 bg-white hover:bg-slate-50 text-slate-800 font-bold text-lg rounded-2xl border border-slate-200 shadow-sm hover:scale-[1.02] active:scale-95 transition-all duration-300 w-full sm:w-auto cursor-pointer"
+                className="w-full sm:w-auto border border-slate-200 rounded-2xl"
+                innerClassName="bg-white hover:bg-slate-50 text-slate-800 font-bold text-lg px-8 py-4 rounded-2xl w-full sm:w-auto"
+                color="#6366f1"
               >
-                <Compass className="w-5 h-5 text-indigo-600 group-hover:animate-[spin_4s_linear_infinite]" />
-                <span>Explore Guides</span>
-              </button>
+                <span className="flex items-center justify-center gap-2.5">
+                  <Compass className="w-5 h-5 text-indigo-600 group-hover:animate-[spin_4s_linear_infinite]" />
+                  <span>Explore Guides</span>
+                </span>
+              </StarBorder>
             </div>
           </div>
 
@@ -154,7 +167,7 @@ const Hero = () => {
               </div>
             </SpotlightCard>
 
-            <div className="absolute -bottom-6 left-2 sm:-left-6 bg-white p-4 rounded-2xl shadow-xl border border-gray-100 flex items-center gap-3">
+            <div className="absolute -bottom-6 left-2 sm:-left-6 bg-white p-4 rounded-2xl shadow-xl border border-gray-100 flex items-center gap-3 z-20">
               <div className="h-10 w-10 bg-indigo-50 rounded-full flex items-center justify-center">
                 <Sparkles className="text-indigo-600 w-5 h-5 fill-indigo-50" />
               </div>
@@ -171,7 +184,9 @@ const Hero = () => {
         </div>
       </section>
 
+
       <Features />
+
       <FAQ />
     </div>
   );
@@ -185,6 +200,7 @@ const Features = () => {
       description:
         "Tell us your destination, budget, and who you're traveling with. We handle the rest.",
       bgColor: "bg-orange-50",
+      spotlightColor: "rgba(249, 115, 22, 0.12)",
     },
     {
       icon: <Sparkles className="w-8 h-8 text-indigo-600" />,
@@ -192,6 +208,7 @@ const Features = () => {
       description:
         "Our advanced algorithms curate the best spots, hidden gems, and efficient routes just for you.",
       bgColor: "bg-indigo-50",
+      spotlightColor: "rgba(79, 70, 229, 0.12)",
     },
     {
       icon: <Map className="w-8 h-8 text-green-600" />,
@@ -199,15 +216,13 @@ const Features = () => {
       description:
         "Get one-click direct access to Google Maps for every hand-picked stop and stay on your itinerary.",
       bgColor: "bg-green-50",
+      spotlightColor: "rgba(22, 163, 74, 0.12)",
     },
   ];
 
   return (
     <section className="pt-16 sm:pt-20 md:pt-24 pb-0 bg-transparent px-6 relative z-10 -mt-12">
       <div className="max-w-7xl mx-auto text-center">
-        <span className="text-indigo-600 font-bold tracking-widest uppercase text-sm">
-          Seamless Experience
-        </span>
         <h2 className="text-4xl md:text-5xl font-extrabold text-[#1A1A1A] mt-4 mb-16 tracking-tight">
           Travel planning <br className="sm:hidden" />
           made <span className="text-gray-400">effortless</span>
@@ -218,7 +233,7 @@ const Features = () => {
             <SpotlightCard
               key={index}
               className="group p-10 rounded-[2.5rem] glass-card text-left h-full"
-              spotlightColor="rgba(99, 102, 241, 0.08)"
+              spotlightColor={feature.spotlightColor}
             >
               <div
                 className={`${feature.bgColor} w-16 h-16 rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform`}

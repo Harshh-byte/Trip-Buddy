@@ -14,7 +14,7 @@ const PageNotFound = () => {
   const navigate = useNavigate();
 
   return (
-    <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-50 px-4 pt-32 pb-10 sm:px-6">
+    <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-50 px-4 pt-28 md:pt-32 pb-10 sm:px-6">
       <SEO
         title="404 - Page Not Found"
         description="The page you are looking for does not exist. Let's get you back on track to planning your next adventure."
