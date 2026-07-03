@@ -44,7 +44,6 @@ const App = () => {
           <Route path="/v2/view-trip" element={<ViewTrip />} />
           <Route path="/v2/view-trip/:tripId" element={<ViewTrip />} />
           <Route path="/v2/my-trips" element={<MyTrips />} />
-          <Route path="/v2/payment-success" element={<PaymentSuccess />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsOfService />} />
           <Route path="/explore" element={<Explore />} />
