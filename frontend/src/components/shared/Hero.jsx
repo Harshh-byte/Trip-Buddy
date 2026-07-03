@@ -44,19 +44,15 @@ const Hero = () => {
             hoverFillColor="rgba(99, 102, 241, 0.08)"
           />
         </div>
-        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-500/10 rounded-full blur-[120px] animate-pulse pointer-events-none" />
-        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-fuchsia-500/10 rounded-full blur-[120px] animate-pulse [animation-delay:2s] pointer-events-none" />
-        <div className="absolute top-[20%] left-[10%] w-[30%] h-[30%] bg-blue-400/5 rounded-full blur-[100px] animate-pulse [animation-delay:4s] pointer-events-none" />
+        <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-500/10 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-fuchsia-500/10 rounded-full blur-[120px] pointer-events-none" />
+        <div className="absolute top-[20%] left-[10%] w-[30%] h-[30%] bg-blue-400/5 rounded-full blur-[100px] pointer-events-none" />
 
         <div className="max-w-7xl mx-auto w-full grid lg:grid-cols-2 gap-12 lg:gap-8 items-center z-10">
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-1000">
             <div className="inline-flex items-center space-x-2 bg-white/60 backdrop-blur-md rounded-full px-4 py-2 border border-white/50 shadow-sm ring-1 ring-black/5">
-              <span className="relative flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-indigo-500" />
-              </span>
               <ShinyText
-                text="AI-Powered Travel Agent v2.0"
+                text="AI-Powered Travel Agent v2.0.0"
                 className="text-xs font-bold uppercase tracking-wider text-indigo-900/70 select-none"
                 speed={4}
               />
