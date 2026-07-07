@@ -1,4 +1,4 @@
-import { Coffee, Hotel, Road } from "lucide-react";
+import { Coffee, Hotel, Route } from "lucide-react";
 
 export const ROAMIE_CONFIG = {
   name: "Roamie",
@@ -29,7 +29,7 @@ export const ROAMIE_CONFIG = {
     },
     {
       text: "Rearrange activities on Day 1",
-      icon: Road,
+      icon: Route,
       iconClassName: "text-emerald-500",
       chipClassName:
         "bg-emerald-50 text-emerald-700 border-emerald-100 hover:border-emerald-200 hover:bg-emerald-100/70",

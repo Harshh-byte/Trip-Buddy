@@ -287,11 +287,37 @@ const ViewTrip = () => {
   const [isPremium, setIsPremium] = useState(false);
 
   useEffect(() => {
+    let unsubSnapshot = null;
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       setAuthLoading(false);
+      if (user?.uid) {
+        unsubSnapshot = onSnapshot(
+          doc(db, "users", user.uid),
+          (docSnap) => {
+            if (docSnap.exists()) {
+              const data = docSnap.data();
+              setIsPremium(data?.isPremium === true || data?.isAdmin === true);
+            } else {
+              setIsPremium(false);
+            }
+          },
+          (err) => {
+            console.error("ViewTrip profile snapshot error:", err);
+          }
+        );
+      } else {
+        setIsPremium(false);
+        if (unsubSnapshot) {
+          unsubSnapshot();
+          unsubSnapshot = null;
+        }
+      }
     });
-    return () => unsubscribe();
+    return () => {
+      unsubscribe();
+      if (unsubSnapshot) unsubSnapshot();
+    };
   }, []);
 
   const [trip, setTrip] = useState(/** @type {any} */ (null));

@@ -1,3 +1,7 @@
+import { useState, useEffect } from "react";
+import { doc, onSnapshot } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth, db } from "../../services/firebaseConfig";
 import {
   MousePointerClick,
   Sparkles,
@@ -308,6 +312,42 @@ const Features = () => {
 
 const Pricing = () => {
   const navigate = useNavigate();
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isPremium, setIsPremium] = useState(false);
+
+  useEffect(() => {
+    let unsubSnapshot = null;
+    const unsubAuth = onAuthStateChanged(auth, (firebaseUser) => {
+      setCurrentUser(firebaseUser);
+      if (firebaseUser?.uid) {
+        unsubSnapshot = onSnapshot(
+          doc(db, "users", firebaseUser.uid),
+          (docSnap) => {
+            if (docSnap.exists()) {
+              const data = docSnap.data();
+              setIsPremium(data.isPremium === true || data.isAdmin === true);
+            } else {
+              setIsPremium(false);
+            }
+          },
+          (err) => {
+            console.error("Pricing component snapshot error:", err);
+          }
+        );
+      } else {
+        setIsPremium(false);
+        if (unsubSnapshot) {
+          unsubSnapshot();
+          unsubSnapshot = null;
+        }
+      }
+    });
+
+    return () => {
+      unsubAuth();
+      if (unsubSnapshot) unsubSnapshot();
+    };
+  }, []);
 
   const plans = [
     {
@@ -432,23 +472,60 @@ const Pricing = () => {
           ))}
         </div>
 
-        <div className="max-w-4xl mx-auto mt-8 flex flex-row gap-4">
-          <button
-            type="button"
-            onClick={() => navigate("/v2/create-trip")}
-            className="flex-1 py-4 px-6 rounded-2xl font-bold text-center tracking-wide transition-all duration-300 bg-slate-100 text-slate-900 hover:bg-slate-200 shadow-sm active:scale-[0.98] cursor-pointer"
-          >
-            Active Plan
-          </button>
-          <button
-            type="button"
-            onClick={() =>
-              window.dispatchEvent(new Event("open-pricing-dialog"))
-            }
-            className="flex-1 py-4 px-6 rounded-2xl font-bold text-center tracking-wide transition-all duration-300 bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-200 active:scale-[0.98] cursor-pointer"
-          >
-            Upgrade Journey
-          </button>
+        <div className="max-w-4xl mx-auto mt-8 flex flex-col sm:flex-row gap-4">
+          {/* Explorer Plan Button */}
+          {!currentUser ? (
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new Event("open-login-dialog"))}
+              className="flex-1 py-4 px-6 rounded-2xl font-bold text-center tracking-wide transition-all duration-300 bg-slate-100 text-slate-900 hover:bg-slate-200 shadow-sm active:scale-[0.98] cursor-pointer"
+            >
+              Get Started (Free)
+            </button>
+          ) : isPremium ? (
+            <button
+              type="button"
+              disabled
+              className="flex-1 py-4 px-6 rounded-2xl font-bold text-center tracking-wide transition-all duration-300 bg-slate-100 text-slate-400 cursor-not-allowed opacity-60"
+            >
+              Explorer Features Included
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => navigate("/v2/create-trip")}
+              className="flex-1 py-4 px-6 rounded-2xl font-bold text-center tracking-wide transition-all duration-300 bg-slate-200 text-slate-800 hover:bg-slate-300 shadow-sm active:scale-[0.98] cursor-pointer"
+            >
+              Active Plan (Create Trip)
+            </button>
+          )}
+
+          {/* Pro Voyageur Plan Button */}
+          {!currentUser ? (
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new Event("open-login-dialog"))}
+              className="flex-1 py-4 px-6 rounded-2xl font-bold text-center tracking-wide transition-all duration-300 bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-200 active:scale-[0.98] cursor-pointer"
+            >
+              Login to Upgrade
+            </button>
+          ) : isPremium ? (
+            <button
+              type="button"
+              onClick={() => navigate("/v2/create-trip")}
+              className="flex-1 py-4 px-6 rounded-2xl font-black text-center tracking-wide transition-all duration-300 bg-linear-to-r from-amber-500 to-indigo-600 hover:from-amber-600 hover:to-indigo-700 text-white shadow-xl hover:shadow-indigo-500/20 active:scale-[0.98] cursor-pointer"
+            >
+              Active Pro Plan (Plan Trip)
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new Event("open-pricing-dialog"))}
+              className="flex-1 py-4 px-6 rounded-2xl font-bold text-center tracking-wide transition-all duration-300 bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-200 active:scale-[0.98] cursor-pointer animate-pulse"
+            >
+              Upgrade Journey
+            </button>
+          )}
         </div>
       </div>
     </section>

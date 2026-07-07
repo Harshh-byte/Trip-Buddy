@@ -46,38 +46,44 @@ const TermsOfService = () => {
               </p>
             </section>
 
-            <section>
-              <h2 className="text-xl font-bold text-slate-900 mb-4">2. Use License</h2>
+             <section>
+              <h2 className="text-xl font-bold text-slate-900 mb-4">2. Use License & Subscription Plans</h2>
               <p>
-                Permission is granted to temporarily use the platform for personal, non-commercial 
-                trip generation and planning purposes. You may not modify, distribute, or copy materials from this site for commercial purposes.
+                Permission is granted to temporarily use the platform for personal, non-commercial trip planning. We offer two service tiers:
+              </p>
+              <ul className="list-disc pl-5 mt-2 space-y-1">
+                <li><strong>Explorer (Free):</strong> Provides access to basic trip generation, guides, and saving itineraries.</li>
+                <li><strong>Pro Voyageur (Premium):</strong> Unlocks premium features including Roamie AI chat assistant, real-time collaborative editing, and PDF itinerary exports.</li>
+              </ul>
+              <p className="mt-2">
+                You may not copy, distribute, modify, or exploit any portion of the service for commercial sale or distribution without explicit permission.
               </p>
             </section>
 
             <section>
               <h2 className="text-xl font-bold text-slate-900 mb-4">3. AI-Generated Content & Disclaimers</h2>
               <p>
-                Trip Buddy uses advanced artificial intelligence to generate travel itineraries. While we strive to provide helpful and accurate planning recommendations, 
-                we do not guarantee the accuracy, availability, operating hours, prices, safety, or suitability of any suggested flights, hotels, restaurants, or attractions. 
+                Trip Buddy uses Google Gemini artificial intelligence to plan travel schedules, estimate budgets, and suggest activities. Because LLMs can generate inaccurate information (hallucinations), you acknowledge and agree that:
               </p>
-              <p className="mt-2">
-                All itineraries are provided for informational and convenience purposes only. Users must verify all booking details, bookings, schedules, and travel advisories independently before initiating travel.
-              </p>
+              <ul className="list-disc pl-5 mt-2 space-y-1">
+                <li>We do not guarantee the accuracy, availability, operating hours, ticket pricing, currency conversions, safety, or suitability of any suggested flights, hotels, restaurants, or attractions.</li>
+                <li>Budget suggestions are high-level approximations and should not be relied upon as exact financial calculations.</li>
+                <li>All generated itineraries are provided for informational and convenience purposes only. You must verify all booking details, ratings, coordinates, and local travel advisories independently before initiating travel.</li>
+              </ul>
             </section>
 
             <section>
               <h2 className="text-xl font-bold text-slate-900 mb-4">4. User Account & Conduct</h2>
               <p>
-                You are responsible for maintaining the confidentiality of your account credentials 
-                and for all activities that occur under your account. 
+                You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. 
               </p>
               <p className="mt-2">
                 You agree not to use the platform to:
               </p>
               <ul className="list-disc pl-5 mt-2 space-y-1">
-                <li>Attempt to scrape, reverse engineer, or exploit the platform or the underlying AI generation systems.</li>
-                <li>Generate malicious, abusive, or inappropriate query content.</li>
-                <li>Impersonate others or create unauthorized accounts.</li>
+                <li>Attempt to scrape, reverse engineer, extract training data from, or exploit the platform or the underlying AI generation systems.</li>
+                <li>Generate malicious, abusive, inappropriate, or prompt-injection queries designed to disrupt the service.</li>
+                <li>Impersonate others, register multiple automated accounts, or bypass premium features.</li>
               </ul>
             </section>
 
