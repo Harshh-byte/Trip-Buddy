@@ -41,12 +41,11 @@ const PrivacyPolicy = () => {
             <section>
               <h2 className="text-xl font-bold text-slate-900 mb-4">1. Information We Collect</h2>
               <p>
-                When you use Trip Buddy, we collect information that you provide to us, such as your name, email address, 
-                and travel preferences when creating an account or searching for trips. We also collect data about the trips you generate.
+                When you use Trip Buddy, we collect information that you explicitly provide, such as your name, email address, profile picture (via third-party auth providers like Google or customized avatars), 
+                and travel preferences when creating an account or planning trips. We also collect and store the details of any custom itineraries you generate.
               </p>
               <p className="mt-2">
-                We also use browser cookies and local storage (such as browser local storage to save your generated trips and session status) 
-                to ensure a seamless and personalized planning experience.
+                We utilize browser local storage to cache active trip generation requests, keep track of your local offline itineraries, and maintain session status. Cookies are used for standard session handling and secure authentication.
               </p>
             </section>
 
@@ -69,8 +68,14 @@ const PrivacyPolicy = () => {
             <section>
               <h2 className="text-xl font-bold text-slate-900 mb-4">4. Third-Party Services</h2>
               <p>
-                We integrate with secure external service providers to facilitate authentication, database storage, map and location searches, and artificial intelligence-based travel generation.
+                We integrate with secure external service providers to facilitate authentication, database storage, mapping, and artificial intelligence-based travel generation:
               </p>
+              <ul className="list-disc pl-5 mt-2 space-y-1">
+                <li><strong>Firebase (Google):</strong> Used for secure authentication, Firestore database storage, and hosting backend Cloud Functions.</li>
+                <li><strong>Google Gemini AI:</strong> Used to analyze travel options and generate custom itineraries and real-time chatbot responses.</li>
+                <li><strong>Google Places API:</strong> Used for autocomplete location searches and fetching location-specific images/details.</li>
+                <li><strong>Wikipedia REST API:</strong> Used to fetch summaries and cultural details of countries and destinations.</li>
+              </ul>
               <p className="mt-2">
                 These third-party platforms have their own privacy policies and security standards.
               </p>
