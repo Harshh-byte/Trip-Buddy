@@ -8,7 +8,16 @@ import {
 } from "../ui/dialog";
 import { useGoogleAuth, useEmailAuth } from "../../services/authApi";
 import { toast } from "sonner";
-import { Compass, Mail, Lock, User, ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
+import {
+  Compass,
+  Mail,
+  Lock,
+  User,
+  ArrowRight,
+  Loader2,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 
 /**
  * @param {{
@@ -117,7 +126,7 @@ const LoginDialog = ({ open, onClose, onLoginSuccess = () => {} }) => {
                 googleAuth();
               }}
               disabled={loading}
-              className="flex items-center justify-center w-full h-12 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 hover:border-indigo-200 transition-all duration-300 group shadow-sm disabled:opacity-50"
+              className="flex items-center justify-center w-full h-12 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 hover:border-indigo-200 transition-all duration-300 group shadow-sm disabled:opacity-50 cursor-pointer"
             >
               <div className="flex items-center gap-3">
                 <svg

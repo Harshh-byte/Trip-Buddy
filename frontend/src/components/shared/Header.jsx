@@ -35,6 +35,9 @@ const Header = () => {
   const [isPremium, setIsPremium] = useState(false);
   const navigate = useNavigate();
 
+  const hasPremiumAccess = (profile) =>
+    profile?.isPremium === true || profile?.isAdmin === true;
+
   useEffect(() => {
     let unsubSnapshot = null;
     const unsubAuth = onAuthStateChanged(auth, (firebaseUser) => {
@@ -43,7 +46,7 @@ const Header = () => {
           doc(db, "users", firebaseUser.uid),
           (docSnap) => {
             if (docSnap.exists()) {
-              setIsPremium(docSnap.data().isPremium === true);
+              setIsPremium(hasPremiumAccess(docSnap.data()));
             } else {
               setIsPremium(false);
             }
@@ -142,11 +145,6 @@ const Header = () => {
                       className="h-full w-full object-cover select-none"
                       referrerPolicy="no-referrer"
                     />
-                    {isPremium && (
-                      <div className="absolute -bottom-0.5 -right-0.5 bg-amber-500 rounded-tl-lg p-0.5 border-t border-l border-amber-300">
-                        <Gem className="w-2.5 h-2.5 text-white" />
-                      </div>
-                    )}
                   </Button>
                 </DropdownMenuTrigger>
 
@@ -162,7 +160,8 @@ const Header = () => {
                           {user?.name}
                         </p>
                         {isPremium && (
-                          <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-50 px-2 py-0.5 text-[9px] font-black uppercase tracking-wider text-amber-600 border border-amber-200">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-linear-to-r from-amber-500 to-amber-600 px-2.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-white shadow-xs">
+                            <Gem className="w-2.5 h-2.5 shrink-0" />
                             PRO
                           </span>
                         )}
