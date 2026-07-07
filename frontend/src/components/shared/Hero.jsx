@@ -11,6 +11,11 @@ import {
   UserStar,
   Compass,
   MoveRight,
+  MessageSquareCode,
+  Users,
+  FileDown,
+  Navigation,
+  BookmarkCheck,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import CountUp from "react-countup";
@@ -27,7 +32,6 @@ import ShinyText from "../ui/ShinyText";
 import SpotlightCard from "../ui/SpotlightCard";
 import StarBorder from "../ui/StarBorder";
 import BlurText from "../ui/BlurText";
-
 
 const Hero = () => {
   const navigate = useNavigate();
@@ -52,7 +56,7 @@ const Hero = () => {
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-1000">
             <div className="inline-flex items-center space-x-2 bg-white/60 backdrop-blur-md rounded-full px-4 py-2 border border-white/50 shadow-sm ring-1 ring-black/5">
               <ShinyText
-                text="AI-Powered Travel Agent v2.0.0"
+                text="AI-Powered Travel Agent v2.0"
                 className="text-xs font-bold uppercase tracking-wider text-indigo-900/70 select-none"
                 speed={4}
               />
@@ -180,8 +184,9 @@ const Hero = () => {
         </div>
       </section>
 
-
       <Features />
+
+      <Pricing />
 
       <FAQ />
     </div>
@@ -295,6 +300,155 @@ const Features = () => {
               </p>
             </div>
           </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const Pricing = () => {
+  const navigate = useNavigate();
+
+  const plans = [
+    {
+      name: "Explorer",
+      price: "$0",
+      period: "forever",
+      description:
+        "Essential toolsets to start visualizing your next core destinations.",
+      features: [
+        {
+          text: "Create basic AI trip plans",
+          icon: <Navigation className="w-4 h-4 text-orange-500" />,
+        },
+        {
+          text: "Explore destinations and guides",
+          icon: <Compass className="w-4 h-4 text-blue-500" />,
+        },
+        {
+          text: "Save and revisit trips in My Trips",
+          icon: <BookmarkCheck className="w-4 h-4 text-emerald-500" />,
+        },
+      ],
+      buttonText: "Active Plan",
+      isPremium: false,
+      spotlightColor: "rgba(148, 163, 184, 0.08)",
+    },
+    {
+      name: "Pro Voyageur",
+      price: "$7.99",
+      period: "month",
+      description:
+        "Unlock full power with continuous real-time AI assistance and generation tools.",
+      features: [
+        {
+          text: "Everything in Free tier",
+          icon: <Sparkles className="w-4 h-4 text-indigo-500" />,
+        },
+        {
+          text: "Roamie AI Assistant live chat",
+          icon: <MessageSquareCode className="w-4 h-4 text-pink-500" />,
+        },
+        {
+          text: "Real-time collaborative editing",
+          icon: <Users className="w-4 h-4 text-purple-500" />,
+        },
+        {
+          text: "PDF download of itineraries",
+          icon: <FileDown className="w-4 h-4 text-cyan-500" />,
+        },
+      ],
+      buttonText: "Upgrade Journey",
+      isPremium: true,
+      spotlightColor: "rgba(99, 102, 241, 0.15)",
+    },
+  ];
+
+  return (
+    <section className="bg-transparent px-6 pt-16 sm:pt-20 md:pt-24 pb-4">
+      <div className="max-w-5xl mx-auto">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-extrabold text-[#1A1A1A] tracking-tight">
+            Fair Plans for Every<span className="text-gradient"> Voyageur</span>
+          </h2>
+          <div className="w-20 h-1.5 bg-indigo-600 rounded-full mt-4 mx-auto" />
+          <p className="text-gray-500 mt-4 text-lg max-w-xl mx-auto">
+            Choose the baseline toolkit or maximize productivity with powerful
+            collaboration features.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch max-w-4xl mx-auto">
+          {plans.map((plan, index) => (
+            <SpotlightCard
+              key={index}
+              className={`group flex flex-col justify-between p-10 rounded-[2.5rem] glass-card text-left transition-all duration-300 relative ${
+                plan.isPremium
+                  ? "bg-linear-to-br from-indigo-50/80 via-white to-fuchsia-50/40 border border-indigo-100 ring-2 ring-indigo-500/70 shadow-2xl shadow-indigo-500/10"
+                  : ""
+              }`}
+              spotlightColor={plan.spotlightColor}
+            >
+              <div className="flex-1 flex flex-col">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-2xl font-bold text-[#1A1A1A]">
+                    {plan.name}
+                  </h3>
+                  {plan.isPremium && (
+                    <span className="bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
+                      Most Popular
+                    </span>
+                  )}
+                </div>
+
+                <div className="mb-6 flex items-baseline gap-1">
+                  <span className="text-4xl font-black text-[#1A1A1A]">
+                    {plan.price}
+                  </span>
+                  <span className="text-gray-400 text-sm font-medium">
+                    /{plan.period}
+                  </span>
+                </div>
+
+                <p className="text-gray-500 leading-relaxed text-sm mb-8">
+                  {plan.description}
+                </p>
+
+                <ul className="space-y-4 flex-1">
+                  {plan.features.map((feature, idx) => (
+                    <li
+                      key={idx}
+                      className="flex items-start text-sm text-gray-600 font-medium group/item"
+                    >
+                      <div className="p-1.5 rounded-xl bg-white border border-gray-100 shadow-sm mr-3 shrink-0 transform group-hover/item:scale-110 transition-transform">
+                        {feature.icon}
+                      </div>
+                      <span className="pt-0.5">{feature.text}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </SpotlightCard>
+          ))}
+        </div>
+
+        <div className="max-w-4xl mx-auto mt-8 flex flex-row gap-4">
+          <button
+            type="button"
+            onClick={() => navigate("/v2/create-trip")}
+            className="flex-1 py-4 px-6 rounded-2xl font-bold text-center tracking-wide transition-all duration-300 bg-slate-100 text-slate-900 hover:bg-slate-200 shadow-sm active:scale-[0.98] cursor-pointer"
+          >
+            Active Plan
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              window.dispatchEvent(new Event("open-pricing-dialog"))
+            }
+            className="flex-1 py-4 px-6 rounded-2xl font-bold text-center tracking-wide transition-all duration-300 bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-200 active:scale-[0.98] cursor-pointer"
+          >
+            Upgrade Journey
+          </button>
         </div>
       </div>
     </section>

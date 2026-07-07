@@ -57,16 +57,16 @@
     outline-color: color-mix(in srgb, var(--color-ring) 50%, transparent);
   }
 
-html {
-  width: 100vw;
-  overflow-x: hidden;
-}
+  html {
+    width: 100vw;
+    overflow-x: hidden;
+  }
 
-body[data-scroll-locked] {
-  padding-right: 0 !important;
-  width: 100vw !important;
-  overflow-x: hidden !important;
-}
+  body[data-scroll-locked] {
+    padding-right: 0 !important;
+    width: 100vw !important;
+    overflow-x: hidden !important;
+  }
 
   body {
     width: 100vw;
@@ -215,10 +215,14 @@ body[data-scroll-locked] {
 
   .bg-mesh {
     background-color: #ffffff;
-    background-image: 
+    background-image:
       radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.05) 0px, transparent 50%),
       radial-gradient(at 50% 0%, rgba(124, 58, 237, 0.05) 0px, transparent 50%),
-      radial-gradient(at 100% 0%, rgba(236, 72, 153, 0.05) 0px, transparent 50%),
+      radial-gradient(
+        at 100% 0%,
+        rgba(236, 72, 153, 0.05) 0px,
+        transparent 50%
+      ),
       radial-gradient(at 50% 50%, rgba(79, 70, 229, 0.02) 0px, transparent 50%);
   }
 
@@ -228,7 +232,6 @@ body[data-scroll-locked] {
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
-
 
   .glass-card {
     background: rgba(255, 255, 255, 0.7);
@@ -240,6 +243,10 @@ body[data-scroll-locked] {
 
   .font-outfit {
     font-family: "Outfit", sans-serif;
+  }
+
+  .font-helvetica {
+    font-family: Helvetica, Arial, sans-serif;
   }
 
   .font-space-grotesk {
@@ -324,4 +331,3 @@ body[data-scroll-locked] {
 .animate-shine {
   animation: shine 6s linear infinite;
 }
-

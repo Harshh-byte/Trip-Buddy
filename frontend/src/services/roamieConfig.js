@@ -1,18 +1,39 @@
+import { Coffee, Hotel, Road } from "lucide-react";
+
 export const ROAMIE_CONFIG = {
   name: "Roamie",
   title: "Roamie",
   subtitle: "Trip Buddy Intelligence",
 
   modelName: "gemini-2.5-flash",
-  getApiUrl: (geminiApiKey) => 
+  getApiUrl: (geminiApiKey) =>
     `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${geminiApiKey}`,
 
-  welcomeMessage: "Hello! I'm Roamie, your AI Travel Assistant. Ask me to customize your itinerary, add stops, swap hotels, or provide local tips!",
-  
+  welcomeMessage:
+    "Hello! I'm Roamie, your AI Travel Assistant. Ask me to customize your itinerary, add stops, swap hotels, or provide local tips!",
+
   suggestedPrompts: [
-    "☕ Add coffee on Day 2 morning",
-    "🏨 Swap premium stay suggestions",
-    "🗺️ Rearrange activities on Day 1",
+    {
+      text: "Add coffee on Day 2 morning",
+      icon: Coffee,
+      iconClassName: "text-[#6F4E37]",
+      chipClassName:
+        "bg-[#F6EEE6] text-[#403627] border-[#E5D4C4] hover:border-[#D9BFA8] hover:bg-[#EFE2D7]",
+    },
+    {
+      text: "Swap premium stay suggestions",
+      icon: Hotel,
+      iconClassName: "text-indigo-500",
+      chipClassName:
+        "bg-indigo-50 text-indigo-700 border-indigo-100 hover:border-indigo-200 hover:bg-indigo-100/70",
+    },
+    {
+      text: "Rearrange activities on Day 1",
+      icon: Road,
+      iconClassName: "text-emerald-500",
+      chipClassName:
+        "bg-emerald-50 text-emerald-700 border-emerald-100 hover:border-emerald-200 hover:bg-emerald-100/70",
+    },
   ],
 
   getSystemPrompt: (tripData, userSelection) => {
@@ -75,5 +96,5 @@ The patch object MUST follow this schema:
 }
 
 Do not include any markdown wrappers (like \`\`\`json). Return raw JSON only.`;
-  }
+  },
 };

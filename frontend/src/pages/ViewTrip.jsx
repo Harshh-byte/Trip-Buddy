@@ -39,6 +39,7 @@ import {
   Lock,
   Unlock,
   Check,
+  Gem,
 } from "lucide-react";
 import SEO from "../components/shared/SEO";
 import { ROAMIE_CONFIG } from "../services/roamieConfig";
@@ -54,8 +55,18 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "../components/ui/accordion";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "../components/ui/tabs";
-import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "../components/ui/tooltip";
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "../components/ui/tabs";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "../components/ui/tooltip";
 import {
   Dialog,
   DialogContent,
@@ -66,7 +77,6 @@ import {
   DialogTrigger,
   DialogClose,
 } from "../components/ui/dialog";
-
 
 let canUsePlacesPhotoLookup = true;
 const TRIP_GENERATING_FLAG_KEY = "tripbuddy:generating-trip";
@@ -373,7 +383,9 @@ const ViewTrip = () => {
         time: activityForm.time,
         title: activityForm.title,
         description: activityForm.description,
-        estDuration: activityForm.estDuration ? parseInt(activityForm.estDuration) : null,
+        estDuration: activityForm.estDuration
+          ? parseInt(activityForm.estDuration)
+          : null,
         geo_coordinates: null,
         holderName: activityForm.holderName.trim(),
       },
@@ -382,9 +394,11 @@ const ViewTrip = () => {
         time: activityForm.time,
         title: activityForm.title,
         description: activityForm.description,
-        estDuration: activityForm.estDuration ? parseInt(activityForm.estDuration) : null,
+        estDuration: activityForm.estDuration
+          ? parseInt(activityForm.estDuration)
+          : null,
         holderName: activityForm.holderName.trim(),
-      }
+      },
     };
 
     if (activityModalMode === "add") {
@@ -442,7 +456,7 @@ const ViewTrip = () => {
         price: hotelForm.price,
         rating: hotelForm.rating,
         description: hotelForm.description,
-      }
+      },
     };
 
     if (hotelModalMode === "add") {
@@ -480,7 +494,6 @@ const ViewTrip = () => {
       chatEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [chatHistory, aiTyping]);
-
 
   const updateTripDataInFirestore = async (newTripData) => {
     try {
@@ -534,11 +547,11 @@ const ViewTrip = () => {
     }
 
     const updatedTripData = JSON.parse(JSON.stringify(trip.tripData));
-    
+
     let itineraryKey = "itinerary";
     if (updatedTripData.day_wise_plan) itineraryKey = "day_wise_plan";
     else if (updatedTripData.days) itineraryKey = "days";
-    
+
     if (!updatedTripData[itineraryKey]) {
       updatedTripData[itineraryKey] = [];
     }
@@ -551,7 +564,7 @@ const ViewTrip = () => {
         const sortedKeys = Object.keys(itinerary).sort(
           (a, b) =>
             (Number(a.match(/\d+/)?.[0]) || 0) -
-            (Number(b.match(/\d+/)?.[0]) || 0)
+            (Number(b.match(/\d+/)?.[0]) || 0),
         );
         const dayKey = sortedKeys[dayIdx];
         return itinerary[dayKey];
@@ -600,7 +613,8 @@ const ViewTrip = () => {
         const actKey = getActivitiesKey(dayObj);
         const list = dayObj[actKey];
         if (list && Array.isArray(list)) {
-          const newIdx = direction === "up" ? activityIndex - 1 : activityIndex + 1;
+          const newIdx =
+            direction === "up" ? activityIndex - 1 : activityIndex + 1;
           if (newIdx >= 0 && newIdx < list.length) {
             const temp = list[activityIndex];
             list[activityIndex] = list[newIdx];
@@ -642,7 +656,7 @@ const ViewTrip = () => {
         const sortedKeys = Object.keys(itinerary).sort(
           (a, b) =>
             (Number(a.match(/\d+/)?.[0]) || 0) -
-            (Number(b.match(/\d+/)?.[0]) || 0)
+            (Number(b.match(/\d+/)?.[0]) || 0),
         );
         const dayKey = sortedKeys[dayIndex];
         if (dayKey) {
@@ -662,8 +676,10 @@ const ViewTrip = () => {
           updatedTripData[itineraryKey] = rekeyed;
         }
       }
-      
-      const newLength = Array.isArray(itinerary) ? itinerary.length : Object.keys(itinerary).length;
+
+      const newLength = Array.isArray(itinerary)
+        ? itinerary.length
+        : Object.keys(itinerary).length;
       if (activeDayIndex >= newLength) {
         setActiveDayIndex(Math.max(0, newLength - 1));
       }
@@ -681,11 +697,11 @@ const ViewTrip = () => {
     }
 
     const updatedTripData = JSON.parse(JSON.stringify(trip.tripData));
-    
+
     let hotelsKey = "hotel_options";
     if (updatedTripData.hotels) hotelsKey = "hotels";
     else if (updatedTripData.accommodations) hotelsKey = "accommodations";
-    
+
     if (!updatedTripData[hotelsKey]) {
       updatedTripData[hotelsKey] = [];
     }
@@ -716,7 +732,8 @@ const ViewTrip = () => {
     if (mode === "edit" && !isPremium) {
       window.dispatchEvent(new Event("open-pricing-dialog"));
       toast.error("Premium Feature Required", {
-        description: "Real-time collaborative editing requires a Premium lifetime upgrade.",
+        description:
+          "Real-time collaborative editing requires a Premium lifetime upgrade.",
       });
       return;
     }
@@ -774,7 +791,8 @@ const ViewTrip = () => {
     if (!isPremium) {
       window.dispatchEvent(new Event("open-pricing-dialog"));
       toast.error("Premium Feature Required", {
-        description: "Roamie AI Chat Assistant is a Premium feature. Please upgrade.",
+        description:
+          "Roamie AI Chat Assistant is a Premium feature. Please upgrade.",
       });
       return;
     }
@@ -803,26 +821,26 @@ const ViewTrip = () => {
         parts: [{ text: trimmed }],
       });
 
-      const systemPrompt = ROAMIE_CONFIG.getSystemPrompt(trip?.tripData, trip?.userSelection);
-
-      const response = await fetch(
-        ROAMIE_CONFIG.getApiUrl(geminiApiKey),
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            contents: contentsForApi,
-            systemInstruction: {
-              parts: [{ text: systemPrompt }],
-            },
-            generationConfig: {
-              responseMimeType: "application/json",
-            },
-          }),
-        },
+      const systemPrompt = ROAMIE_CONFIG.getSystemPrompt(
+        trip?.tripData,
+        trip?.userSelection,
       );
+
+      const response = await fetch(ROAMIE_CONFIG.getApiUrl(geminiApiKey), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          contents: contentsForApi,
+          systemInstruction: {
+            parts: [{ text: systemPrompt }],
+          },
+          generationConfig: {
+            responseMimeType: "application/json",
+          },
+        }),
+      });
 
       if (!response.ok) {
         throw new Error(`API error: ${response.status} ${response.statusText}`);
@@ -893,25 +911,28 @@ const ViewTrip = () => {
 
   const cleanTextForPDF = (str) => {
     if (typeof str !== "string") return "";
-    return str
-      .replace(/₹/g, "Rs. ")
-      .replace(/[\u201e\u200e\u200b\u200f\ufeff]/g, "")
-      .replace(/[\u2018\u2019]/g, "'")
-      .replace(/[\u201C\u201D]/g, '"')
-      .replace(/[\u2013\u2014]/g, "-")
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      // eslint-disable-next-line no-control-regex
-      .replace(/[^\x00-\x7F]/g, "")
-      .replace(/\s+/g, " ")
-      .trim();
+    return (
+      str
+        .replace(/₹/g, "Rs. ")
+        .replace(/[\u201e\u200e\u200b\u200f\ufeff]/g, "")
+        .replace(/[\u2018\u2019]/g, "'")
+        .replace(/[\u201C\u201D]/g, '"')
+        .replace(/[\u2013\u2014]/g, "-")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        // eslint-disable-next-line no-control-regex
+        .replace(/[^\x00-\x7F]/g, "")
+        .replace(/\s+/g, " ")
+        .trim()
+    );
   };
 
   const exportToPDF = async () => {
     if (!isPremium) {
       window.dispatchEvent(new Event("open-pricing-dialog"));
       toast.error("Premium Feature Required", {
-        description: "PDF downloads require a Premium lifetime upgrade. Please upgrade.",
+        description:
+          "PDF downloads require a Premium lifetime upgrade. Please upgrade.",
       });
       return;
     }
@@ -1303,7 +1324,7 @@ const ViewTrip = () => {
         toast.error("Sync Error", {
           description: `There was a problem syncing itinerary details in real-time. Details: ${errMsg}`,
         });
-      }
+      },
     );
 
     return () => unsubscribe();
@@ -1344,11 +1365,13 @@ const ViewTrip = () => {
 
             if (isHighDemand) {
               toast.error("High Server Demand", {
-                description: "The personalization service is currently experiencing high volume. Please wait a moment and try again.",
+                description:
+                  "The personalization service is currently experiencing high volume. Please wait a moment and try again.",
               });
             } else {
               toast.error("Generation Failed", {
-                description: "We encountered an unexpected issue while crafting your itinerary. Please try again.",
+                description:
+                  "We encountered an unexpected issue while crafting your itinerary. Please try again.",
               });
             }
             navigate("/v2/create-trip");
@@ -1369,7 +1392,7 @@ const ViewTrip = () => {
           description: `Unable to establish connection to track your itinerary creation. Details: ${errMsg}`,
         });
         navigate("/v2/create-trip");
-      }
+      },
     );
 
     return () => unsubscribe();
@@ -1381,7 +1404,8 @@ const ViewTrip = () => {
     const timeout = setTimeout(() => {
       setLoading(false);
       toast.error("Generation Timeout", {
-        description: "Crafting your luxury itinerary is taking longer than expected. Please try again.",
+        description:
+          "Crafting your luxury itinerary is taking longer than expected. Please try again.",
       });
       navigate("/v2/create-trip");
     }, 60000); // 60 seconds
@@ -1395,9 +1419,10 @@ const ViewTrip = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const destinationLabel = typeof trip?.userSelection?.destination?.label === "string"
-    ? trip.userSelection.destination.label
-    : trip?.userSelection?.destination?.value || "Your Destination";
+  const destinationLabel =
+    typeof trip?.userSelection?.destination?.label === "string"
+      ? trip.userSelection.destination.label
+      : trip?.userSelection?.destination?.value || "Your Destination";
 
   const summary = {
     location: trip?.tripData?.trip_summary?.location || destinationLabel,
@@ -1528,18 +1553,21 @@ const ViewTrip = () => {
                       <TooltipContent side="bottom">Go Back</TooltipContent>
                     </Tooltip>
 
-                    <Dialog open={sharingDialogOpen} onOpenChange={setSharingDialogOpen}>
+                    <Dialog
+                      open={sharingDialogOpen}
+                      onOpenChange={setSharingDialogOpen}
+                    >
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <DialogTrigger asChild>
-                            <button
-                              className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-full bg-white/10 backdrop-blur-md text-white hover:bg-white hover:text-indigo-600 transition-colors border border-white/20 shadow-sm cursor-pointer"
-                            >
+                            <button className="inline-flex h-7.5 w-7.5 items-center justify-center rounded-full bg-white/10 backdrop-blur-md text-white hover:bg-white hover:text-indigo-600 transition-colors border border-white/20 shadow-sm cursor-pointer">
                               <Share2 className="w-3.5 h-3.5" />
                             </button>
                           </DialogTrigger>
                         </TooltipTrigger>
-                        <TooltipContent side="bottom">Share Itinerary</TooltipContent>
+                        <TooltipContent side="bottom">
+                          Share Itinerary
+                        </TooltipContent>
                       </Tooltip>
 
                       <DialogContent className="sm:max-w-md rounded-3xl p-6 bg-white/95 backdrop-blur-md border border-slate-200/80 shadow-2xl">
@@ -1549,7 +1577,8 @@ const ViewTrip = () => {
                             Share Itinerary
                           </DialogTitle>
                           <DialogDescription className="text-slate-500 font-medium font-outfit">
-                            Configure access and copy the link to collaborate with other travelers.
+                            Configure access and copy the link to collaborate
+                            with other travelers.
                           </DialogDescription>
                         </DialogHeader>
 
@@ -1562,7 +1591,9 @@ const ViewTrip = () => {
                               <div className="grid grid-cols-2 gap-3">
                                 <button
                                   type="button"
-                                  onClick={() => handleUpdateSharingMode("view")}
+                                  onClick={() =>
+                                    handleUpdateSharingMode("view")
+                                  }
                                   className={`flex items-center justify-center gap-2 p-3.5 rounded-2xl border text-sm font-bold font-outfit transition-all cursor-pointer ${
                                     trip?.sharingMode !== "edit"
                                       ? "bg-indigo-50 border-indigo-200 text-indigo-700 shadow-sm"
@@ -1574,7 +1605,9 @@ const ViewTrip = () => {
                                 </button>
                                 <button
                                   type="button"
-                                  onClick={() => handleUpdateSharingMode("edit")}
+                                  onClick={() =>
+                                    handleUpdateSharingMode("edit")
+                                  }
                                   className={`flex items-center justify-center gap-2 p-3.5 rounded-2xl border text-sm font-bold font-outfit transition-all cursor-pointer ${
                                     trip?.sharingMode === "edit"
                                       ? "bg-emerald-50 border-emerald-200 text-emerald-700 shadow-sm"
@@ -1583,10 +1616,12 @@ const ViewTrip = () => {
                                 >
                                   <Unlock className="w-4 h-4" />
                                   Collaborative
-                                  {!isPremium && <Sparkles className="w-3 h-3 text-amber-500 fill-amber-500 shrink-0" />}
+                                  {!isPremium && (
+                                    <Sparkles className="w-3 h-3 text-amber-500 fill-amber-500 shrink-0" />
+                                  )}
                                 </button>
                               </div>
-                              <p className="text-xs text-slate-400 font-medium leading-relaxed min-h-[36px]">
+                              <p className="text-xs text-slate-400 font-medium leading-relaxed min-h-9">
                                 {trip?.sharingMode === "edit"
                                   ? "Anyone with this link will be able to add, edit, or delete items on this itinerary in real-time."
                                   : "Anyone with this link can view the itinerary. Only you can make edits."}
@@ -1600,8 +1635,13 @@ const ViewTrip = () => {
                                     <Unlock className="w-5 h-5 text-emerald-600" />
                                   </div>
                                   <div>
-                                    <h5 className="font-bold text-slate-900 text-sm">Collaborative Access</h5>
-                                    <p className="text-xs text-slate-500 font-medium">You are allowed to edit this itinerary collaboratively.</p>
+                                    <h5 className="font-bold text-slate-900 text-sm">
+                                      Collaborative Access
+                                    </h5>
+                                    <p className="text-xs text-slate-500 font-medium">
+                                      You are allowed to edit this itinerary
+                                      collaboratively.
+                                    </p>
                                   </div>
                                 </>
                               ) : (
@@ -1610,8 +1650,13 @@ const ViewTrip = () => {
                                     <Lock className="w-5 h-5 text-indigo-600" />
                                   </div>
                                   <div>
-                                    <h5 className="font-bold text-slate-900 text-sm">Read-Only Mode</h5>
-                                    <p className="text-xs text-slate-500 font-medium">Only the trip owner can edit this itinerary.</p>
+                                    <h5 className="font-bold text-slate-900 text-sm">
+                                      Read-Only Mode
+                                    </h5>
+                                    <p className="text-xs text-slate-500 font-medium">
+                                      Only the trip owner can edit this
+                                      itinerary.
+                                    </p>
                                   </div>
                                 </>
                               )}
@@ -1646,17 +1691,6 @@ const ViewTrip = () => {
                             </div>
                           </div>
                         </div>
-
-                        <DialogFooter className="sm:justify-end">
-                          <DialogClose asChild>
-                            <button
-                              type="button"
-                              className="px-5 py-2.5 rounded-2xl border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-bold font-outfit cursor-pointer"
-                            >
-                              Close
-                            </button>
-                          </DialogClose>
-                        </DialogFooter>
                       </DialogContent>
                     </Dialog>
 
@@ -1665,7 +1699,7 @@ const ViewTrip = () => {
                         <button
                           onClick={exportToPDF}
                           disabled={pdfDownloading}
-                          className="inline-flex h-[30px] w-[30px] items-center justify-center rounded-full bg-white/10 backdrop-blur-md text-white hover:bg-white hover:text-indigo-600 transition-colors border border-white/20 shadow-sm disabled:opacity-50 cursor-pointer"
+                          className="inline-flex h-7.5 w-7.5 items-center justify-center rounded-full bg-white/10 backdrop-blur-md text-white hover:bg-white hover:text-indigo-600 transition-colors border border-white/20 shadow-sm disabled:opacity-50 cursor-pointer"
                         >
                           {pdfDownloading ? (
                             <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -1740,22 +1774,32 @@ const ViewTrip = () => {
           </div>
         </section>
 
-        <Tabs defaultValue="itinerary" className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <Tabs
+          defaultValue="itinerary"
+          className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700"
+        >
           <div className="flex items-center justify-between border-b border-slate-200/50 pb-4">
             <TabsList className="bg-slate-100/60 rounded-2xl p-1 gap-1">
-              <TabsTrigger value="itinerary" className="rounded-xl px-5 py-2 text-sm font-bold flex items-center gap-2">
+              <TabsTrigger
+                value="itinerary"
+                className="rounded-xl px-5 py-2 text-sm font-bold flex items-center gap-2"
+              >
                 <MapPinned className="w-4 h-4 text-indigo-600" />
                 <span>Daily Itinerary</span>
               </TabsTrigger>
               {(hotels.length > 0 || canEdit) && (
-                <TabsTrigger value="hotels" className="rounded-xl px-5 py-2 text-sm font-bold flex items-center gap-2">
+                <TabsTrigger
+                  value="hotels"
+                  className="rounded-xl px-5 py-2 text-sm font-bold flex items-center gap-2"
+                >
                   <Hotel className="w-4 h-4 text-indigo-600" />
                   <span>Stays & Hotels</span>
                 </TabsTrigger>
               )}
             </TabsList>
             <div className="text-xs font-bold text-slate-400 uppercase tracking-widest hidden md:block">
-              {itineraryDays.length} Days Planned {hotels.length > 0 && `• ${hotels.length} Stays Curated`}
+              {itineraryDays.length} Days Planned{" "}
+              {hotels.length > 0 && `• ${hotels.length} Stays Curated`}
             </div>
           </div>
 
@@ -1772,7 +1816,8 @@ const ViewTrip = () => {
             {itineraryDays.length === 0 ? (
               <div className="rounded-4xl bg-indigo-50 border border-indigo-100 p-8 text-center">
                 <p className="text-indigo-900 font-medium">
-                  Your itinerary details are still being prepared. Check back soon!
+                  Your itinerary details are still being prepared. Check back
+                  soon!
                 </p>
               </div>
             ) : (
@@ -1787,12 +1832,19 @@ const ViewTrip = () => {
                       if (idx !== -1) {
                         setActiveDayIndex(idx);
                         setTimeout(() => {
-                          const element = document.getElementById(`day-item-${val}`);
+                          const element = document.getElementById(
+                            `day-item-${val}`,
+                          );
                           if (element) {
-                            const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+                            const elementPosition =
+                              element.getBoundingClientRect().top +
+                              window.scrollY;
                             const header = document.querySelector("header");
-                            const headerHeight = header ? header.getBoundingClientRect().bottom : 100;
-                            const offsetPosition = elementPosition - headerHeight - 24;
+                            const headerHeight = header
+                              ? header.getBoundingClientRect().bottom
+                              : 100;
+                            const offsetPosition =
+                              elementPosition - headerHeight - 24;
 
                             window.scrollTo({
                               top: offsetPosition,
@@ -1837,9 +1889,18 @@ const ViewTrip = () => {
                                     type="button"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      const newTitle = prompt("Enter new title for this day:", day.title);
+                                      const newTitle = prompt(
+                                        "Enter new title for this day:",
+                                        day.title,
+                                      );
                                       if (newTitle && newTitle.trim()) {
-                                        handleModifyItinerary("EDIT_DAY_TITLE", { dayIndex, newTitle: newTitle.trim() });
+                                        handleModifyItinerary(
+                                          "EDIT_DAY_TITLE",
+                                          {
+                                            dayIndex,
+                                            newTitle: newTitle.trim(),
+                                          },
+                                        );
                                       }
                                     }}
                                     className="p-1 rounded-md hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 transition-colors cursor-pointer"
@@ -1857,7 +1918,9 @@ const ViewTrip = () => {
                                     <MapPin className="w-3.5 h-3.5" />
                                     Includes:
                                   </span>
-                                  {day.activities.map((a) => a.title).join(" • ")}
+                                  {day.activities
+                                    .map((a) => a.title)
+                                    .join(" • ")}
                                 </p>
                               </div>
                             </div>
@@ -1898,7 +1961,10 @@ const ViewTrip = () => {
                               </div>
                               <div className="flex flex-1 flex-col p-6 gap-3 text-left">
                                 <a
-                                  href={getGoogleMapsUrl(activity.title, summary.location)}
+                                  href={getGoogleMapsUrl(
+                                    activity.title,
+                                    summary.location,
+                                  )}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="block focus:outline-none"
@@ -1939,7 +2005,14 @@ const ViewTrip = () => {
                                         disabled={activityIdx === 0}
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          handleModifyItinerary("REORDER_ACTIVITY", { dayIndex, activityIndex: activityIdx, direction: "up" });
+                                          handleModifyItinerary(
+                                            "REORDER_ACTIVITY",
+                                            {
+                                              dayIndex,
+                                              activityIndex: activityIdx,
+                                              direction: "up",
+                                            },
+                                          );
                                         }}
                                         className="p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-400 hover:text-indigo-600 disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer"
                                       >
@@ -1947,10 +2020,20 @@ const ViewTrip = () => {
                                       </button>
                                       <button
                                         type="button"
-                                        disabled={activityIdx === day.activities.length - 1}
+                                        disabled={
+                                          activityIdx ===
+                                          day.activities.length - 1
+                                        }
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          handleModifyItinerary("REORDER_ACTIVITY", { dayIndex, activityIndex: activityIdx, direction: "down" });
+                                          handleModifyItinerary(
+                                            "REORDER_ACTIVITY",
+                                            {
+                                              dayIndex,
+                                              activityIndex: activityIdx,
+                                              direction: "down",
+                                            },
+                                          );
                                         }}
                                         className="p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-400 hover:text-indigo-600 disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer"
                                       >
@@ -1962,7 +2045,12 @@ const ViewTrip = () => {
                                         type="button"
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          openActivityModal("edit", dayIndex, activityIdx, activity);
+                                          openActivityModal(
+                                            "edit",
+                                            dayIndex,
+                                            activityIdx,
+                                            activity,
+                                          );
                                         }}
                                         className="p-2 rounded-xl border border-slate-200 hover:bg-indigo-50 text-slate-500 hover:text-indigo-600 transition-colors cursor-pointer"
                                       >
@@ -1972,8 +2060,18 @@ const ViewTrip = () => {
                                         type="button"
                                         onClick={(e) => {
                                           e.stopPropagation();
-                                          if (confirm("Are you sure you want to delete this activity?")) {
-                                            handleModifyItinerary("DELETE_ACTIVITY", { dayIndex, activityIndex: activityIdx });
+                                          if (
+                                            confirm(
+                                              "Are you sure you want to delete this activity?",
+                                            )
+                                          ) {
+                                            handleModifyItinerary(
+                                              "DELETE_ACTIVITY",
+                                              {
+                                                dayIndex,
+                                                activityIndex: activityIdx,
+                                              },
+                                            );
                                           }
                                         }}
                                         className="p-2 rounded-xl border border-red-100 hover:bg-red-50 text-red-500 hover:text-red-600 transition-colors cursor-pointer"
@@ -1991,7 +2089,7 @@ const ViewTrip = () => {
                             <button
                               type="button"
                               onClick={() => openActivityModal("add", dayIndex)}
-                              className="group/add bg-slate-50/50 hover:bg-indigo-50/30 rounded-4xl border border-dashed border-slate-300 hover:border-indigo-300 min-h-[300px] flex flex-col items-center justify-center p-8 gap-4 transition-all duration-500 cursor-pointer"
+                              className="group/add bg-slate-50/50 hover:bg-indigo-50/30 rounded-4xl border border-dashed border-slate-300 hover:border-indigo-300 min-h-75 flex flex-col items-center justify-center p-8 gap-4 transition-all duration-500 cursor-pointer"
                             >
                               <div className="p-4 rounded-full bg-white border border-slate-200 shadow-sm group-hover/add:scale-110 group-hover/add:border-indigo-200 transition-transform">
                                 <Plus className="w-6 h-6 text-slate-400 group-hover/add:text-indigo-600" />
@@ -2000,8 +2098,9 @@ const ViewTrip = () => {
                                 <h5 className="text-lg font-bold text-slate-700 group-hover/add:text-indigo-600">
                                   Add Activity
                                 </h5>
-                                <p className="text-xs text-slate-400 font-medium max-w-[200px] mt-1">
-                                  Add a new custom activity or stop to this day's plan.
+                                <p className="text-xs text-slate-400 font-medium max-w-50 mt-1">
+                                  Add a new custom activity or stop to this
+                                  day's plan.
                                 </p>
                               </div>
                             </button>
@@ -2011,8 +2110,6 @@ const ViewTrip = () => {
                     </AccordionItem>
                   ))}
                 </Accordion>
-
-
               </div>
             )}
           </TabsContent>
@@ -2037,10 +2134,8 @@ const ViewTrip = () => {
                     rel="noopener noreferrer"
                     className="group block h-full focus:outline-none hover:-translate-y-2 transition-transform duration-500"
                   >
-                    <div
-                      className="bg-white rounded-4xl border border-slate-200/80 shadow-sm group-hover:shadow-2xl flex flex-col h-full overflow-hidden transition-all duration-500"
-                    >
-                      <div className="relative h-[300px] w-full overflow-hidden">
+                    <div className="bg-white rounded-4xl border border-slate-200/80 shadow-sm group-hover:shadow-2xl flex flex-col h-full overflow-hidden transition-all duration-500">
+                      <div className="relative h-75 w-full overflow-hidden">
                         <GetPhoto
                           locationItem={`${hotel.name}, ${hotel.address}`}
                           className="h-full w-full"
@@ -2049,7 +2144,9 @@ const ViewTrip = () => {
                         <div className="absolute top-4 right-4 pointer-events-none">
                           <span className="rounded-full bg-white/95 backdrop-blur px-3.5 py-1.5 text-xs font-bold text-slate-900 shadow-sm border border-slate-100">
                             {formatPrice(hotel.price)}{" "}
-                            <span className="text-slate-500 font-medium">/ night</span>
+                            <span className="text-slate-500 font-medium">
+                              / night
+                            </span>
                           </span>
                         </div>
                       </div>
@@ -2063,7 +2160,9 @@ const ViewTrip = () => {
                           </h4>
                           <p className="mt-2 flex items-start gap-1.5 text-sm text-slate-500 font-medium">
                             <MapPin className="w-4 h-4 shrink-0 text-slate-400 mt-0.5" />
-                            <span className="line-clamp-2">{hotel.address}</span>
+                            <span className="line-clamp-2">
+                              {hotel.address}
+                            </span>
                           </p>
                         </div>
 
@@ -2094,8 +2193,14 @@ const ViewTrip = () => {
                               onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                if (confirm("Are you sure you want to delete this hotel stay?")) {
-                                  handleModifyHotels("DELETE_HOTEL", { hotelIndex: hotelIdx });
+                                if (
+                                  confirm(
+                                    "Are you sure you want to delete this hotel stay?",
+                                  )
+                                ) {
+                                  handleModifyHotels("DELETE_HOTEL", {
+                                    hotelIndex: hotelIdx,
+                                  });
                                 }
                               }}
                               className="p-2 rounded-xl border border-red-100 hover:bg-red-50 text-red-500 hover:text-red-600 transition-colors cursor-pointer"
@@ -2113,7 +2218,7 @@ const ViewTrip = () => {
                   <button
                     type="button"
                     onClick={() => openHotelModal("add")}
-                    className="group/add bg-slate-50/50 hover:bg-indigo-50/30 rounded-4xl border border-dashed border-slate-300 hover:border-indigo-300 min-h-[350px] flex flex-col items-center justify-center p-8 gap-4 transition-all duration-500 cursor-pointer"
+                    className="group/add bg-slate-50/50 hover:bg-indigo-50/30 rounded-4xl border border-dashed border-slate-300 hover:border-indigo-300 min-h-87.5 flex flex-col items-center justify-center p-8 gap-4 transition-all duration-500 cursor-pointer"
                   >
                     <div className="p-4 rounded-full bg-white border border-slate-200 shadow-sm group-hover/add:scale-110 group-hover/add:border-indigo-200 transition-transform">
                       <Plus className="w-6 h-6 text-slate-400 group-hover/add:text-indigo-600" />
@@ -2122,7 +2227,7 @@ const ViewTrip = () => {
                       <h5 className="text-lg font-bold text-slate-700 group-hover/add:text-indigo-600">
                         Add Stay Recommendation
                       </h5>
-                      <p className="text-xs text-slate-400 font-medium max-w-[200px] mt-1">
+                      <p className="text-xs text-slate-400 font-medium max-w-50 mt-1">
                         Recommend another stay or accommodation choice.
                       </p>
                     </div>
@@ -2136,7 +2241,7 @@ const ViewTrip = () => {
         {isOwner && (
           <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-4 font-sans select-none">
             {chatOpen && (
-              <div className="w-96 max-w-[calc(100vw-2rem)] h-[580px] max-h-[calc(100vh-8rem)] rounded-4xl border border-white/40 bg-white/80 backdrop-blur-xl shadow-[0_24px_60px_-15px_rgba(79,70,229,0.15)] flex flex-col overflow-hidden animate-in slide-in-from-bottom-6 fade-in duration-300 ease-out">
+              <div className="w-96 max-w-[calc(100vw-2rem)] h-145 max-h-[calc(100vh-8rem)] rounded-4xl border border-white/40 bg-white/80 backdrop-blur-xl shadow-[0_24px_60px_-15px_rgba(79,70,229,0.15)] flex flex-col overflow-hidden animate-in slide-in-from-bottom-6 fade-in duration-300 ease-out">
                 <div className="p-5 bg-linear-to-b from-indigo-50/60 to-transparent border-b border-indigo-100/30 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-indigo-500 via-indigo-600 to-violet-600 shadow-md text-white shadow-indigo-200">
@@ -2161,9 +2266,19 @@ const ViewTrip = () => {
 
                 {!isPremium && (
                   <div className="bg-amber-50/90 border-b border-amber-100/50 px-5 py-3 flex items-center gap-2.5 shrink-0">
-                    <Sparkles className="w-4 h-4 text-amber-500 fill-amber-500 animate-pulse shrink-0" />
-                    <p className="text-[10px] font-bold text-amber-800 leading-normal text-left">
-                      Roamie AI Assistant is a Premium feature. <button type="button" onClick={() => window.dispatchEvent(new Event("open-pricing-dialog"))} className="underline font-black hover:text-amber-950 cursor-pointer">Upgrade now</button> to ask questions.
+                    <Gem className="w-4 h-4 text-amber-500 animate-pulse shrink-0" />
+                    <p className="text-[10px] font-bold text-amber-800 leading-normal text-left font-helvetica">
+                      Roamie AI Assistant is a Premium feature.{" "}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          window.dispatchEvent(new Event("open-pricing-dialog"))
+                        }
+                        className="underline font-black hover:text-amber-950 cursor-pointer"
+                      >
+                        Upgrade now
+                      </button>{" "}
+                      to ask questions.
                     </p>
                   </div>
                 )}
@@ -2218,16 +2333,23 @@ const ViewTrip = () => {
                         Suggested Controls
                       </p>
                       <div className="flex flex-wrap gap-1.5">
-                        {ROAMIE_CONFIG.suggestedPrompts.map((promptText) => (
-                          <button
-                            key={promptText}
-                            type="button"
-                            onClick={() => setInputText(promptText.substring(2))}
-                            className="text-xs font-semibold text-slate-600 bg-white hover:bg-indigo-50/30 border border-slate-200/70 hover:border-indigo-200/50 rounded-xl px-3 py-2 text-left transition-all cursor-pointer shadow-xs"
-                          >
-                            {promptText}
-                          </button>
-                        ))}
+                        {ROAMIE_CONFIG.suggestedPrompts.map((prompt) => {
+                          const PromptIcon = prompt.icon;
+
+                          return (
+                            <button
+                              key={prompt.text}
+                              type="button"
+                              onClick={() => setInputText(prompt.text)}
+                              className={`inline-flex items-center gap-2 text-xs font-semibold border rounded-xl px-3 py-2 text-left transition-all cursor-pointer shadow-xs ${prompt.chipClassName}`}
+                            >
+                              <PromptIcon
+                                className={`w-3.5 h-3.5 shrink-0 ${prompt.iconClassName}`}
+                              />
+                              <span>{prompt.text}</span>
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   )}
@@ -2267,7 +2389,12 @@ const ViewTrip = () => {
                   : "bg-linear-to-br from-indigo-500 via-indigo-600 to-indigo-700 shadow-indigo-600/20",
               )}
             >
-              <BotMessageSquare className={cn("w-5 h-5 transition-transform duration-300", chatOpen && "rotate-12 scale-110")} />
+              <BotMessageSquare
+                className={cn(
+                  "w-5 h-5 transition-transform duration-300",
+                  chatOpen && "rotate-12 scale-110",
+                )}
+              />
               {!chatOpen && (
                 <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75" />
@@ -2294,12 +2421,16 @@ const ViewTrip = () => {
 
             <form onSubmit={handleSaveActivity} className="space-y-4 py-2">
               <div className="space-y-1.5 text-left">
-                <label className="text-xs font-black uppercase tracking-wider text-slate-500">Activity Title</label>
+                <label className="text-xs font-black uppercase tracking-wider text-slate-500">
+                  Activity Title
+                </label>
                 <input
                   type="text"
                   required
                   value={activityForm.title}
-                  onChange={(e) => setActivityForm({ ...activityForm, title: e.target.value })}
+                  onChange={(e) =>
+                    setActivityForm({ ...activityForm, title: e.target.value })
+                  }
                   placeholder="E.g., Visit Golden Gate Bridge"
                   className="w-full h-11 px-4 rounded-xl border border-slate-200/80 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm font-medium text-slate-800 transition-all"
                 />
@@ -2307,21 +2438,32 @@ const ViewTrip = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5 text-left">
-                  <label className="text-xs font-black uppercase tracking-wider text-slate-500">Time</label>
+                  <label className="text-xs font-black uppercase tracking-wider text-slate-500">
+                    Time
+                  </label>
                   <input
                     type="text"
                     value={activityForm.time}
-                    onChange={(e) => setActivityForm({ ...activityForm, time: e.target.value })}
+                    onChange={(e) =>
+                      setActivityForm({ ...activityForm, time: e.target.value })
+                    }
                     placeholder="E.g., 10:00 AM"
                     className="w-full h-11 px-4 rounded-xl border border-slate-200/80 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm font-medium text-slate-800 transition-all"
                   />
                 </div>
                 <div className="space-y-1.5 text-left">
-                  <label className="text-xs font-black uppercase tracking-wider text-slate-500">Duration (mins)</label>
+                  <label className="text-xs font-black uppercase tracking-wider text-slate-500">
+                    Duration (mins)
+                  </label>
                   <input
                     type="number"
                     value={activityForm.estDuration}
-                    onChange={(e) => setActivityForm({ ...activityForm, estDuration: e.target.value })}
+                    onChange={(e) =>
+                      setActivityForm({
+                        ...activityForm,
+                        estDuration: e.target.value,
+                      })
+                    }
                     placeholder="E.g., 60"
                     className="w-full h-11 px-4 rounded-xl border border-slate-200/80 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm font-medium text-slate-800 transition-all"
                   />
@@ -2329,21 +2471,35 @@ const ViewTrip = () => {
               </div>
 
               <div className="space-y-1.5 text-left">
-                <label className="text-xs font-black uppercase tracking-wider text-slate-500">Activity Holder Name</label>
+                <label className="text-xs font-black uppercase tracking-wider text-slate-500">
+                  Activity Holder Name
+                </label>
                 <input
                   type="text"
                   value={activityForm.holderName}
-                  onChange={(e) => setActivityForm({ ...activityForm, holderName: e.target.value })}
+                  onChange={(e) =>
+                    setActivityForm({
+                      ...activityForm,
+                      holderName: e.target.value,
+                    })
+                  }
                   placeholder="E.g., John Doe"
                   className="w-full h-11 px-4 rounded-xl border border-slate-200/80 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm font-medium text-slate-800 transition-all"
                 />
               </div>
 
               <div className="space-y-1.5 text-left">
-                <label className="text-xs font-black uppercase tracking-wider text-slate-500">Description</label>
+                <label className="text-xs font-black uppercase tracking-wider text-slate-500">
+                  Description
+                </label>
                 <textarea
                   value={activityForm.description}
-                  onChange={(e) => setActivityForm({ ...activityForm, description: e.target.value })}
+                  onChange={(e) =>
+                    setActivityForm({
+                      ...activityForm,
+                      description: e.target.value,
+                    })
+                  }
                   placeholder="Write a brief description of the plans or hidden details..."
                   rows={3}
                   className="w-full px-4 py-3 rounded-xl border border-slate-200/80 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm transition-all resize-none font-medium text-slate-600"
@@ -2375,7 +2531,9 @@ const ViewTrip = () => {
             <DialogHeader>
               <DialogTitle className="text-2xl font-black font-outfit text-slate-900 flex items-center gap-2">
                 <Hotel className="w-6 h-6 text-indigo-600" />
-                {hotelModalMode === "add" ? "Add Stay Recommendation" : "Edit Stay Details"}
+                {hotelModalMode === "add"
+                  ? "Add Stay Recommendation"
+                  : "Edit Stay Details"}
               </DialogTitle>
               <DialogDescription className="text-slate-500 font-medium font-outfit">
                 Enter the details of the recommended hotel stay.
@@ -2384,23 +2542,31 @@ const ViewTrip = () => {
 
             <form onSubmit={handleSaveHotel} className="space-y-4 py-2">
               <div className="space-y-1.5 text-left">
-                <label className="text-xs font-black uppercase tracking-wider text-slate-500">Hotel Name</label>
+                <label className="text-xs font-black uppercase tracking-wider text-slate-500">
+                  Hotel Name
+                </label>
                 <input
                   type="text"
                   required
                   value={hotelForm.name}
-                  onChange={(e) => setHotelForm({ ...hotelForm, name: e.target.value })}
+                  onChange={(e) =>
+                    setHotelForm({ ...hotelForm, name: e.target.value })
+                  }
                   placeholder="E.g., Fairmont San Francisco"
                   className="w-full h-11 px-4 rounded-xl border border-slate-200/80 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm font-medium text-slate-800 transition-all"
                 />
               </div>
 
               <div className="space-y-1.5 text-left">
-                <label className="text-xs font-black uppercase tracking-wider text-slate-500">Address / Location</label>
+                <label className="text-xs font-black uppercase tracking-wider text-slate-500">
+                  Address / Location
+                </label>
                 <input
                   type="text"
                   value={hotelForm.address}
-                  onChange={(e) => setHotelForm({ ...hotelForm, address: e.target.value })}
+                  onChange={(e) =>
+                    setHotelForm({ ...hotelForm, address: e.target.value })
+                  }
                   placeholder="E.g., 950 Mason St, San Francisco, CA"
                   className="w-full h-11 px-4 rounded-xl border border-slate-200/80 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm font-medium text-slate-800 transition-all"
                 />
@@ -2408,21 +2574,29 @@ const ViewTrip = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5 text-left">
-                  <label className="text-xs font-black uppercase tracking-wider text-slate-500">Price (e.g., ₹8,500)</label>
+                  <label className="text-xs font-black uppercase tracking-wider text-slate-500">
+                    Price (e.g., ₹8,500)
+                  </label>
                   <input
                     type="text"
                     value={hotelForm.price}
-                    onChange={(e) => setHotelForm({ ...hotelForm, price: e.target.value })}
+                    onChange={(e) =>
+                      setHotelForm({ ...hotelForm, price: e.target.value })
+                    }
                     placeholder="E.g., ₹8,500"
                     className="w-full h-11 px-4 rounded-xl border border-slate-200/80 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm font-medium text-slate-800 transition-all"
                   />
                 </div>
                 <div className="space-y-1.5 text-left">
-                  <label className="text-xs font-black uppercase tracking-wider text-slate-500">Rating (1-5)</label>
+                  <label className="text-xs font-black uppercase tracking-wider text-slate-500">
+                    Rating (1-5)
+                  </label>
                   <input
                     type="text"
                     value={hotelForm.rating}
-                    onChange={(e) => setHotelForm({ ...hotelForm, rating: e.target.value })}
+                    onChange={(e) =>
+                      setHotelForm({ ...hotelForm, rating: e.target.value })
+                    }
                     placeholder="E.g., 4.7"
                     className="w-full h-11 px-4 rounded-xl border border-slate-200/80 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm font-medium text-slate-800 transition-all"
                   />
@@ -2430,10 +2604,14 @@ const ViewTrip = () => {
               </div>
 
               <div className="space-y-1.5 text-left">
-                <label className="text-xs font-black uppercase tracking-wider text-slate-500">Description</label>
+                <label className="text-xs font-black uppercase tracking-wider text-slate-500">
+                  Description
+                </label>
                 <textarea
                   value={hotelForm.description}
-                  onChange={(e) => setHotelForm({ ...hotelForm, description: e.target.value })}
+                  onChange={(e) =>
+                    setHotelForm({ ...hotelForm, description: e.target.value })
+                  }
                   placeholder="Describe key highlights, room choices, or why this stay was curated..."
                   rows={3}
                   className="w-full px-4 py-3 rounded-xl border border-slate-200/80 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/10 focus:border-indigo-500 text-sm font-medium transition-all resize-non text-slate-600"
