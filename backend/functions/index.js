@@ -3,6 +3,14 @@ import admin from "firebase-admin";
 import { GoogleGenAI } from "@google/genai";
 import { Resend } from "resend";
 import { onCall, onRequest, HttpsError } from "firebase-functions/v2/https";
+import * as Sentry from "@sentry/node";
+
+if (process.env.SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.SENTRY_DSN,
+    tracesSampleRate: 1.0,
+  });
+}
 
 admin.initializeApp();
 
@@ -412,6 +420,7 @@ export const onTripRequestCreated = onDocumentCreated(
 
       await snapshot.ref.update({ status: "completed", tripId: requestId });
     } catch (error) {
+      Sentry.captureException(error);
       const errorMessage =
         typeof error === "object" && error && "message" in error
           ? error.message
