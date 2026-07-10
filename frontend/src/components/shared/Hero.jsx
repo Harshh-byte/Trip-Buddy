@@ -42,7 +42,7 @@ const Hero = () => {
 
   return (
     <div className="flex flex-col">
-      <section className="min-h-screen bg-mesh pt-28 sm:pt-32 lg:pt-32 pb-16 px-6 flex items-center relative overflow-hidden">
+      <section className="min-h-screen bg-mesh pt-36 sm:pt-36 lg:pt-32 pb-16 px-6 flex items-center relative overflow-hidden">
         <div className="absolute inset-0 z-0">
           <Squares
             speed={0.3}
