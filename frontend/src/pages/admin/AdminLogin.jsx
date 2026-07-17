@@ -54,7 +54,7 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 font-sans text-slate-900 relative overflow-hidden">
+    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 font-sans text-slate-900 relative overflow-hidden admin-scope">
       <SEO
         title="Auth Portal"
         description="Secure gateway for system administration."
