@@ -513,7 +513,7 @@ const Pricing = () => {
             <button
               type="button"
               onClick={() => navigate("/v2/create-trip")}
-              className="flex-1 py-4 px-6 rounded-2xl font-black text-center tracking-wide transition-all duration-300 bg-linear-to-r from-amber-500 to-indigo-600 hover:from-amber-600 hover:to-indigo-700 text-white shadow-xl hover:shadow-indigo-500/20 active:scale-[0.98] cursor-pointer"
+              className="flex-1 py-4 px-6 rounded-2xl font-black text-center tracking-wide transition-all duration-300 bg-linear-to-r from-indigo-600 via-violet-600 to-pink-500 hover:from-indigo-700 hover:via-violet-700 hover:to-pink-600 text-white shadow-xl hover:shadow-indigo-500/20 active:scale-[0.98] cursor-pointer"
             >
               Active Pro Plan (Plan Trip)
             </button>

@@ -1,6 +1,8 @@
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import admin from "firebase-admin";
 import { GoogleGenAI } from "@google/genai";
+import Razorpay from "razorpay";
+import crypto from "crypto";
 import { Resend } from "resend";
 import { onCall, onRequest, HttpsError } from "firebase-functions/v2/https";
 import * as Sentry from "@sentry/node";
@@ -61,7 +63,7 @@ export const onTripRequestCreated = onDocumentCreated(
     try {
       const ai = new GoogleGenAI({ apiKey: process.env.VITE_GEMINI_API_KEY });
       const chat = ai.chats.create({
-        model: "gemini-2.5-flash-lite",
+        model: "gemini-2.5-flash",
       });
 
       const DYNAMIC_PROMPT = `
@@ -124,10 +126,10 @@ export const onTripRequestCreated = onDocumentCreated(
         try {
           const resend = new Resend(resendApiKey);
           await resend.emails.send({
-          from: "TripBuddy <onboarding@resend.dev>",
-          to: [userEmail],
-          subject: `Your trip to ${formData.destinationLabel} is ready!`,
-          html: `
+            from: "TripBuddy <onboarding@resend.dev>",
+            to: [userEmail],
+            subject: `Your trip to ${formData.destinationLabel} is ready!`,
+            html: `
 <!doctype html>
 <html>
    <head>
@@ -414,8 +416,7 @@ export const onTripRequestCreated = onDocumentCreated(
  </html>
  `,
           });
-        } catch (emailError) {
-        }
+        } catch (emailError) {}
       }
 
       await snapshot.ref.update({ status: "completed", tripId: requestId });
@@ -429,3 +430,114 @@ export const onTripRequestCreated = onDocumentCreated(
     }
   },
 );
+
+export const createRazorpayOrder = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError(
+      "unauthenticated",
+      "The function must be called while authenticated.",
+    );
+  }
+
+  const { amount, currency } = request.data || {};
+  if (!amount) {
+    throw new HttpsError("invalid-argument", "Amount is required.");
+  }
+
+  const keyId =
+    process.env.VITE_RAZORPAY_KEY_ID ||
+    process.env.RAZORPAY_KEY_ID ||
+    "rzp_test_dummy";
+  const keySecret = process.env.RAZORPAY_KEY_SECRET || "dummy_secret";
+
+  try {
+    const razorpay = new Razorpay({
+      key_id: keyId,
+      key_secret: keySecret,
+    });
+
+    const options = {
+      amount: Math.round(amount * 100),
+      currency: currency || "INR",
+      receipt: `receipt_${request.auth.uid}_${Date.now()}`,
+    };
+
+    const order = await razorpay.orders.create(options);
+
+    return {
+      id: order.id,
+      amount: order.amount,
+      currency: order.currency,
+      key: keyId,
+    };
+  } catch (error) {
+    Sentry.captureException(error);
+    throw new HttpsError(
+      "internal",
+      error.message || "Failed to create Razorpay order.",
+    );
+  }
+});
+
+export const verifyRazorpayPayment = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError(
+      "unauthenticated",
+      "The function must be called while authenticated.",
+    );
+  }
+
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature, amount = 699 } =
+    request.data || {};
+  if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+    throw new HttpsError(
+      "invalid-argument",
+      "All payment parameters are required.",
+    );
+  }
+
+  const keySecret = process.env.RAZORPAY_KEY_SECRET || "dummy_secret";
+
+  const generatedSignature = crypto
+    .createHmac("sha256", keySecret)
+    .update(razorpay_order_id + "|" + razorpay_payment_id)
+    .digest("hex");
+
+  if (generatedSignature !== razorpay_signature) {
+    throw new HttpsError("permission-denied", "Signature verification failed.");
+  }
+
+  const userId = request.auth.uid;
+
+  try {
+    await db.collection("users").doc(userId).set(
+      {
+        isPremium: true,
+        premiumUpgradedAt: admin.firestore.FieldValue.serverTimestamp(),
+      },
+      { merge: true },
+    );
+
+    await db
+      .collection("users")
+      .doc(userId)
+      .collection("payments")
+      .doc(razorpay_payment_id)
+      .set({
+        orderId: razorpay_order_id,
+        paymentId: razorpay_payment_id,
+        verified: true,
+        amount: amount,
+        currency: "INR",
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+    return { success: true };
+  } catch (error) {
+    Sentry.captureException(error);
+    throw new HttpsError(
+      "internal",
+      error.message || "Failed to finalize subscription.",
+    );
+  }
+});

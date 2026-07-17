@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Plane, User, LogOut, Map, Sparkles, Gem } from "lucide-react";
 import { Button } from "../ui/button";
 import LoginDialog from "./LoginDialog";
+import PricingDialog from "./PricingDialog";
 import { googleLogout } from "@react-oauth/google";
 import { AUTH_USER_CHANGED_EVENT } from "../../lib/authEvents";
 import { auth, db } from "../../services/firebaseConfig";
@@ -86,6 +87,7 @@ const Header = () => {
     setUser(null);
     window.dispatchEvent(new Event(AUTH_USER_CHANGED_EVENT));
     navigate("/");
+    window.location.reload();
   };
 
   const refreshUser = () => {
@@ -213,6 +215,7 @@ const Header = () => {
         onClose={() => setOpenDialog(false)}
         onLoginSuccess={refreshUser}
       />
+      <PricingDialog />
     </header>
   );
 };

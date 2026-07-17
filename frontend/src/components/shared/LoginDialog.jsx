@@ -45,6 +45,9 @@ const LoginDialog = ({ open, onClose, onLoginSuccess = () => {} }) => {
     toast.success(`Welcome back, ${userData.name}!`, {
       description: "Successfully logged in.",
     });
+    setTimeout(() => {
+      window.location.reload();
+    }, 600);
   };
 
   /**
@@ -102,7 +105,7 @@ const LoginDialog = ({ open, onClose, onLoginSuccess = () => {} }) => {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md rounded-[2.5rem] p-0 overflow-hidden bg-white border border-slate-200 shadow-2xl">
+      <DialogContent className="sm:max-w-md rounded-[2.5rem] p-0 overflow-hidden bg-white border border-slate-900/10 shadow-2xl">
         <div className="p-8 flex flex-col items-center">
           <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-indigo-100/50">
             <Compass className="w-7 h-7 text-indigo-600 animate-pulse" />
