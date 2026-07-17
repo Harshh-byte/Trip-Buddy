@@ -9,14 +9,14 @@ import { Helmet } from "react-helmet-async";
  * @param {string} [props.url]
  */
 const SEO = ({
-  title = "Trip Buddy | AI-Powered Travel Agent",
+  title = "Trip Buddy • AI-Powered Travel Agent",
   description = "Design your dream getaway in seconds with our advanced AI travel planner.",
   keywords = "AI Travel, Trip Planner, Itinerary Generator, Travel Agent, Vacation Planning",
   image = "https://trip-buddy-n6b3.onrender.com/favicon.png",
   url = "https://trip-buddy-n6b3.onrender.com/",
 } = {}) => {
   const siteName = "Trip Buddy";
-  const fullTitle = title.includes(siteName) ? title : `${title} | ${siteName}`;
+  const fullTitle = title.includes(siteName) ? title : `${title} • ${siteName}`;
 
   return (
     <Helmet>
