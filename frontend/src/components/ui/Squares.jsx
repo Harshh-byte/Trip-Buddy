@@ -25,8 +25,10 @@ export default function Squares({
       ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
     };
 
-    resizeCanvas();
-    window.addEventListener("resize", resizeCanvas);
+    const resizeObserver = new ResizeObserver(() => {
+      resizeCanvas();
+    });
+    resizeObserver.observe(canvas);
 
     let animationFrameId;
 
@@ -79,7 +81,7 @@ export default function Squares({
     render();
 
     return () => {
-      window.removeEventListener("resize", resizeCanvas);
+      resizeObserver.disconnect();
       cancelAnimationFrame(animationFrameId);
     };
   }, [direction, speed, squareSize, borderColor, hoverFillColor]);
