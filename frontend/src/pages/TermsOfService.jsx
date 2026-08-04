@@ -47,14 +47,10 @@ const TermsOfService = () => {
             </section>
 
              <section>
-              <h2 className="text-xl font-bold text-slate-900 mb-4">2. Use License & Subscription Plans</h2>
+              <h2 className="text-xl font-bold text-slate-900 mb-4">2. Use License & Free Access</h2>
               <p>
-                Permission is granted to temporarily use the platform for personal, non-commercial trip planning. We offer two service tiers:
+                Permission is granted to use the platform completely free of charge for personal, non-commercial trip planning. All features—including AI trip generation, Roamie AI chat assistant, real-time collaborative editing, and PDF itinerary exports—are available to all users without any subscription or payment requirements.
               </p>
-              <ul className="list-disc pl-5 mt-2 space-y-1">
-                <li><strong>Explorer (Free):</strong> Provides access to basic trip generation, guides, and saving itineraries.</li>
-                <li><strong>Pro Voyageur (Premium):</strong> Unlocks premium features including Roamie AI chat assistant, real-time collaborative editing, and PDF itinerary exports.</li>
-              </ul>
               <p className="mt-2">
                 You may not copy, distribute, modify, or exploit any portion of the service for commercial sale or distribution without explicit permission.
               </p>

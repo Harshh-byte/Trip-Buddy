@@ -1,14 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Plane, User, LogOut, Map, Sparkles, Gem } from "lucide-react";
+import { Plane, User, LogOut, Map, Sparkles } from "lucide-react";
 import { Button } from "../ui/button";
 import LoginDialog from "./LoginDialog";
-import PricingDialog from "./PricingDialog";
 import { googleLogout } from "@react-oauth/google";
 import { AUTH_USER_CHANGED_EVENT } from "../../lib/authEvents";
-import { auth, db } from "../../services/firebaseConfig";
-import { doc, onSnapshot } from "firebase/firestore";
-import { onAuthStateChanged } from "firebase/auth";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -33,37 +29,9 @@ const getStoredUser = () => {
 const Header = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [user, setUser] = useState(getStoredUser());
-  const [isPremium, setIsPremium] = useState(false);
   const navigate = useNavigate();
 
-  const hasPremiumAccess = (profile) =>
-    profile?.isPremium === true || profile?.isAdmin === true;
-
   useEffect(() => {
-    let unsubSnapshot = null;
-    const unsubAuth = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser?.uid) {
-        unsubSnapshot = onSnapshot(
-          doc(db, "users", firebaseUser.uid),
-          (docSnap) => {
-            if (docSnap.exists()) {
-              setIsPremium(hasPremiumAccess(docSnap.data()));
-            } else {
-              setIsPremium(false);
-            }
-          },
-          (err) => {
-            console.error("Header profile snapshot error:", err);
-          }
-        );
-      } else {
-        setIsPremium(false);
-        if (unsubSnapshot) {
-          unsubSnapshot();
-          unsubSnapshot = null;
-        }
-      }
-    });
     const handleStorageChange = () => {
       setUser(getStoredUser());
     };
@@ -76,8 +44,6 @@ const Header = () => {
       window.removeEventListener("storage", handleStorageChange);
       window.removeEventListener(AUTH_USER_CHANGED_EVENT, handleStorageChange);
       window.removeEventListener("open-login-dialog", handleOpenLoginDialog);
-      unsubAuth();
-      if (unsubSnapshot) unsubSnapshot();
     };
   }, []);
 
@@ -128,18 +94,14 @@ const Header = () => {
             <Sparkles className="w-4 h-4" />
             Plan Trip
           </Button>
- 
+
           <div className="flex items-center">
             {user ? (
               <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    className={`relative size-11 shrink-0 rounded-2xl p-0 overflow-hidden border-2 ring-2 ring-transparent transition-all duration-300 shadow-md ${
-                      isPremium
-                        ? "border-amber-400 hover:ring-amber-100 data-[state=open]:ring-amber-200"
-                        : "border-white hover:ring-indigo-100 data-[state=open]:ring-indigo-200"
-                    }`}
+                    className="relative size-11 shrink-0 rounded-2xl p-0 overflow-hidden border-2 border-white ring-2 ring-transparent hover:ring-indigo-100 data-[state=open]:ring-indigo-200 transition-all duration-300 shadow-md"
                   >
                     <img
                       src={user?.picture}
@@ -157,17 +119,9 @@ const Header = () => {
                 >
                   <DropdownMenuLabel className="font-normal mb-2" inset={false}>
                     <div className="flex flex-col space-y-1 p-2">
-                      <div className="flex items-center gap-1.5">
-                        <p className="text-sm font-black text-slate-900 leading-none">
-                          {user?.name}
-                        </p>
-                        {isPremium && (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-linear-to-r from-amber-500 to-amber-600 px-2.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-white shadow-xs">
-                            <Gem className="w-2.5 h-2.5 shrink-0" />
-                            PRO
-                          </span>
-                        )}
-                      </div>
+                      <p className="text-sm font-black text-slate-900 leading-none">
+                        {user?.name}
+                      </p>
                       <p className="text-xs font-medium text-slate-500 truncate">
                         {user?.email}
                       </p>
@@ -215,7 +169,6 @@ const Header = () => {
         onClose={() => setOpenDialog(false)}
         onLoginSuccess={refreshUser}
       />
-      <PricingDialog />
     </header>
   );
 };

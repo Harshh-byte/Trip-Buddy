@@ -50,9 +50,9 @@ export const FAQ_DATA = [
       "Imagine having a personal travel agent in your pocket. Trip Buddy is an AI-powered travel planner that creates bespoke itineraries based on your budget, interests, and travel style in seconds.",
   },
   {
-    question: "What plans does Trip Buddy offer?",
+    question: "Is Trip Buddy free to use?",
     answer:
-      "Trip Buddy offers a Free plan for getting started and a Subscriber plan at $7.99 per month for travelers who want a premium experience.",
+      "Yes! Trip Buddy is 100% free. You get unlimited access to all features including AI itinerary generation, Roamie AI chat assistant, real-time collaborative editing, and PDF exports without any hidden costs.",
   },
   {
     question: "How does Trip Buddy create personalized recommendations?",

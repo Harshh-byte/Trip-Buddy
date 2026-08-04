@@ -1,7 +1,3 @@
-import { useState, useEffect } from "react";
-import { doc, onSnapshot } from "firebase/firestore";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth, db } from "../../services/firebaseConfig";
 import {
   MousePointerClick,
   Sparkles,
@@ -15,11 +11,7 @@ import {
   UserStar,
   Compass,
   MoveRight,
-  MessageSquareCode,
-  Users,
-  FileDown,
-  Navigation,
-  BookmarkCheck,
+  BotMessageSquare,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import CountUp from "react-countup";
@@ -80,17 +72,13 @@ const Hero = () => {
             />
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <StarBorder
+              <button
                 onClick={() => navigate("/v2/create-trip")}
-                className="w-full sm:w-auto shadow-xl shadow-indigo-100 hover:shadow-indigo-200"
-                innerClassName="bg-indigo-600 hover:bg-indigo-700 text-white font-black text-lg px-8 py-4 rounded-2xl w-full sm:w-auto"
-                color="#ec4899"
+                className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-black text-lg px-8 py-4 rounded-2xl shadow-xl shadow-indigo-100 hover:shadow-indigo-200 transition-all duration-300 group flex items-center justify-center gap-2.5"
               >
-                <span className="flex items-center justify-center gap-2.5">
-                  <span>Start Planning</span>
-                  <MoveRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-2" />
-                </span>
-              </StarBorder>
+                <span>Start Planning</span>
+                <MoveRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-2" />
+              </button>
 
               <StarBorder
                 onClick={() => navigate("/explore")}
@@ -190,8 +178,6 @@ const Hero = () => {
 
       <Features />
 
-      <Pricing />
-
       <FAQ />
     </div>
   );
@@ -208,7 +194,7 @@ const Features = () => {
       spotlightColor: "rgba(249, 115, 22, 0.12)",
     },
     {
-      icon: <Sparkles className="w-8 h-8 text-indigo-600" />,
+      icon: <BotMessageSquare className="w-8 h-8 text-indigo-600" />,
       title: "AI Itineraries",
       description:
         "Our advanced algorithms curate the best spots, hidden gems, and efficient routes just for you.",
@@ -304,228 +290,6 @@ const Features = () => {
               </p>
             </div>
           </div>
-        </div>
-      </div>
-    </section>
-  );
-};
-
-const Pricing = () => {
-  const navigate = useNavigate();
-  const [currentUser, setCurrentUser] = useState(null);
-  const [isPremium, setIsPremium] = useState(false);
-
-  useEffect(() => {
-    let unsubSnapshot = null;
-    const unsubAuth = onAuthStateChanged(auth, (firebaseUser) => {
-      setCurrentUser(firebaseUser);
-      if (firebaseUser?.uid) {
-        unsubSnapshot = onSnapshot(
-          doc(db, "users", firebaseUser.uid),
-          (docSnap) => {
-            if (docSnap.exists()) {
-              const data = docSnap.data();
-              setIsPremium(data.isPremium === true || data.isAdmin === true);
-            } else {
-              setIsPremium(false);
-            }
-          },
-          (err) => {
-            console.error("Pricing component snapshot error:", err);
-          }
-        );
-      } else {
-        setIsPremium(false);
-        if (unsubSnapshot) {
-          unsubSnapshot();
-          unsubSnapshot = null;
-        }
-      }
-    });
-
-    return () => {
-      unsubAuth();
-      if (unsubSnapshot) unsubSnapshot();
-    };
-  }, []);
-
-  const plans = [
-    {
-      name: "Explorer",
-      price: "$0",
-      period: "forever",
-      description:
-        "Essential toolsets to start visualizing your next core destinations.",
-      features: [
-        {
-          text: "Create basic AI trip plans",
-          icon: <Navigation className="w-4 h-4 text-orange-500" />,
-        },
-        {
-          text: "Explore destinations and guides",
-          icon: <Compass className="w-4 h-4 text-blue-500" />,
-        },
-        {
-          text: "Save and revisit trips in My Trips",
-          icon: <BookmarkCheck className="w-4 h-4 text-emerald-500" />,
-        },
-      ],
-      buttonText: "Active Plan",
-      isPremium: false,
-      spotlightColor: "rgba(148, 163, 184, 0.08)",
-    },
-    {
-      name: "Pro Voyageur",
-      price: "$7.99",
-      period: "month",
-      description:
-        "Unlock full power with continuous real-time AI assistance and generation tools.",
-      features: [
-        {
-          text: "Everything in Free tier",
-          icon: <Sparkles className="w-4 h-4 text-indigo-500" />,
-        },
-        {
-          text: "Roamie AI Assistant live chat",
-          icon: <MessageSquareCode className="w-4 h-4 text-pink-500" />,
-        },
-        {
-          text: "Real-time collaborative editing",
-          icon: <Users className="w-4 h-4 text-purple-500" />,
-        },
-        {
-          text: "PDF download of itineraries",
-          icon: <FileDown className="w-4 h-4 text-cyan-500" />,
-        },
-      ],
-      buttonText: "Upgrade Journey",
-      isPremium: true,
-      spotlightColor: "rgba(99, 102, 241, 0.15)",
-    },
-  ];
-
-  return (
-    <section className="bg-transparent px-6 pt-16 sm:pt-20 md:pt-24 pb-4">
-      <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-[#1A1A1A] tracking-tight">
-            Fair Plans for Every<span className="text-gradient"> Voyageur</span>
-          </h2>
-          <div className="w-20 h-1.5 bg-indigo-600 rounded-full mt-4 mx-auto" />
-          <p className="text-gray-500 mt-4 text-lg max-w-xl mx-auto">
-            Choose the baseline toolkit or maximize productivity with powerful
-            collaboration features.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch max-w-4xl mx-auto">
-          {plans.map((plan, index) => (
-            <SpotlightCard
-              key={index}
-              className={`group flex flex-col justify-between p-10 rounded-[2.5rem] glass-card text-left transition-all duration-300 relative ${
-                plan.isPremium
-                  ? "bg-linear-to-br from-indigo-50/80 via-white to-fuchsia-50/40 border border-indigo-100 ring-2 ring-indigo-500/70 shadow-2xl shadow-indigo-500/10"
-                  : ""
-              }`}
-              spotlightColor={plan.spotlightColor}
-            >
-              <div className="flex-1 flex flex-col">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-2xl font-bold text-[#1A1A1A]">
-                    {plan.name}
-                  </h3>
-                  {plan.isPremium && (
-                    <span className="bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
-                      Most Popular
-                    </span>
-                  )}
-                </div>
-
-                <div className="mb-6 flex items-baseline gap-1">
-                  <span className="text-4xl font-black text-[#1A1A1A]">
-                    {plan.price}
-                  </span>
-                  <span className="text-gray-400 text-sm font-medium">
-                    /{plan.period}
-                  </span>
-                </div>
-
-                <p className="text-gray-500 leading-relaxed text-sm mb-8">
-                  {plan.description}
-                </p>
-
-                <ul className="space-y-4 flex-1">
-                  {plan.features.map((feature, idx) => (
-                    <li
-                      key={idx}
-                      className="flex items-start text-sm text-gray-600 font-medium group/item"
-                    >
-                      <div className="p-1.5 rounded-xl bg-white border border-gray-100 shadow-sm mr-3 shrink-0 transform group-hover/item:scale-110 transition-transform">
-                        {feature.icon}
-                      </div>
-                      <span className="pt-0.5">{feature.text}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </SpotlightCard>
-          ))}
-        </div>
-
-        <div className="max-w-4xl mx-auto mt-8 flex flex-col sm:flex-row gap-4">
-          {/* Explorer Plan Button */}
-          {!currentUser ? (
-            <button
-              type="button"
-              onClick={() => window.dispatchEvent(new Event("open-login-dialog"))}
-              className="flex-1 py-4 px-6 rounded-2xl font-bold text-center tracking-wide transition-all duration-300 bg-slate-100 text-slate-900 hover:bg-slate-200 shadow-sm active:scale-[0.98] cursor-pointer"
-            >
-              Get Started (Free)
-            </button>
-          ) : isPremium ? (
-            <button
-              type="button"
-              disabled
-              className="flex-1 py-4 px-6 rounded-2xl font-bold text-center tracking-wide transition-all duration-300 bg-slate-100 text-slate-400 cursor-not-allowed opacity-60"
-            >
-              Explorer Features Included
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => navigate("/v2/create-trip")}
-              className="flex-1 py-4 px-6 rounded-2xl font-bold text-center tracking-wide transition-all duration-300 bg-slate-200 text-slate-800 hover:bg-slate-300 shadow-sm active:scale-[0.98] cursor-pointer"
-            >
-              Active Plan (Create Trip)
-            </button>
-          )}
-
-          {/* Pro Voyageur Plan Button */}
-          {!currentUser ? (
-            <button
-              type="button"
-              onClick={() => window.dispatchEvent(new Event("open-login-dialog"))}
-              className="flex-1 py-4 px-6 rounded-2xl font-bold text-center tracking-wide transition-all duration-300 bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-200 active:scale-[0.98] cursor-pointer"
-            >
-              Login to Upgrade
-            </button>
-          ) : isPremium ? (
-            <button
-              type="button"
-              onClick={() => navigate("/v2/create-trip")}
-              className="flex-1 py-4 px-6 rounded-2xl font-black text-center tracking-wide transition-all duration-300 bg-linear-to-r from-indigo-600 via-violet-600 to-pink-500 hover:from-indigo-700 hover:via-violet-700 hover:to-pink-600 text-white shadow-xl hover:shadow-indigo-500/20 active:scale-[0.98] cursor-pointer"
-            >
-              Active Pro Plan (Plan Trip)
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => window.dispatchEvent(new Event("open-pricing-dialog"))}
-              className="flex-1 py-4 px-6 rounded-2xl font-bold text-center tracking-wide transition-all duration-300 bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-200 active:scale-[0.98] cursor-pointer animate-pulse"
-            >
-              Upgrade Journey
-            </button>
-          )}
         </div>
       </div>
     </section>
