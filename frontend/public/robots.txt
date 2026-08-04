@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Exclude admin dashboard from crawling
+Disallow: /admin
+Disallow: /admin/*
+
+Sitemap: https://trip-buddy-n6b3.onrender.com/sitemap.xml

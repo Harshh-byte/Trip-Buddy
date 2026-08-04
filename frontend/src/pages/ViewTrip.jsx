@@ -39,7 +39,6 @@ import {
   Lock,
   Unlock,
   Check,
-  Gem,
 } from "lucide-react";
 import SEO from "../components/shared/SEO";
 import { ROAMIE_CONFIG } from "../services/roamieConfig";
@@ -284,40 +283,12 @@ const ViewTrip = () => {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState(auth.currentUser);
   const [authLoading, setAuthLoading] = useState(true);
-  const [isPremium, setIsPremium] = useState(false);
-
   useEffect(() => {
-    let unsubSnapshot = null;
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       setCurrentUser(user);
       setAuthLoading(false);
-      if (user?.uid) {
-        unsubSnapshot = onSnapshot(
-          doc(db, "users", user.uid),
-          (docSnap) => {
-            if (docSnap.exists()) {
-              const data = docSnap.data();
-              setIsPremium(data?.isPremium === true || data?.isAdmin === true);
-            } else {
-              setIsPremium(false);
-            }
-          },
-          (err) => {
-            console.error("ViewTrip profile snapshot error:", err);
-          }
-        );
-      } else {
-        setIsPremium(false);
-        if (unsubSnapshot) {
-          unsubSnapshot();
-          unsubSnapshot = null;
-        }
-      }
     });
-    return () => {
-      unsubscribe();
-      if (unsubSnapshot) unsubSnapshot();
-    };
+    return () => unsubscribe();
   }, []);
 
   const [trip, setTrip] = useState(/** @type {any} */ (null));
@@ -347,8 +318,8 @@ const ViewTrip = () => {
   const [sharingDialogOpen, setSharingDialogOpen] = useState(false);
   const [activityModalOpen, setActivityModalOpen] = useState(false);
   const [activityModalMode, setActivityModalMode] = useState("add");
-  const [selectedDayIndex, setSelectedDayIndex] = useState(0);
-  const [selectedActivityIndex, setSelectedActivityIndex] = useState(0);
+  const [selectedDayIndex, setSelectedDayIndex] = useState(/** @type {number | null} */ (0));
+  const [selectedActivityIndex, setSelectedActivityIndex] = useState(/** @type {number | null} */ (null));
   const [activityForm, setActivityForm] = useState({
     time: "",
     title: "",
@@ -360,7 +331,7 @@ const ViewTrip = () => {
 
   const [hotelModalOpen, setHotelModalOpen] = useState(false);
   const [hotelModalMode, setHotelModalMode] = useState("add");
-  const [selectedHotelIndex, setSelectedHotelIndex] = useState(0);
+  const [selectedHotelIndex, setSelectedHotelIndex] = useState(/** @type {number | null} */ (null));
   const [hotelForm, setHotelForm] = useState({
     name: "",
     address: "",
@@ -369,7 +340,7 @@ const ViewTrip = () => {
     description: "",
   });
 
-  const openActivityModal = (mode, dayIdx, actIdx = null, activity = null) => {
+  const openActivityModal = (mode, dayIdx, actIdx = null, activity = {}) => {
     setActivityModalMode(mode);
     setSelectedDayIndex(dayIdx);
     if (mode === "edit" && activity) {
@@ -436,7 +407,7 @@ const ViewTrip = () => {
     setActivityModalOpen(false);
   };
 
-  const openHotelModal = (mode, hotelIdx = null, hotel = null) => {
+  const openHotelModal = (mode, hotelIdx = null, hotel = {}) => {
     setHotelModalMode(mode);
     if (mode === "edit" && hotel) {
       setSelectedHotelIndex(hotelIdx);
@@ -755,14 +726,6 @@ const ViewTrip = () => {
   };
 
   const handleUpdateSharingMode = async (mode) => {
-    if (mode === "edit" && !isPremium) {
-      window.dispatchEvent(new Event("open-pricing-dialog"));
-      toast.error("Premium Feature Required", {
-        description:
-          "Real-time collaborative editing requires a Premium lifetime upgrade.",
-      });
-      return;
-    }
     if (!isOwner) {
       toast.error("Access Denied", {
         description: "Only the trip owner can update sharing settings.",
@@ -814,14 +777,6 @@ const ViewTrip = () => {
 
   const handleSendMessage = async (e) => {
     if (e) e.preventDefault();
-    if (!isPremium) {
-      window.dispatchEvent(new Event("open-pricing-dialog"));
-      toast.error("Premium Feature Required", {
-        description:
-          "Roamie AI Chat Assistant is a Premium feature. Please upgrade.",
-      });
-      return;
-    }
     const trimmed = inputText.trim();
     if (!trimmed || aiTyping) return;
 
@@ -954,14 +909,6 @@ const ViewTrip = () => {
   };
 
   const exportToPDF = async () => {
-    if (!isPremium) {
-      window.dispatchEvent(new Event("open-pricing-dialog"));
-      toast.error("Premium Feature Required", {
-        description:
-          "PDF downloads require a Premium lifetime upgrade. Please upgrade.",
-      });
-      return;
-    }
     setPdfDownloading(true);
     try {
       const { jsPDF } = await import("jspdf");
@@ -995,7 +942,6 @@ const ViewTrip = () => {
         try {
           doc.addImage(logoBase64, "PNG", 20, y + 3, 16, 16);
         } catch {
-          // Silent fallback if image adding fails
         }
       }
 
@@ -1247,7 +1193,6 @@ const ViewTrip = () => {
       const fileName = `${destinationLabel.split(",")[0].trim().replace(/\s+/g, "_")}_Itinerary.pdf`;
       doc.save(fileName);
     } catch {
-      // Silent error handling
     } finally {
       setPdfDownloading(false);
     }
@@ -1274,7 +1219,6 @@ const ViewTrip = () => {
           return next;
         }
 
-        // Simulating slow but steady and non-stagnant loading increments
         let increment = 0;
         if (prev < 35) {
           increment = 1.2 + Math.random() * 1.8;
@@ -1285,7 +1229,7 @@ const ViewTrip = () => {
         } else if (prev < 98) {
           increment = 0.05 + Math.random() * 0.1;
         } else {
-          increment = 0.005; // Never fully stalls, keeps animating
+          increment = 0.005;
         }
 
         return Math.min(prev + increment, 99);
@@ -1434,7 +1378,7 @@ const ViewTrip = () => {
           "Crafting your luxury itinerary is taking longer than expected. Please try again.",
       });
       navigate("/v2/create-trip");
-    }, 60000); // 60 seconds
+    }, 60000);
 
     return () => clearTimeout(timeout);
   }, [requestId, tripId, loading, navigate]);
@@ -1543,6 +1487,10 @@ const ViewTrip = () => {
 
   if (!trip) return null;
 
+  const noOfDays = trip?.userSelection?.noOfDays || itineraryDays.length || 1;
+  const travelerLabel = trip?.userSelection?.travelers || "Traveler";
+  const budgetLabel = trip?.userSelection?.budget || summary.budget || "Standard";
+
   return (
     <div className="min-h-screen pt-36 md:pt-40 pb-16 px-4 md:px-6 bg-mesh">
       <SEO
@@ -1551,6 +1499,23 @@ const ViewTrip = () => {
         keywords="AI Travel, Trip Planner, Itinerary Generator, Travel Agent, Vacation Planning"
         image="https://trip-buddy-n6b3.onrender.com/favicon.png"
         url={`https://trip-buddy-n6b3.onrender.com/v2/view-trip/${tripId || ""}`}
+        jsonLd={{
+          "@context": "https://schema.org",
+          "@type": "TouristTrip",
+          "name": `AI Trip Itinerary for ${destinationLabel}`,
+          "description": `Custom AI travel itinerary for ${noOfDays} days in ${destinationLabel} for ${travelerLabel} (${budgetLabel} budget).`,
+          "touristType": travelerLabel,
+          "itinerary": {
+            "@type": "ItemList",
+            "numberOfItems": itineraryDays.length,
+            "itemListElement": itineraryDays.map((day, idx) => ({
+              "@type": "ListItem",
+              "position": idx + 1,
+              "name": day.title || `Day ${idx + 1}`,
+              "description": day.activities?.map((a) => a.title).join(", ") || "",
+            })),
+          },
+        }}
       />
       <div className="max-w-screen-2xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
         <section className="overflow-hidden rounded-[2.5rem] glass-card">
@@ -1642,9 +1607,6 @@ const ViewTrip = () => {
                                 >
                                   <Unlock className="w-4 h-4" />
                                   Collaborative
-                                  {!isPremium && (
-                                    <Sparkles className="w-3 h-3 text-amber-500 fill-amber-500 shrink-0" />
-                                  )}
                                 </button>
                               </div>
                               <p className="text-xs text-slate-400 font-medium leading-relaxed min-h-9">
@@ -2290,24 +2252,7 @@ const ViewTrip = () => {
                   </button>
                 </div>
 
-                {!isPremium && (
-                  <div className="bg-amber-50/90 border-b border-amber-100/50 px-5 py-3 flex items-center gap-2.5 shrink-0">
-                    <Gem className="w-4 h-4 text-amber-500 animate-pulse shrink-0" />
-                    <p className="text-[10px] font-bold text-amber-800 leading-normal text-left font-helvetica">
-                      Roamie AI Assistant is a Premium feature.{" "}
-                      <button
-                        type="button"
-                        onClick={() =>
-                          window.dispatchEvent(new Event("open-pricing-dialog"))
-                        }
-                        className="underline font-black hover:text-amber-950 cursor-pointer"
-                      >
-                        Upgrade now
-                      </button>{" "}
-                      to ask questions.
-                    </p>
-                  </div>
-                )}
+
 
                 <div className="flex-1 overflow-y-auto custom-scrollbar p-5 space-y-4 bg-linear-to-b from-transparent to-slate-50/30">
                   {chatHistory.map((msg, index) => {

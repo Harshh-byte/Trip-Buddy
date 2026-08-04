@@ -26,10 +26,24 @@ const App = () => {
   const isAdminRoute = location.pathname.startsWith("/admin");
   const hideHeaderRoutes = ["/privacy", "/terms"];
   const hideFooterRoutes = ["/privacy", "/terms"];
+  const is404Route =
+    location.pathname === "/404" ||
+    ![
+      "/",
+      "/v2/create-trip",
+      "/v2/view-trip",
+      "/v2/my-trips",
+      "/privacy",
+      "/terms",
+      "/explore",
+    ].some(
+      (path) =>
+        location.pathname === path || location.pathname.startsWith(`${path}/`),
+    );
   const shouldHideHeader =
     isAdminRoute || hideHeaderRoutes.includes(location.pathname);
   const shouldHideFooter =
-    isAdminRoute || hideFooterRoutes.includes(location.pathname);
+    isAdminRoute || hideFooterRoutes.includes(location.pathname) || is404Route;
 
   return (
     <div className="flex flex-col min-h-screen">

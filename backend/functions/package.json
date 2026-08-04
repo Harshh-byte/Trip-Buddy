@@ -20,8 +20,7 @@
     "firebase-functions": "^7.2.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "resend": "^3.5.0",
-    "razorpay": "^2.9.5"
+    "resend": "^3.5.0"
   },
   "private": true
 }

@@ -7,6 +7,7 @@ import { Helmet } from "react-helmet-async";
  * @param {string} [props.keywords]
  * @param {string} [props.image]
  * @param {string} [props.url]
+ * @param {Object} [props.jsonLd]
  */
 const SEO = ({
   title = "Trip Buddy • AI-Powered Travel Agent",
@@ -14,6 +15,7 @@ const SEO = ({
   keywords = "AI Travel, Trip Planner, Itinerary Generator, Travel Agent, Vacation Planning",
   image = "https://trip-buddy-n6b3.onrender.com/favicon.png",
   url = "https://trip-buddy-n6b3.onrender.com/",
+  jsonLd = null,
 } = {}) => {
   const siteName = "Trip Buddy";
   const fullTitle = title.includes(siteName) ? title : `${title} • ${siteName}`;
@@ -34,6 +36,12 @@ const SEO = ({
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image" content={image} />
+
+      {jsonLd && (
+        <script type="application/ld+json">
+          {JSON.stringify(jsonLd)}
+        </script>
+      )}
     </Helmet>
   );
 };
