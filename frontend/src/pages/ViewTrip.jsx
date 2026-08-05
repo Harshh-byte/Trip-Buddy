@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { doc, getDoc, onSnapshot, writeBatch } from "firebase/firestore";
 import { toast } from "sonner";
 import { useSearchParams } from "react-router-dom";
@@ -30,7 +31,6 @@ import {
   Send,
   X,
   BotMessageSquare,
-  Zap,
   Plus,
   Trash2,
   Pencil,
@@ -314,6 +314,7 @@ const ViewTrip = () => {
   }, [trip, isOwner]);
 
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("itinerary");
   const [copied, setCopied] = useState(false);
   const [sharingDialogOpen, setSharingDialogOpen] = useState(false);
   const [activityModalOpen, setActivityModalOpen] = useState(false);
@@ -901,7 +902,6 @@ const ViewTrip = () => {
         .replace(/[\u2013\u2014]/g, "-")
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
-        // eslint-disable-next-line no-control-regex
         .replace(/[^\x00-\x7F]/g, "")
         .replace(/\s+/g, " ")
         .trim()
@@ -1763,25 +1763,40 @@ const ViewTrip = () => {
         </section>
 
         <Tabs
-          defaultValue="itinerary"
+          value={activeTab}
+          onValueChange={setActiveTab}
           className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700"
         >
           <div className="flex items-center justify-between border-b border-slate-200/50 pb-4">
-            <TabsList className="bg-slate-100/60 rounded-2xl p-1 gap-1">
+            <TabsList className="bg-slate-100/60 rounded-2xl p-1 gap-1 relative border border-slate-200/40">
               <TabsTrigger
                 value="itinerary"
-                className="rounded-xl px-5 py-2 text-sm font-bold flex items-center gap-2"
+                className="rounded-xl px-5 py-2 text-sm font-bold flex items-center gap-2 relative z-10 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-indigo-950 transition-colors cursor-pointer"
               >
-                <MapPinned className="w-4 h-4 text-indigo-600" />
-                <span>Daily Itinerary</span>
+                {activeTab === "itinerary" && (
+                  <motion.div
+                    layoutId="activeTabIndicator"
+                    className="absolute inset-0 bg-white rounded-xl shadow-xs border border-slate-200/50"
+                    transition={{ type: "spring", stiffness: 450, damping: 35 }}
+                  />
+                )}
+                <MapPinned className="w-4 h-4 text-indigo-600 relative z-10" />
+                <span className="relative z-10">Daily Itinerary</span>
               </TabsTrigger>
               {(hotels.length > 0 || canEdit) && (
                 <TabsTrigger
                   value="hotels"
-                  className="rounded-xl px-5 py-2 text-sm font-bold flex items-center gap-2"
+                  className="rounded-xl px-5 py-2 text-sm font-bold flex items-center gap-2 relative z-10 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-indigo-950 transition-colors cursor-pointer"
                 >
-                  <Hotel className="w-4 h-4 text-indigo-600" />
-                  <span>Stays & Hotels</span>
+                  {activeTab === "hotels" && (
+                    <motion.div
+                      layoutId="activeTabIndicator"
+                      className="absolute inset-0 bg-white rounded-xl shadow-xs border border-slate-200/50"
+                      transition={{ type: "spring", stiffness: 450, damping: 35 }}
+                    />
+                  )}
+                  <Hotel className="w-4 h-4 text-indigo-600 relative z-10" />
+                  <span className="relative z-10">Stays & Hotels</span>
                 </TabsTrigger>
               )}
             </TabsList>
@@ -2366,14 +2381,6 @@ const ViewTrip = () => {
                   chatOpen && "rotate-12 scale-110",
                 )}
               />
-              {!chatOpen && (
-                <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75" />
-                  <span className="relative flex rounded-full h-3.5 w-3.5 bg-indigo-600 items-center justify-center text-white border border-white/20 shadow-sm">
-                    <Zap className="w-2 h-2 fill-white text-white" />
-                  </span>
-                </span>
-              )}
             </button>
           </div>
         )}

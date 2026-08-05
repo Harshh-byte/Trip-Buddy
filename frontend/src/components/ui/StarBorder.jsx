@@ -9,10 +9,12 @@ export default function StarBorder({
   children,
   ...props
 }) {
+  const Tag = /** @type {any} */ (Component);
+
   return (
-    <Component
+    <Tag
       className={cn(
-        "relative inline-flex p-[1px] overflow-hidden rounded-2xl bg-slate-100 shadow-sm hover:scale-[1.02] active:scale-95 transition-all duration-300 cursor-pointer",
+        "relative inline-flex p-px overflow-hidden rounded-2xl bg-slate-100 shadow-sm hover:scale-[1.02] active:scale-95 transition-all duration-300 cursor-pointer",
         className
       )}
       {...props}
@@ -27,6 +29,6 @@ export default function StarBorder({
       <div className={cn("relative z-10 w-full h-full bg-white rounded-[15px] flex items-center justify-center", innerClassName)}>
         {children}
       </div>
-    </Component>
+    </Tag>
   );
 }

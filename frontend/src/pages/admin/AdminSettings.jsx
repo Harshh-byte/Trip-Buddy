@@ -122,7 +122,6 @@ const AdminSettings = () => {
                     onChange={(e) => setNewName(e.target.value)}
                     className="bg-transparent px-2 py-1 font-bold text-xl text-slate-900 outline-none w-full max-w-50px"
                     autoFocus
-                    // @ts-ignore
                     onKeyDown={(e) => e.key === "Enter" && handleSaveName()}
                   />
                   <button
@@ -131,7 +130,6 @@ const AdminSettings = () => {
                   >
                     <Check className="w-5 h-5" />
                   </button>
-                  {/* @ts-ignore */}
                   <button
                     onClick={() => setIsEditingName(false)}
                     className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-md transition-colors"

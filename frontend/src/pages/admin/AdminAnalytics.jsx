@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEffect, useState, useMemo } from "react";
 import {
   BarChart,
@@ -132,14 +131,15 @@ const AdminAnalytics = () => {
   const topInterest = interestData[0]?.name || "N/A";
   const topBudget = budgetData[0]?.name || "N/A";
 
-  const renderCustomizedLabel = ({
-    cx,
-    cy,
-    midAngle,
-    outerRadius,
-    percent,
-    name,
-  }) => {
+  const renderCustomizedLabel = (/** @type {any} */ props) => {
+    const {
+      cx = 0,
+      cy = 0,
+      midAngle = 0,
+      outerRadius = 0,
+      percent = 0,
+      name = "",
+    } = props || {};
     if (percent < 0.05) return null;
     const RADIAN = Math.PI / 180;
     const radius = outerRadius * 1.08;
@@ -186,7 +186,6 @@ const AdminAnalytics = () => {
     <div className="space-y-8 pb-12 w-full">
       <style>{chartStyles}</style>
 
-      {/* Header */}
       <div className="flex justify-between items-end">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
@@ -198,7 +197,6 @@ const AdminAnalytics = () => {
         </div>
       </div>
 
-      {/* KPI Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
           {
@@ -243,7 +241,6 @@ const AdminAnalytics = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
-        {/* Budget Distribution */}
         <div className="bg-white rounded-3xl p-6 lg:p-8 border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2.5 bg-emerald-50 rounded-xl text-emerald-600">
@@ -306,7 +303,6 @@ const AdminAnalytics = () => {
           </div>
         </div>
 
-        {/* Traveler Types */}
         <div className="bg-white rounded-3xl p-6 lg:p-8 border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2.5 bg-blue-50 rounded-xl text-blue-600">
@@ -367,7 +363,6 @@ const AdminAnalytics = () => {
           </div>
         </div>
 
-        {/* Interests Popularity (Bar Chart) */}
         <div className="lg:col-span-2 bg-white rounded-3xl p-6 lg:p-8 border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
           <div className="flex items-center gap-3 mb-8">
             <div className="p-2.5 bg-indigo-50 rounded-xl text-indigo-600">
@@ -422,7 +417,6 @@ const AdminAnalytics = () => {
           </div>
         </div>
 
-        {/* Duration Distribution (Area Chart) */}
         <div className="lg:col-span-2 bg-white rounded-3xl p-6 lg:p-8 border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
           <div className="flex items-center gap-3 mb-8">
             <div className="p-2.5 bg-rose-50 rounded-xl text-rose-600">

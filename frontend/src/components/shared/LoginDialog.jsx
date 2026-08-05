@@ -37,7 +37,6 @@ const LoginDialog = ({ open, onClose, onLoginSuccess = () => {} }) => {
   /**
    * @param {any} userData
    */
-  // @ts-ignore
   const handleAuthSuccess = (userData) => {
     setLoading(false);
     onClose();
@@ -53,7 +52,6 @@ const LoginDialog = ({ open, onClose, onLoginSuccess = () => {} }) => {
   /**
    * @param {any} error
    */
-  // @ts-ignore
   const handleAuthError = (error) => {
     setLoading(false);
     const authError = /** @type {{ code?: string, message?: string }} */ (

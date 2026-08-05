@@ -60,11 +60,9 @@ const GuideDetails = () => {
   const stateData = location.state || {};
 
   const [destinationName, setDestinationName] = useState(
-    // @ts-ignore
     stateData.destinationName ||
       decodeURIComponent(wikiTitle || "").replace(/_/g, " "),
   );
-  // @ts-ignore
   const [countryName, setCountryName] = useState(stateData.countryName || "");
   const [loading, setLoading] = useState(true);
   const [progress, setProgress] = useState(0);
@@ -103,7 +101,7 @@ const GuideDetails = () => {
         } else if (prev < 98) {
           increment = 0.05 + Math.random() * 0.1;
         } else {
-          increment = 0.005; // Never fully stalls, keeps animating
+          increment = 0.005;
         }
 
         return Math.min(prev + increment, 99);
@@ -118,20 +116,15 @@ const GuideDetails = () => {
 
   const [description, setDescription] = useState("");
   const [coverImage, setCoverImage] = useState("");
-  // @ts-ignore
   const [flag, setFlag] = useState(stateData.flag || "");
-  // @ts-ignore
   const [flagUrl, setFlagUrl] = useState(stateData.flagUrl || "");
   const [currencyName, setCurrencyName] = useState(
-    // @ts-ignore
     stateData.currencyName || "",
   );
   const [currencySymbol, setCurrencySymbol] = useState(
-    // @ts-ignore
     stateData.currencySymbol || "",
   );
   const [language, setLanguage] = useState(
-    // @ts-ignore
     stateData.language && stateData.language.length < 25
       ? stateData.language
       : "",
