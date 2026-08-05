@@ -45,9 +45,7 @@ const AdminLogin = () => {
       }
       navigate("/admin/dashboard");
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Access denied.",
-      );
+      toast.error(err instanceof Error ? err.message : "Access denied.");
     } finally {
       setLoading(false);
     }
@@ -65,14 +63,23 @@ const AdminLogin = () => {
       <div className="absolute bottom-0 left-0 w-160 h-160 bg-rose-300/20 rounded-full blur-[100px] -z-10 -translate-x-1/3 translate-y-1/3 pointer-events-none" />
 
       <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-8 duration-700 z-10">
-        
         {/* Header Section */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-linear-to-br from-indigo-500 to-indigo-700 text-white mb-5 shadow-lg shadow-indigo-200">
+          <div
+            className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-5 shadow-lg ${
+              isSeederMode
+                ? "bg-linear-to-br from-indigo-500 to-indigo-700 text-white shadow-indigo-200"
+                : "bg-indigo-50 border border-indigo-100 shadow-indigo-100/50"
+            }`}
+          >
             {isSeederMode ? (
-              <DatabaseZap className="w-8 h-8" />
+              <DatabaseZap className="w-9 h-9 text-white" />
             ) : (
-              <Shield className="w-8 h-8" />
+              <img
+                src="/favicon.svg"
+                alt="Trip Buddy Admin"
+                className="w-10 h-10 object-contain"
+              />
             )}
           </div>
           <h1 className="text-3xl font-black tracking-tight text-slate-900">
@@ -88,7 +95,6 @@ const AdminLogin = () => {
         {/* Auth Card */}
         <div className="bg-white/80 backdrop-blur-xl rounded-4xl p-8 md:p-10 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] border border-white">
           <form onSubmit={handleSubmit} className="space-y-6">
-            
             {/* Seeder Mode Fields */}
             {isSeederMode && (
               <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
@@ -134,7 +140,7 @@ const AdminLogin = () => {
                     </button>
                   </div>
                 </div>
-                
+
                 <div className="h-px w-full bg-linear-to-r from-transparent via-slate-200 to-transparent my-2" />
               </div>
             )}
@@ -192,8 +198,8 @@ const AdminLogin = () => {
               type="submit"
               disabled={loading}
               className={`w-full py-6 mt-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${
-                isSeederMode 
-                  ? "bg-slate-900 hover:bg-slate-800 text-white shadow-lg shadow-slate-900/20" 
+                isSeederMode
+                  ? "bg-slate-900 hover:bg-slate-800 text-white shadow-lg shadow-slate-900/20"
                   : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/20"
               }`}
             >
@@ -201,7 +207,9 @@ const AdminLogin = () => {
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <>
-                  {isSeederMode ? "Deploy Root Authorization" : "Authenticate Session"}{" "}
+                  {isSeederMode
+                    ? "Deploy Root Authorization"
+                    : "Authenticate Session"}{" "}
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
