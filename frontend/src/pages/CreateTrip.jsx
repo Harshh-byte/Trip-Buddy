@@ -79,7 +79,6 @@ const CreateTrip = () => {
     /** @type {"destination" | "noOfDays" | "startDate" | "travelers" | "budget" | "interests"} */ name,
     /** @type {unknown} */ value,
   ) => {
-    // @ts-ignore: allow dynamic key assignment on formData
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 

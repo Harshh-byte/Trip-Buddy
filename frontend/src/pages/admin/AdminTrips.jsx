@@ -49,11 +49,9 @@ const AdminTrips = () => {
       }
     };
 
-    // @ts-ignore
     const unsubUsers = subscribeToUsers((data) => {
       /** @type {Record<string, any>} */
       const map = {};
-      // @ts-ignore
       data.forEach((u) => {
         map[u.uid || u.id] = u;
       });
@@ -75,7 +73,6 @@ const AdminTrips = () => {
   }, []);
 
   const enrichedTrips = useMemo(
-    // @ts-ignore
     () =>
       trips.map((t) => {
         const owner = usersMap[t?.userId] || {};
@@ -87,7 +84,6 @@ const AdminTrips = () => {
           t?.userSelection?.destination?.value ||
           "Unknown Location";
 
-        // @ts-ignore
         const locParts = rawLoc.split(",").map(function (p) {
           return p.trim();
         });
@@ -135,7 +131,6 @@ const AdminTrips = () => {
   const filteredTrips = useMemo(() => {
     let sortable = [...enrichedTrips];
     if (sortConfig.key) {
-      // @ts-ignore
       sortable.sort((a, b) => {
         if (a[sortConfig.key] < b[sortConfig.key])
           return sortConfig.direction === "asc" ? -1 : 1;
@@ -161,14 +156,12 @@ const AdminTrips = () => {
     [filteredTrips, currentPage],
   );
 
-  // @ts-ignore
   const requestSort = (key) =>
     setSortConfig((prev) => ({
       key,
       direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
     }));
 
-  // @ts-ignore
   const handleDeleteTrip = (tripId, location) => {
     setTripToDelete({ id: tripId, location });
   };
@@ -329,7 +322,6 @@ const AdminTrips = () => {
           </table>
         </div>
 
-        {/* Simple Pagination */}
         <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
           <span className="text-xs text-slate-500 font-medium">
             Page {currentPage} of {totalPages || 1}

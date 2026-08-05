@@ -11,7 +11,6 @@ import {
   CheckCircle2,
   Database,
   Clock,
-  RefreshCw,
   XCircle,
   Loader2,
   BarChart3,
@@ -411,7 +410,6 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* Metrics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {statCards.map((card, idx) => (
           <div
@@ -452,9 +450,7 @@ const AdminDashboard = () => {
         ))}
       </div>
 
-      {/* Main Charts & Logs Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Line/Area Chart */}
         <div className="lg:col-span-2 bg-white rounded-3xl p-6 border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-2.5">
@@ -582,7 +578,6 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      {/* AI Live Generation Logs */}
       <div className="bg-white rounded-3xl p-6 border border-slate-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-2">

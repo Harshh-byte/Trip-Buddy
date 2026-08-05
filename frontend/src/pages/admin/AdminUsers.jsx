@@ -27,10 +27,8 @@ const AdminUsers = () => {
 
   useEffect(() => {
     const unsub = subscribeToUsers(
-      // @ts-ignore
       (data) => {
         setUsers(
-          // @ts-ignore
           data.map((u) => ({
             ...u,
             displayName: u.name || "Unknown",
@@ -42,7 +40,6 @@ const AdminUsers = () => {
         );
         setLoading(false);
       },
-      // @ts-ignore
       (err) => {
         setLoading(false);
         if (err.code === "permission-denied") {
@@ -61,7 +58,6 @@ const AdminUsers = () => {
     return () => unsub();
   }, []);
 
-  // @ts-ignore
   const handleToggleAdmin = async (user) => {
     try {
       await toggleUserAdminStatus(user.id, user.isAdmin);
@@ -106,7 +102,6 @@ const AdminUsers = () => {
     [filteredUsers, currentPage],
   );
 
-  // @ts-ignore
   const requestSort = (key) =>
     setSortConfig((p) => ({
       key,
@@ -257,7 +252,6 @@ const AdminUsers = () => {
           </table>
         </div>
 
-        {/* Pagination */}
         <div className="px-6 py-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
           <span className="text-xs text-slate-500 font-medium">
             Page {currentPage} of {totalPages || 1}

@@ -79,16 +79,13 @@ export const seedAdminUser = async (email, password, secretKey, name) => {
     const result = await createUserWithEmailAndPassword(auth, email, password);
     user = result.user;
   } catch (err) {
-    // @ts-ignore
     if (err.code === "auth/email-already-in-use") {
       try {
         const result = await signInWithEmailAndPassword(auth, email, password);
         user = result.user;
       } catch (signInErr) {
         if (
-          // @ts-ignore
           signInErr.code === "auth/wrong-password" ||
-          // @ts-ignore
           signInErr.code === "auth/invalid-credential"
         ) {
           throw new Error(
@@ -150,7 +147,6 @@ export const getStoredAdminUser = () => {
   }
 };
 
-// @ts-ignore
 export const subscribeToUsers = (onData, onError) => {
   const q = collection(db, "users");
   return onSnapshot(
@@ -169,7 +165,6 @@ export const subscribeToUsers = (onData, onError) => {
   );
 };
 
-// @ts-ignore
 export const subscribeToTrips = (callback) => {
   const q = collection(db, "Trips");
   return onSnapshot(q, (snapshot) => {
@@ -183,7 +178,6 @@ export const subscribeToTrips = (callback) => {
   });
 };
 
-// @ts-ignore
 export const subscribeToAiLogs = (callback) => {
   const q = query(collection(db, "ai_logs"), orderBy("createdAt", "desc"));
   return onSnapshot(
@@ -215,7 +209,6 @@ export const subscribeToAiLogs = (callback) => {
   );
 };
 
-// @ts-ignore
 export const toggleUserAdminStatus = async (userId, currentStatus) => {
   const ref = doc(db, "users", userId);
   await updateDoc(ref, {
@@ -223,7 +216,6 @@ export const toggleUserAdminStatus = async (userId, currentStatus) => {
   });
 };
 
-// @ts-ignore
 export const deleteTrip = async (tripId) => {
   const ref = doc(db, "Trips", tripId);
   await deleteDoc(ref);

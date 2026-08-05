@@ -106,7 +106,6 @@ export const useGoogleAuth = ({ onSuccess, onError }) => {
  */
 export const useEmailAuth = ({ onSuccess, onError }) => {
   return {
-    // @ts-ignore
     login: async (email, password) => {
       try {
         const result = await signInWithEmailAndPassword(auth, email, password);
@@ -116,7 +115,6 @@ export const useEmailAuth = ({ onSuccess, onError }) => {
         if (onError) onError(error);
       }
     },
-    // @ts-ignore
     signup: async (email, password, name) => {
       try {
         const result = await createUserWithEmailAndPassword(

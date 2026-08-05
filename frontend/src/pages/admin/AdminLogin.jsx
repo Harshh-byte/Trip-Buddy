@@ -1,15 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Shield,
   KeyRound,
   Mail,
   Lock,
   User,
+  UserPlus,
   Loader2,
   ArrowRight,
   ArrowLeft,
-  DatabaseZap,
   Eye,
   EyeOff,
 } from "lucide-react";
@@ -38,10 +37,10 @@ const AdminLogin = () => {
       if (isSeederMode) {
         if (!secretKey) throw new Error("Master secret key required.");
         await seedAdminUser(email, password, secretKey, name);
-        toast.success("Root user deployed.");
+        toast.success("Admin account created successfully.");
       } else {
         await loginAdmin(email, password);
-        toast.success("Session authenticated.");
+        toast.success("Signed in successfully.");
       }
       navigate("/admin/dashboard");
     } catch (err) {
@@ -54,16 +53,14 @@ const AdminLogin = () => {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-6 font-sans text-slate-900 relative overflow-hidden admin-scope">
       <SEO
-        title="Auth Portal"
-        description="Secure gateway for system administration."
+        title="Admin Portal"
+        description="Admin portal for Trip Buddy management."
       />
 
-      {/* Ambient Background Glows */}
       <div className="absolute top-0 right-0 w-160 h-160 bg-indigo-300/20 rounded-full blur-[100px] -z-10 translate-x-1/3 -translate-y-1/3 pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-160 h-160 bg-rose-300/20 rounded-full blur-[100px] -z-10 -translate-x-1/3 translate-y-1/3 pointer-events-none" />
 
       <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-8 duration-700 z-10">
-        {/* Header Section */}
         <div className="text-center mb-8">
           <div
             className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-5 shadow-lg ${
@@ -73,7 +70,7 @@ const AdminLogin = () => {
             }`}
           >
             {isSeederMode ? (
-              <DatabaseZap className="w-9 h-9 text-white" />
+              <UserPlus className="w-8 h-8 text-white" />
             ) : (
               <img
                 src="/favicon.svg"
@@ -83,24 +80,22 @@ const AdminLogin = () => {
             )}
           </div>
           <h1 className="text-3xl font-black tracking-tight text-slate-900">
-            {isSeederMode ? "System Initialization" : "Admin Core"}
+            {isSeederMode ? "Create Admin Account" : "Admin Login"}
           </h1>
           <p className="text-sm font-medium text-slate-500 mt-2">
             {isSeederMode
-              ? "Configure immutable root access for deployment."
-              : "Enter authorized credentials to access the console."}
+              ? "Set up your initial administrator account."
+              : "Sign in to access your admin dashboard."}
           </p>
         </div>
 
-        {/* Auth Card */}
         <div className="bg-white/80 backdrop-blur-xl rounded-4xl p-8 md:p-10 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.1)] border border-white">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Seeder Mode Fields */}
             {isSeederMode && (
               <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
                 <div className="space-y-2">
                   <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
-                    Display Name
+                    Full Name
                   </label>
                   <div className="relative group">
                     <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
@@ -108,7 +103,7 @@ const AdminLogin = () => {
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="System Admin"
+                      placeholder="John Doe"
                       className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 outline-none transition-all"
                     />
                   </div>
@@ -116,7 +111,7 @@ const AdminLogin = () => {
 
                 <div className="space-y-2">
                   <label className="text-[11px] font-bold text-rose-500 uppercase tracking-widest flex items-center gap-1.5">
-                    Master Secret <Lock className="w-3 h-3" />
+                    Secret Key <Lock className="w-3 h-3" />
                   </label>
                   <div className="relative group">
                     <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-rose-400 group-focus-within:text-rose-600 transition-colors" />
@@ -130,12 +125,12 @@ const AdminLogin = () => {
                     <button
                       type="button"
                       onClick={() => setShowSecretKey(!showSecretKey)}
-                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-rose-400 hover:text-rose-600 transition-colors focus:outline-none"
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-rose-400 hover:text-rose-600 transition-colors focus:outline-none cursor-pointer"
                     >
                       {showSecretKey ? (
-                        <Eye className="w-4 h-4" />
+                        <Eye className="w-4 h-4 cursor-pointer" />
                       ) : (
-                        <EyeOff className="w-4 h-4" />
+                        <EyeOff className="w-4 h-4 cursor-pointer" />
                       )}
                     </button>
                   </div>
@@ -145,11 +140,10 @@ const AdminLogin = () => {
               </div>
             )}
 
-            {/* Standard Login Fields */}
             <div className="space-y-6">
               <div className="space-y-2">
                 <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest">
-                  Secure Email
+                  Email
                 </label>
                 <div className="relative group">
                   <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-indigo-600 transition-colors" />
@@ -181,23 +175,22 @@ const AdminLogin = () => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-600 transition-colors focus:outline-none"
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-600 transition-colors focus:outline-none cursor-pointer"
                   >
                     {showPassword ? (
-                      <Eye className="w-4 h-4" />
+                      <Eye className="w-4 h-4 cursor-pointer" />
                     ) : (
-                      <EyeOff className="w-4 h-4" />
+                      <EyeOff className="w-4 h-4 cursor-pointer" />
                     )}
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* Submit Button */}
             <Button
               type="submit"
               disabled={loading}
-              className={`w-full py-6 mt-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all ${
+              className={`w-full py-6 mt-4 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer ${
                 isSeederMode
                   ? "bg-slate-900 hover:bg-slate-800 text-white shadow-lg shadow-slate-900/20"
                   : "bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/20"
@@ -208,8 +201,8 @@ const AdminLogin = () => {
               ) : (
                 <>
                   {isSeederMode
-                    ? "Deploy Root Authorization"
-                    : "Authenticate Session"}{" "}
+                    ? "Create Account"
+                    : "Sign In"}{" "}
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
@@ -217,7 +210,6 @@ const AdminLogin = () => {
           </form>
         </div>
 
-        {/* Footer Toggle */}
         <div className="mt-8 text-center">
           <button
             onClick={() => setIsSeederMode(!isSeederMode)}
@@ -226,12 +218,12 @@ const AdminLogin = () => {
             {isSeederMode ? (
               <>
                 <ArrowLeft className="w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform" />
-                Abort Initialization
+                Back to Login
               </>
             ) : (
               <>
-                <DatabaseZap className="w-3.5 h-3.5" />
-                Root Setup Mode
+                <UserPlus className="w-3.5 h-3.5" />
+                Initial Admin Setup
               </>
             )}
           </button>
