@@ -64,7 +64,9 @@ const AdminLayout = () => {
       "/admin/users",
       "/admin/trips",
     ];
-    return wideRoutes.includes(location.pathname) ? "max-w-none" : "max-w-7xl mx-auto";
+    return wideRoutes.includes(location.pathname)
+      ? "max-w-none"
+      : "max-w-7xl mx-auto";
   };
 
   return (
@@ -95,15 +97,21 @@ const AdminLayout = () => {
         </button>
 
         <div className="h-16 flex items-center border-b border-slate-100 pl-6 gap-3 transition-all duration-300">
-          <div className="bg-indigo-600 p-2 rounded-sm text-white shadow-md shrink-0">
-            <Plane className="w-5 h-5" />
+          <div className="w-10 h-10 rounded-2xl bg-indigo-50 border border-indigo-100 shrink-0 flex items-center justify-center shadow-xs">
+            <img
+              src="/favicon.svg"
+              alt="Trip Buddy"
+              className="w-7 h-7 object-contain"
+            />
           </div>
-          <span 
+          <span
             className={`font-bold text-lg tracking-tight whitespace-nowrap overflow-hidden transition-all duration-300 ${
-              isCollapsed ? "w-0 opacity-0 pointer-events-none" : "w-32 opacity-100"
+              isCollapsed
+                ? "w-0 opacity-0 pointer-events-none"
+                : "w-32 opacity-100"
             }`}
           >
-            Trip{" "}<span className="text-indigo-600">Buddy</span>
+            Trip <span className="text-indigo-600">Buddy</span>
           </span>
         </div>
 
@@ -115,7 +123,7 @@ const AdminLayout = () => {
                 key={item.path}
                 to={item.path}
                 className={({ isActive }) =>
-                  `flex items-center rounded-xl text-sm font-medium transition-all duration-300 group relative py-2.5 pr-3 pl-[18px] gap-3 ${
+                  `flex items-center rounded-xl text-sm font-medium transition-all duration-300 group relative py-2.5 pr-3 pl-4.5 gap-3 ${
                     isActive
                       ? "bg-indigo-50 text-indigo-700"
                       : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
@@ -124,9 +132,11 @@ const AdminLayout = () => {
                 title={isCollapsed ? item.name : ""}
               >
                 <Icon className="w-5 h-5 shrink-0 transition-transform duration-300 group-hover:scale-110" />
-                <span 
+                <span
                   className={`transition-all duration-300 whitespace-nowrap overflow-hidden ${
-                    isCollapsed ? "w-0 opacity-0 pointer-events-none" : "w-32 opacity-100 ml-1"
+                    isCollapsed
+                      ? "w-0 opacity-0 pointer-events-none"
+                      : "w-32 opacity-100 ml-1"
                   }`}
                 >
                   {item.name}
@@ -137,7 +147,9 @@ const AdminLayout = () => {
           })}
         </nav>
 
-        <div className={`p-4 border-t border-slate-100 transition-all duration-300 ${isCollapsed ? "pl-5 pr-3" : "pl-4 pr-4"}`}>
+        <div
+          className={`p-4 border-t border-slate-100 transition-all duration-300 ${isCollapsed ? "pl-5 pr-3" : "pl-4 pr-4"}`}
+        >
           <div className="flex items-center gap-3 mb-4">
             <img
               src={
@@ -148,9 +160,11 @@ const AdminLayout = () => {
               alt="Admin"
               className="w-10 h-10 rounded-xl border border-slate-200 object-cover shrink-0 shadow-sm transition-all duration-300"
             />
-            <div 
+            <div
               className={`flex flex-col transition-all duration-300 overflow-hidden whitespace-nowrap ${
-                isCollapsed ? "w-0 opacity-0 pointer-events-none" : "w-32 opacity-100 ml-1"
+                isCollapsed
+                  ? "w-0 opacity-0 pointer-events-none"
+                  : "w-32 opacity-100 ml-1"
               }`}
             >
               <span className="text-sm font-semibold text-slate-900 truncate">
@@ -164,14 +178,16 @@ const AdminLayout = () => {
           <button
             onClick={handleLogout}
             className={`w-full flex items-center py-2.5 rounded-xl text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all duration-300 gap-3 ${
-              isCollapsed ? "pl-[10px]" : "pl-[14px]"
+              isCollapsed ? "pl-2.5" : "pl-3.5"
             }`}
             title={isCollapsed ? "Sign Out" : ""}
           >
             <LogOut className="w-5 h-5 shrink-0" />
             <span
               className={`transition-all duration-300 whitespace-nowrap overflow-hidden ${
-                isCollapsed ? "w-0 opacity-0 pointer-events-none" : "w-32 opacity-100 ml-1"
+                isCollapsed
+                  ? "w-0 opacity-0 pointer-events-none"
+                  : "w-32 opacity-100 ml-1"
               }`}
             >
               Sign Out
@@ -188,7 +204,7 @@ const AdminLayout = () => {
                 <Plane className="w-4 h-4" />
               </div>
               <span className="font-bold text-lg tracking-tight text-slate-900">
-                Trip{" "}<span className="text-indigo-600">Buddy</span>
+                Trip <span className="text-indigo-600">Buddy</span>
               </span>
             </div>
 
@@ -197,11 +213,12 @@ const AdminLayout = () => {
             </h2>
           </div>
 
-          <div className="flex items-center gap-4">
-          </div>
+          <div className="flex items-center gap-4"></div>
         </header>
 
-        <main className={`flex-1 overflow-y-auto p-4 md:p-8 pb-24 lg:pb-8 w-full animate-in fade-in duration-500 ${getPageMaxWidth()}`}>
+        <main
+          className={`flex-1 overflow-y-auto p-4 md:p-8 pb-24 lg:pb-8 w-full animate-in fade-in duration-500 ${getPageMaxWidth()}`}
+        >
           <Outlet />
         </main>
 

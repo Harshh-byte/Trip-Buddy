@@ -107,8 +107,12 @@ const LoginDialog = ({ open, onClose, onLoginSuccess = () => {} }) => {
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md rounded-[2.5rem] p-0 overflow-hidden bg-white border border-slate-900/10 shadow-2xl">
         <div className="p-8 flex flex-col items-center">
-          <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-indigo-100/50">
-            <Compass className="w-7 h-7 text-indigo-600 animate-pulse" />
+          <div className="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center mb-6 shadow-xs border border-indigo-100">
+            <img
+              src="/favicon.svg"
+              alt="Trip Buddy"
+              className="w-9 h-9 object-contain"
+            />
           </div>
 
           <DialogHeader className="flex flex-col items-center w-full mb-8">
@@ -214,7 +218,7 @@ const LoginDialog = ({ open, onClose, onLoginSuccess = () => {} }) => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full h-12 bg-indigo-600 text-white rounded-2xl font-bold text-sm hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full h-12 bg-indigo-600 text-white rounded-2xl font-bold text-sm hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
               >
                 {loading ? (
                   <Loader2 className="w-5 h-5 animate-spin" />
