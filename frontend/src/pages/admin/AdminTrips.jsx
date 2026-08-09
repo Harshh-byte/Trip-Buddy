@@ -12,17 +12,12 @@ import {
   Activity,
   ChevronLeft,
   ChevronRight,
+  AlertTriangle,
+  X as CloseIcon,
+  Loader2,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
-import { Button } from "../../components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "../../components/ui/dialog";
 
 const AdminTrips = () => {
   /** @type {[any[], Function]} */
@@ -32,7 +27,8 @@ const AdminTrips = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [tripToDelete, setTripToDelete] = useState(/** @type {{ id: string, location: string } | null} */ (null));
+  const [tripToDelete, setTripToDelete] = useState(/** @type {any | null} */ (null));
+  const [isDeleting, setIsDeleting] = useState(false);
   const [sortConfig, setSortConfig] = useState({
     key: "id",
     direction: "desc",
@@ -72,79 +68,75 @@ const AdminTrips = () => {
     };
   }, []);
 
-  const enrichedTrips = useMemo(
-    () =>
-      trips.map((t) => {
-        const owner = usersMap[t?.userId] || {};
-        const rawLoc =
-          t?.trip_summary?.location ||
-          t?.tripSummary?.location ||
-          t?.tripData?.trip_summary?.location ||
-          t?.userSelection?.destination?.label ||
-          t?.userSelection?.destination?.value ||
-          "Unknown Location";
+  const handleConfirmDeleteTrip = async () => {
+    if (!tripToDelete) return;
+    setIsDeleting(true);
+    try {
+      await deleteTrip(tripToDelete.id);
+      toast.success("Trip deleted from registry successfully");
+      setTripToDelete(null);
+    } catch (err) {
+      toast.error("Failed to delete trip");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
-        const locParts = rawLoc.split(",").map(function (p) {
-          return p.trim();
-        });
-        const loc =
-          locParts.length > 1
-            ? `${locParts[0]}, ${locParts[locParts.length - 1]}`
-            : locParts[0];
-        const coverImg =
-          t?.trip_summary?.cover_image_url ||
-          t?.tripSummary?.cover_image_url ||
-          t?.tripData?.trip_summary?.cover_image_url ||
-          t?.trip_summary?.coverImageUrl ||
-          "";
-        const duration =
-          t?.trip_summary?.duration ||
-          t?.tripSummary?.duration ||
-          t?.tripData?.trip_summary?.duration ||
-          (t?.userSelection?.noOfDays
-            ? `${t.userSelection.noOfDays} Days`
-            : "N/A");
-        const budget =
-          t?.userSelection?.budget ||
-          t?.trip_summary?.budget_note ||
-          t?.tripSummary?.budget_note ||
-          t?.tripData?.trip_summary?.budget_note ||
-          t?.tripSummary?.budgetNote ||
-          "Standard";
-        return {
-          ...t,
-          displayLocation: loc,
-          coverImg,
-          duration,
-          budget,
-          ownerEmail: owner.email || t?.userEmail || "Guest",
-          ownerName: owner.name || "Traveler",
-          ownerPicture:
-            owner.photoURL ||
-            owner.picture ||
-            `https://api.dicebear.com/7.x/lorelei/svg?seed=${owner.name || t?.userId || "guest"}`,
-        };
-      }),
-    [trips, usersMap],
-  );
+  const formattedTrips = useMemo(() => {
+    return trips.map((t) => {
+      const ownerId =
+        t.userId ||
+        t.uid ||
+        t.userSelection?.userId ||
+        t.userSelection?.uid;
+      const owner = usersMap[ownerId] || {};
+      return {
+        ...t,
+        ownerName: owner.name || t?.userSelection?.name || "Guest User",
+        ownerEmail: owner.email || t?.userEmail || "Guest",
+        ownerPicture:
+          owner.picture ||
+          owner.photoURL ||
+          `https://api.dicebear.com/7.x/lorelei/svg?seed=${encodeURIComponent(owner.name || "guest")}`,
+        displayLocation:
+          t.userSelection?.destination?.label ||
+          (typeof t.userSelection?.destination === "string"
+            ? t.userSelection.destination
+            : null) ||
+          t.userSelection?.location?.label ||
+          (typeof t.userSelection?.location === "string"
+            ? t.userSelection.location
+            : null) ||
+          t.tripData?.trip_summary?.location ||
+          t.trip_summary?.location ||
+          t.tripSummary?.location ||
+          t.location ||
+          "Trip Itinerary",
+        duration: `${t.userSelection?.noOfDays || 1} Days`,
+        budget: t.userSelection?.budget || "Standard",
+      };
+    });
+  }, [trips, usersMap]);
 
   const filteredTrips = useMemo(() => {
-    let sortable = [...enrichedTrips];
+    /** @type {any[]} */
+    let sorted = [...formattedTrips];
     if (sortConfig.key) {
-      sortable.sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key])
-          return sortConfig.direction === "asc" ? -1 : 1;
-        if (a[sortConfig.key] > b[sortConfig.key])
-          return sortConfig.direction === "asc" ? 1 : -1;
+      sorted.sort((a, b) => {
+        let valA = a[sortConfig.key];
+        let valB = b[sortConfig.key];
+        if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
+        if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
         return 0;
       });
     }
-    return sortable.filter(
-      (trip) =>
-        trip.displayLocation.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        trip.ownerName.toLowerCase().includes(searchTerm.toLowerCase()),
+    return sorted.filter(
+      (t) =>
+        t.displayLocation.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.ownerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.ownerEmail.toLowerCase().includes(searchTerm.toLowerCase()),
     );
-  }, [enrichedTrips, sortConfig, searchTerm]);
+  }, [formattedTrips, sortConfig, searchTerm]);
 
   const totalPages = Math.ceil(filteredTrips.length / itemsPerPage);
   const paginatedTrips = useMemo(
@@ -157,13 +149,13 @@ const AdminTrips = () => {
   );
 
   const requestSort = (key) =>
-    setSortConfig((prev) => ({
+    setSortConfig((p) => ({
       key,
-      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
+      direction: p.key === key && p.direction === "asc" ? "desc" : "asc",
     }));
 
-  const handleDeleteTrip = (tripId, location) => {
-    setTripToDelete({ id: tripId, location });
+  const handleDeleteTrip = (trip) => {
+    setTripToDelete(trip);
   };
 
   if (loading) {
@@ -177,10 +169,10 @@ const AdminTrips = () => {
           </div>
           <div className="flex flex-col items-center gap-1">
             <p className="text-sm font-bold text-slate-900 tracking-tight">
-              Synchronizing Registry
+              Loading Registry
             </p>
             <p className="text-xs font-medium text-slate-400">
-              Fetching itinerary data...
+              Fetching itineraries...
             </p>
           </div>
         </div>
@@ -192,16 +184,16 @@ const AdminTrips = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Trip Registry</h1>
+          <h1 className="text-2xl font-bold text-slate-900">Registry</h1>
           <p className="text-sm text-slate-500">
-            Database of all generated itinerary payloads.
+            System-wide trip logs and records.
           </p>
         </div>
         <div className="relative w-full sm:w-72">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
             type="text"
-            placeholder="Search locations or users..."
+            placeholder="Search destination or owner..."
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
@@ -291,15 +283,13 @@ const AdminTrips = () => {
                       <Link
                         to={`/v2/view-trip/${trip.id}`}
                         target="_blank"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-200 transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium bg-white border border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-200 transition-colors cursor-pointer"
                       >
                         View <ExternalLink className="w-3 h-3" />
                       </Link>
                       <button
-                        onClick={() =>
-                          handleDeleteTrip(trip.id, trip.displayLocation)
-                        }
-                        className="p-1.5 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                        onClick={() => handleDeleteTrip(trip)}
+                        className="p-1.5 rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
                         title="Delete Trip"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -330,7 +320,7 @@ const AdminTrips = () => {
             <button
               onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
               disabled={currentPage === 1}
-              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold border border-slate-200 rounded-md bg-white disabled:opacity-50 transition-colors hover:bg-slate-50"
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold border border-slate-200 rounded-md bg-white disabled:opacity-50 transition-colors hover:bg-slate-50 cursor-pointer disabled:cursor-not-allowed"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
               Prev
@@ -338,7 +328,7 @@ const AdminTrips = () => {
             <button
               onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
               disabled={currentPage === totalPages || totalPages === 0}
-              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold border border-slate-200 rounded-md bg-white disabled:opacity-50 transition-colors hover:bg-slate-50"
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold border border-slate-200 rounded-md bg-white disabled:opacity-50 transition-colors hover:bg-slate-50 cursor-pointer disabled:cursor-not-allowed"
             >
               Next
               <ChevronRight className="w-3.5 h-3.5" />
@@ -347,54 +337,75 @@ const AdminTrips = () => {
         </div>
       </div>
 
-      <Dialog open={!!tripToDelete} onOpenChange={() => setTripToDelete(null)}>
-        <DialogContent className="sm:max-w-md rounded-[2.5rem] p-8 bg-white border border-slate-200 shadow-2xl">
-          <div className="flex flex-col items-center text-center">
-            <div className="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-rose-100/50">
-              <Trash2 className="w-8 h-8 text-rose-600 animate-pulse" />
+      {tripToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-6 animate-in fade-in zoom-in duration-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+                  <AlertTriangle className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 text-base">Delete Trip Registry</h3>
+                  <p className="text-xs text-slate-500">This action cannot be undone.</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setTripToDelete(null)}
+                disabled={isDeleting}
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <CloseIcon className="w-5 h-5" />
+              </button>
             </div>
 
-            <DialogHeader className="flex flex-col items-center w-full mb-6">
-              <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight">
-                Delete Trip from Registry?
-              </DialogTitle>
-              <DialogDescription className="text-center text-sm text-slate-500 font-medium mt-2 leading-relaxed">
-                This will permanently delete the itinerary for{" "}
-                <span className="font-bold text-slate-800">
-                  {tripToDelete ? tripToDelete.location.split(",")[0] : ""}
-                </span>{" "}
-                from the database. This action is irreversible.
-              </DialogDescription>
-            </DialogHeader>
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-4">
+              <img
+                src={tripToDelete.ownerPicture}
+                alt=""
+                className="w-10 h-10 rounded-full border border-slate-200 object-cover shrink-0"
+              />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold text-slate-900 truncate">
+                  {tripToDelete.displayLocation}
+                </p>
+                <p className="text-xs text-slate-500 truncate">
+                  Created by {tripToDelete.ownerName}
+                </p>
+              </div>
+            </div>
 
-            <div className="flex gap-4 w-full mt-4">
-              <Button
-                variant="outline"
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Are you sure you want to permanently delete this itinerary from the registry?
+            </p>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
                 onClick={() => setTripToDelete(null)}
-                className="flex-1 h-12 rounded-2xl border-slate-200 font-bold hover:bg-slate-50 transition-all text-slate-600 focus:outline-none"
+                disabled={isDeleting}
+                className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
               >
-                Keep It
-              </Button>
-              <Button
-                onClick={async () => {
-                  if (tripToDelete) {
-                    try {
-                      await deleteTrip(tripToDelete.id);
-                      toast.success("Trip deleted successfully");
-                    } catch (err) {
-                      toast.error("Failed to delete trip");
-                    }
-                    setTripToDelete(null);
-                  }
-                }}
-                className="flex-1 h-12 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-bold shadow-lg shadow-rose-100 transition-all hover:scale-[1.02] active:scale-95 focus:outline-none"
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmDeleteTrip}
+                disabled={isDeleting}
+                className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-xl transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
               >
-                Delete Trip
-              </Button>
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" /> Delete Trip
+                  </>
+                )}
+              </button>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </div>
   );
 };

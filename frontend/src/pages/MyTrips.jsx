@@ -19,6 +19,8 @@ import {
   Trash2,
   Users,
   Lock,
+  AlertTriangle,
+  X as CloseIcon,
 } from "lucide-react";
 import { auth, db } from "../services/firebaseConfig";
 import LoginDialog from "../components/shared/LoginDialog";
@@ -63,6 +65,15 @@ const getDestinationLabel = (
   if (typeof destination?.label === "string") return destination.label;
   if (typeof destination?.value === "string") return destination.value;
   return "Destination not available";
+};
+
+const getDurationLabel = (trip) => {
+  const days = trip?.userSelection?.noOfDays;
+  return days ? `${days} Days` : "Trip Itinerary";
+};
+
+const getBudgetLabel = (trip) => {
+  return trip?.userSelection?.budget || "Standard Budget";
 };
 
 const GetPhoto = (
@@ -445,7 +456,7 @@ const MyTrips = () => {
                             handleDeleteTrip(trip);
                           }}
                           disabled={isDeleting}
-                          className="h-10 w-10 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white/80 transition-all hover:bg-rose-600 hover:text-white hover:border-rose-500 disabled:opacity-50 shadow-lg"
+                          className="h-10 w-10 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white/80 transition-all hover:bg-rose-600 hover:text-white hover:border-rose-500 disabled:opacity-50 shadow-lg cursor-pointer disabled:cursor-not-allowed"
                         >
                           {isDeleting ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
@@ -498,8 +509,8 @@ const MyTrips = () => {
                         <Route className="w-5 h-5 ml-2 group-hover:rotate-12 transition-transform" />
                         View Itinerary
                       </Button>
-                      <p className="text-center text-[10px] font-bold text-slate-300 mt-4 uppercase tracking-widest">
-                        Generated {tripDate}
+                      <p className="text-center text-[10px] font-bold text-slate-500 mt-4 tracking-widest uppercase">
+                        Generated on {tripDate}
                       </p>
                     </div>
                   </article>
@@ -515,49 +526,78 @@ const MyTrips = () => {
         onLoginSuccess={() => setOpenLogin(false)}
       />
 
-      <Dialog open={!!tripToDelete} onOpenChange={() => setTripToDelete(null)}>
-        <DialogContent className="sm:max-w-md rounded-[2.5rem] p-8 bg-white border border-slate-200 shadow-2xl">
-          <div className="flex flex-col items-center text-center">
-            <div className="w-16 h-16 bg-rose-50 rounded-2xl flex items-center justify-center mb-6 shadow-sm border border-rose-100/50">
-              <Trash2 className="w-8 h-8 text-rose-600 animate-pulse" />
+      {tripToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-6 animate-in fade-in zoom-in duration-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+                  <AlertTriangle className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 text-base">Delete Itinerary</h3>
+                  <p className="text-xs text-slate-500">This action cannot be undone.</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setTripToDelete(null)}
+                disabled={deletingTripId === (tripToDelete?.id || tripToDelete?.docId)}
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <CloseIcon className="w-5 h-5" />
+              </button>
             </div>
 
-            <DialogHeader className="flex flex-col items-center w-full mb-6">
-              <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight">
-                Delete this Itinerary?
-              </DialogTitle>
-              <DialogDescription className="text-center text-sm text-slate-500 font-medium mt-2 leading-relaxed">
-                This will permanently delete your travel plan for{" "}
-                <span className="font-bold text-slate-800">
-                  {tripToDelete ? getDestinationLabel(tripToDelete).split(",")[0] : ""}
-                </span>
-                . This action is irreversible.
-              </DialogDescription>
-            </DialogHeader>
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-4">
+              <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0 text-indigo-600">
+                <Compass className="w-5 h-5" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold text-slate-900 truncate">
+                  {getDestinationLabel(tripToDelete)}
+                </p>
+                <p className="text-xs text-slate-500 truncate">
+                  {getDurationLabel(tripToDelete)} • {getBudgetLabel(tripToDelete)}
+                </p>
+              </div>
+            </div>
 
-            <div className="flex gap-4 w-full mt-4">
-              <Button
-                variant="outline"
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Are you sure you want to permanently delete this itinerary? It will be removed from your saved trips database.
+            </p>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
                 onClick={() => setTripToDelete(null)}
-                className="flex-1 h-12 rounded-2xl border-slate-200 font-bold hover:bg-slate-50 transition-all text-slate-600 focus:outline-none"
+                disabled={deletingTripId === (tripToDelete?.id || tripToDelete?.docId)}
+                className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
               >
-                Keep It
-              </Button>
-              <Button
-                onClick={() => {
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
                   if (tripToDelete) {
-                    performDeleteTrip(tripToDelete);
+                    await performDeleteTrip(tripToDelete);
                     setTripToDelete(null);
                   }
                 }}
-                className="flex-1 h-12 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white font-bold shadow-lg shadow-rose-100 transition-all hover:scale-[1.02] active:scale-95 focus:outline-none"
+                disabled={deletingTripId === (tripToDelete?.id || tripToDelete?.docId)}
+                className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-xl transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
               >
-                Delete Trip
-              </Button>
+                {deletingTripId === (tripToDelete?.id || tripToDelete?.docId) ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" /> Delete Itinerary
+                  </>
+                )}
+              </button>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </section>
   );
 };

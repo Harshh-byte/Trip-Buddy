@@ -177,7 +177,7 @@ const AdminLayout = () => {
           </div>
           <button
             onClick={handleLogout}
-            className={`w-full flex items-center py-2.5 rounded-xl text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all duration-300 gap-3 ${
+            className={`w-full flex items-center py-2.5 rounded-xl text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-all duration-300 gap-3 cursor-pointer ${
               isCollapsed ? "pl-2.5" : "pl-3.5"
             }`}
             title={isCollapsed ? "Sign Out" : ""}
@@ -213,7 +213,16 @@ const AdminLayout = () => {
             </h2>
           </div>
 
-          <div className="flex items-center gap-4"></div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleLogout}
+              className="lg:hidden flex items-center gap-2 px-3 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200/60 text-xs font-bold transition-all shadow-xs cursor-pointer"
+              title="Sign Out"
+            >
+              <LogOut className="w-4 h-4 shrink-0" />
+              <span>Sign Out</span>
+            </button>
+          </div>
         </header>
 
         <main
