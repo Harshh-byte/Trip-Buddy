@@ -6,6 +6,7 @@ import {
 import {
   doc,
   getDoc,
+  getDocs,
   setDoc,
   collection,
   onSnapshot,
@@ -39,12 +40,10 @@ export const loginAdmin = async (email, password) => {
   }
 
   const userDocData = userSnap.data();
-  let currentPicture = userDocData.picture || "";
-  const isAvatarFixed = userDocData.isAvatarFixed ?? false;
+  let currentPicture = userDocData.picture || userDocData.photoURL || "";
 
-  if (!isAvatarFixed) {
-    const randomSeed = Math.random().toString(36).substring(7);
-    currentPicture = `https://api.dicebear.com/7.x/lorelei/svg?seed=${randomSeed}`;
+  if (!currentPicture) {
+    currentPicture = `https://api.dicebear.com/7.x/lorelei/svg?seed=${user.uid}`;
     await updateDoc(userDocRef, { picture: currentPicture, photoURL: currentPicture });
   }
 
@@ -53,7 +52,6 @@ export const loginAdmin = async (email, password) => {
     email: user.email,
     name: userDocData.name || "Administrator",
     picture: currentPicture,
-    isAvatarFixed: isAvatarFixed,
     isAdmin: true,
   };
 
@@ -108,7 +106,6 @@ export const seedAdminUser = async (email, password, secretKey, name) => {
       picture: `https://api.dicebear.com/7.x/lorelei/svg?seed=${encodeURIComponent(name || "admin")}`,
       provider: "email",
       isAdmin: true,
-      isAvatarFixed: false,
       lastLoginAt: serverTimestamp(),
       createdAt: serverTimestamp(),
     },
@@ -120,7 +117,6 @@ export const seedAdminUser = async (email, password, secretKey, name) => {
     email: user.email,
     name: name || "Admin",
     picture: `https://api.dicebear.com/7.x/lorelei/svg?seed=${encodeURIComponent(name || "admin")}`,
-    isAvatarFixed: false,
     isAdmin: true,
   };
 
@@ -223,6 +219,34 @@ export const deleteTrip = async (tripId) => {
 
 /**
  * @param {string} userId
+ * @param {string} [userEmail]
+ */
+export const deleteUserAndData = async (userId, userEmail) => {
+  await deleteDoc(doc(db, "users", userId));
+
+  try {
+    const tripsSnap = await getDocs(collection(db, "Trips"));
+    /** @type {Promise<any>[]} */
+    const deletePromises = [];
+    tripsSnap.forEach((docSnap) => {
+      const data = docSnap.data();
+      if (
+        data.userId === userId ||
+        data.uid === userId ||
+        (userEmail && data.userEmail?.toLowerCase() === userEmail.toLowerCase()) ||
+        (userEmail && data.userSelection?.userEmail?.toLowerCase() === userEmail.toLowerCase())
+      ) {
+        deletePromises.push(deleteDoc(doc(db, "Trips", docSnap.id)));
+      }
+    });
+    await Promise.all(deletePromises);
+  } catch (err) {
+    console.error("Failed to delete user trips:", err);
+  }
+};
+
+/**
+ * @param {string} userId
  * @param {string} newPicture
  */
 export const updateAdminPicture = async (userId, newPicture) => {
@@ -230,32 +254,12 @@ export const updateAdminPicture = async (userId, newPicture) => {
   await updateDoc(ref, { 
     picture: newPicture, 
     photoURL: newPicture,
-    isAvatarFixed: true 
   });
 
   const admin = getStoredAdminUser();
   if (admin && admin.uid === userId) {
     admin.picture = newPicture;
     admin.photoURL = newPicture;
-    admin.isAvatarFixed = true;
-    localStorage.setItem("admin_user", JSON.stringify(admin));
-    localStorage.setItem("user", JSON.stringify(admin));
-    dispatchAuthUserChanged();
-    window.dispatchEvent(new Event("storage"));
-  }
-};
-
-/**
- * @param {string} userId
- * @param {boolean} isFixed
- */
-export const updateAdminAvatarSettings = async (userId, isFixed) => {
-  const ref = doc(db, "users", userId);
-  await updateDoc(ref, { isAvatarFixed: isFixed });
-
-  const admin = getStoredAdminUser();
-  if (admin && admin.uid === userId) {
-    admin.isAvatarFixed = isFixed;
     localStorage.setItem("admin_user", JSON.stringify(admin));
     localStorage.setItem("user", JSON.stringify(admin));
     dispatchAuthUserChanged();

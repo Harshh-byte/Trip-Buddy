@@ -1,16 +1,19 @@
 import { useEffect, useState, useMemo } from "react";
 import {
   subscribeToUsers,
-  toggleUserAdminStatus,
+  deleteUserAndData,
+  getStoredAdminUser,
 } from "../../services/adminApi";
 import {
   Search,
   ArrowUpDown,
-  Shield,
-  ShieldOff,
   Activity,
   ChevronLeft,
   ChevronRight,
+  Trash2,
+  AlertTriangle,
+  X as CloseIcon,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -23,6 +26,10 @@ const AdminUsers = () => {
     key: "createdAt",
     direction: "desc",
   });
+  const [deletingUser, setDeletingUser] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const currentAdmin = getStoredAdminUser();
   const itemsPerPage = 10;
 
   useEffect(() => {
@@ -58,12 +65,17 @@ const AdminUsers = () => {
     return () => unsub();
   }, []);
 
-  const handleToggleAdmin = async (user) => {
+  const handleDeleteUser = async () => {
+    if (!deletingUser) return;
+    setIsDeleting(true);
     try {
-      await toggleUserAdminStatus(user.id, user.isAdmin);
-      toast.success(`Access updated for ${user.displayName}`);
+      await deleteUserAndData(deletingUser.id, deletingUser.email);
+      toast.success(`User ${deletingUser.displayName} and associated trips deleted.`);
+      setDeletingUser(null);
     } catch (err) {
-      toast.error("Update failed.");
+      toast.error("Failed to delete user data.");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -167,77 +179,71 @@ const AdminUsers = () => {
                     Identity <ArrowUpDown className="w-3 h-3" />
                   </div>
                 </th>
-                <th className="px-6 py-3 font-semibold hidden md:table-cell">
+                <th className="px-6 py-3 font-semibold">
                   Contact
                 </th>
-                <th className="px-6 py-3 font-semibold hidden lg:table-cell">
+                <th className="px-6 py-3 font-semibold">
                   Provider
                 </th>
                 <th
-                  className="px-6 py-3 font-semibold cursor-pointer hidden sm:table-cell"
+                  className="px-6 py-3 font-semibold cursor-pointer"
                   onClick={() => requestSort("createdAt")}
                 >
                   <div className="flex items-center gap-2">
                     Joined <ArrowUpDown className="w-3 h-3" />
                   </div>
                 </th>
-                <th className="px-6 py-3 font-semibold text-right">Role</th>
+                <th className="px-6 py-3 font-semibold text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {paginatedUsers.map((user) => (
-                <tr
-                  key={user.id}
-                  className="hover:bg-slate-50/50 transition-colors"
-                >
-                  <td className="px-6 py-3 flex items-center gap-3">
-                    <img
-                      src={
-                        user.photoURL ||
-                        user.picture ||
-                        `https://api.dicebear.com/7.x/lorelei/svg?seed=${user.displayName}`
-                      }
-                      alt=""
-                      className="w-8 h-8 rounded-full border border-slate-200"
-                    />
-                    <div>
-                      <p className="font-semibold text-slate-900">
-                        {user.displayName}
-                      </p>
-                      <p className="text-[10px] text-slate-400 font-mono hidden sm:block">
-                        {user.id.slice(0, 10)}
-                      </p>
-                    </div>
-                  </td>
-                  <td className="px-6 py-3 text-slate-600 hidden md:table-cell">
-                    {user.displayEmail}
-                  </td>
-                  <td className="px-6 py-3 hidden lg:table-cell">
-                    <span className="px-2 py-1 rounded bg-slate-100 border border-slate-200 text-slate-500 text-[10px] font-bold uppercase tracking-wider">
-                      {user.providerBadge}
-                    </span>
-                  </td>
-                  <td className="px-6 py-3 text-slate-500 hidden sm:table-cell">
-                    {user.signupDate}
-                  </td>
-                  <td className="px-6 py-3 text-right">
-                    <button
-                      onClick={() => handleToggleAdmin(user)}
-                      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors border ${user.isAdmin ? "bg-rose-50 text-rose-600 border-rose-100 hover:bg-rose-600 hover:text-white" : "bg-white text-slate-600 border-slate-200 hover:bg-slate-900 hover:text-white"}`}
-                    >
-                      {user.isAdmin ? (
-                        <>
-                          <ShieldOff className="w-3 h-3" /> Admin
-                        </>
-                      ) : (
-                        <>
-                          <Shield className="w-3 h-3" /> User
-                        </>
-                      )}
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {paginatedUsers.map((user) => {
+                const isSelf = user.id === currentAdmin?.uid;
+                return (
+                  <tr
+                    key={user.id}
+                    className="hover:bg-slate-50/50 transition-colors"
+                  >
+                    <td className="px-6 py-3 flex items-center gap-3">
+                      <img
+                        src={
+                          user.photoURL ||
+                          user.picture ||
+                          `https://api.dicebear.com/7.x/lorelei/svg?seed=${user.displayName}`
+                        }
+                        alt=""
+                        className="w-8 h-8 rounded-full border border-slate-200 shrink-0"
+                      />
+                      <div>
+                        <p className="font-semibold text-slate-900">
+                          {user.displayName}
+                        </p>
+                      </div>
+                    </td>
+                    <td className="px-6 py-3 text-slate-600">
+                      {user.displayEmail}
+                    </td>
+                    <td className="px-6 py-3">
+                      <span className="px-2 py-1 rounded bg-slate-100 border border-slate-200 text-slate-500 text-[10px] font-bold uppercase tracking-wider">
+                        {user.providerBadge}
+                      </span>
+                    </td>
+                    <td className="px-6 py-3 text-slate-500">
+                      {user.signupDate}
+                    </td>
+                    <td className="px-6 py-3 text-right">
+                      <button
+                        onClick={() => setDeletingUser(user)}
+                        disabled={isSelf}
+                        className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors border border-transparent hover:border-rose-100 disabled:opacity-20 disabled:pointer-events-none cursor-pointer inline-flex items-center justify-center"
+                        title={isSelf ? "You cannot delete your own admin account" : "Delete User & Data"}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
               {paginatedUsers.length === 0 && (
                 <tr>
                   <td
@@ -260,7 +266,7 @@ const AdminUsers = () => {
             <button
               onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
               disabled={currentPage === 1}
-              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold border border-slate-200 rounded-md bg-white disabled:opacity-50 transition-colors hover:bg-slate-50"
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold border border-slate-200 rounded-md bg-white disabled:opacity-50 transition-colors hover:bg-slate-50 cursor-pointer disabled:cursor-not-allowed"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
               Prev
@@ -268,7 +274,7 @@ const AdminUsers = () => {
             <button
               onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
               disabled={currentPage === totalPages || totalPages === 0}
-              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold border border-slate-200 rounded-md bg-white disabled:opacity-50 transition-colors hover:bg-slate-50"
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-semibold border border-slate-200 rounded-md bg-white disabled:opacity-50 transition-colors hover:bg-slate-50 cursor-pointer disabled:cursor-not-allowed"
             >
               Next
               <ChevronRight className="w-3.5 h-3.5" />
@@ -276,6 +282,80 @@ const AdminUsers = () => {
           </div>
         </div>
       </div>
+
+      {deletingUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-6 animate-in fade-in zoom-in duration-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+                  <AlertTriangle className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-slate-900 text-base">Delete User Account</h3>
+                  <p className="text-xs text-slate-500">This action cannot be undone.</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setDeletingUser(null)}
+                disabled={isDeleting}
+                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <CloseIcon className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-4">
+              <img
+                src={
+                  deletingUser.photoURL ||
+                  deletingUser.picture ||
+                  `https://api.dicebear.com/7.x/lorelei/svg?seed=${deletingUser.displayName}`
+                }
+                alt=""
+                className="w-10 h-10 rounded-full border border-slate-200 object-cover shrink-0"
+              />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-bold text-slate-900 truncate">
+                  {deletingUser.displayName}
+                </p>
+                <p className="text-xs text-slate-500 truncate">
+                  {deletingUser.displayEmail}
+                </p>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Are you sure you want to permanently delete this user account? All trips created by this user will also be removed from the database.
+            </p>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                onClick={() => setDeletingUser(null)}
+                disabled={isDeleting}
+                className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteUser}
+                disabled={isDeleting}
+                className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-xl transition-colors shadow-sm disabled:opacity-50 cursor-pointer"
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" /> Delete User & Trips
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

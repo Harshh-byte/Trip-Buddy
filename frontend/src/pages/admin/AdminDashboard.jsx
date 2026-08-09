@@ -404,9 +404,6 @@ const AdminDashboard = () => {
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
             System Overview
           </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Real-time metrics and platform analytics.
-          </p>
         </div>
       </div>
 
@@ -457,11 +454,8 @@ const AdminDashboard = () => {
               <BarChart3 className="w-5 h-5 text-indigo-600 shrink-0" />
               <div>
                 <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
-                  Generation Volume
+                  Trip Activity
                 </h3>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Monthly breakdown of AI itinerary creations
-                </p>
               </div>
             </div>
           </div>
@@ -520,7 +514,7 @@ const AdminDashboard = () => {
               <div className="flex items-center gap-2">
                 <Cpu className="w-5 h-5 text-indigo-600 animate-pulse" />
                 <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
-                  AI Service Status
+                  AI Status
                 </h3>
               </div>
             </div>
@@ -584,11 +578,8 @@ const AdminDashboard = () => {
             <Database className="w-5 h-5 text-indigo-600" />
             <div>
               <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
-                Live AI Generations Stream
+                Live AI Stream
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Real-time log of trip generation models and guide caching runs
-              </p>
             </div>
           </div>
         </div>
