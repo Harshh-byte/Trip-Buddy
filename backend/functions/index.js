@@ -4,6 +4,8 @@ import { GoogleGenAI } from "@google/genai";
 import { Resend } from "resend";
 import { onCall, onRequest, HttpsError } from "firebase-functions/v2/https";
 import * as Sentry from "@sentry/node";
+import { Redis } from "@upstash/redis";
+import crypto from "crypto";
 
 if (process.env.SENTRY_DSN) {
   Sentry.init({
@@ -12,9 +14,57 @@ if (process.env.SENTRY_DSN) {
   });
 }
 
-admin.initializeApp();
+let _db = null;
+function getDb() {
+  if (!_db) {
+    if (!admin.apps.length) {
+      admin.initializeApp();
+    }
+    _db = admin.firestore();
+  }
+  return _db;
+}
 
-const db = admin.firestore();
+let _redis = null;
+function getRedis() {
+  if (!_redis && process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    _redis = new Redis({
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    });
+  }
+  return _redis;
+}
+
+/**
+ * @param {any} formData
+ */
+function getTripCacheKey(formData) {
+  const destination = String(formData?.destinationLabel || "")
+    .trim()
+    .toLowerCase();
+  const days = String(formData?.noOfDays || "").trim();
+  const travelers = String(formData?.travelers || "")
+    .trim()
+    .toLowerCase();
+  const budget = String(formData?.budget || "")
+    .trim()
+    .toLowerCase();
+  const interests = Array.isArray(formData?.interests)
+    ? [...formData.interests]
+        .map((i) => String(i).trim().toLowerCase())
+        .sort()
+        .join(",")
+    : "";
+
+  const rawKey = `${destination}|${days}|${travelers}|${budget}|${interests}`;
+  const hash = crypto
+    .createHash("sha256")
+    .update(rawKey)
+    .digest("hex")
+    .slice(0, 24);
+  return `trip:cache:${hash}`;
+}
 
 const AI_RESPONSE_CONTRACT = `
 Return ONLY valid JSON (no markdown, no explanations).
@@ -59,12 +109,35 @@ export const onTripRequestCreated = onDocumentCreated(
     const { formData, userEmail, userName, userId, userPhoto } = requestData;
 
     try {
-      const ai = new GoogleGenAI({ apiKey: process.env.VITE_GEMINI_API_KEY });
-      const chat = ai.chats.create({
-        model: "gemini-2.5-flash",
-      });
+      const db = getDb();
+      const redis = getRedis();
+      let tripData = null;
+      const cacheKey = redis ? getTripCacheKey(formData) : null;
 
-      const DYNAMIC_PROMPT = `
+      if (redis && cacheKey) {
+        try {
+          const cachedData = await redis.get(cacheKey);
+          if (cachedData) {
+            tripData =
+              typeof cachedData === "string"
+                ? JSON.parse(cachedData)
+                : cachedData;
+          }
+        } catch (cacheError) {
+          console.warn(
+            "Redis cache read failed, falling back to Gemini:",
+            cacheError,
+          );
+        }
+      }
+
+      if (!tripData) {
+        const ai = new GoogleGenAI({ apiKey: process.env.VITE_GEMINI_API_KEY });
+        const chat = ai.chats.create({
+          model: "gemini-2.5-flash",
+        });
+
+        const DYNAMIC_PROMPT = `
       Generate a detailed travel plan tailored specifically to the user's selected interests and traveler group composition.
       Details:
       - Location: ${formData.destinationLabel}
@@ -88,14 +161,28 @@ export const onTripRequestCreated = onDocumentCreated(
       ${AI_RESPONSE_CONTRACT}
     `.trim();
 
-      const response = await chat.sendMessage({
-        message: DYNAMIC_PROMPT,
-      });
+        const response = await chat.sendMessage({
+          message: DYNAMIC_PROMPT,
+        });
 
-      const text = response.text ?? "";
-      const tripData = parseAIJsonResponse(text);
+        const text = response.text ?? "";
+        tripData = parseAIJsonResponse(text);
 
-      if (!tripData) throw new Error("Failed to parse AI response");
+        if (!tripData) throw new Error("Failed to parse AI response");
+
+        if (redis && cacheKey) {
+          try {
+            await redis.set(cacheKey, JSON.stringify(tripData), {
+              ex: 60 * 60 * 24 * 14,
+            });
+          } catch (cacheSetError) {
+            console.warn(
+              "Failed to store itinerary in Redis cache:",
+              cacheSetError,
+            );
+          }
+        }
+      }
 
       const tripPayload = {
         userSelection: formData,
@@ -414,7 +501,9 @@ export const onTripRequestCreated = onDocumentCreated(
  </html>
  `,
           });
-        } catch (emailError) {}
+        } catch (emailError) {
+          console.warn("Failed to send itinerary notification email:", emailError);
+        }
       }
 
       await snapshot.ref.update({ status: "completed", tripId: requestId });
@@ -424,9 +513,8 @@ export const onTripRequestCreated = onDocumentCreated(
         typeof error === "object" && error && "message" in error
           ? error.message
           : String(error);
+      console.error("Error processing trip request:", error);
       await snapshot.ref.update({ status: "error", error: errorMessage });
     }
   },
 );
-
-

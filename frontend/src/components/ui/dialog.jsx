@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 
 import * as DialogPrimitive from "@radix-ui/react-dialog";
@@ -6,23 +7,23 @@ import { XIcon } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { Button } from "./button";
 
-function Dialog({ ...props }) {
+function Dialog(props) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />;
 }
 
-function DialogTrigger({ ...props }) {
+function DialogTrigger(props) {
   return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />;
 }
 
-function DialogPortal({ ...props }) {
+function DialogPortal(props) {
   return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />;
 }
 
-function DialogClose({ ...props }) {
+function DialogClose(props) {
   return <DialogPrimitive.Close data-slot="dialog-close" {...props} />;
 }
 
-function DialogOverlay({ className = "", ...props } = {}) {
+function DialogOverlay({ className, ...props }) {
   return (
     <DialogPrimitive.Overlay
       data-slot="dialog-overlay"
