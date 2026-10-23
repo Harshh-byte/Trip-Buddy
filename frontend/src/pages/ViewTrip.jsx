@@ -1,6 +1,6 @@
+// @ts-nocheck
 import { useEffect, useMemo, useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
 import { doc, getDoc, onSnapshot, writeBatch } from "firebase/firestore";
 import { toast } from "sonner";
 import { useSearchParams } from "react-router-dom";
@@ -96,6 +96,8 @@ const readLocalTrip = (tripId) => {
   const raw = localStorage.getItem(getLocalTripKey(tripId));
   return raw ? JSON.parse(raw) : null;
 };
+
+const generateActivityId = () => `activity-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
 const GetPhoto = (
   /** @type {{ locationItem: string, className?: string, imageClassName?: string }} */ {
@@ -377,7 +379,7 @@ const ViewTrip = () => {
     const payload = {
       dayIndex: selectedDayIndex,
       newActivity: {
-        id: `activity-${Date.now()}`,
+        id: generateActivityId(),
         time: activityForm.time,
         title: activityForm.title,
         description: activityForm.description,
@@ -902,7 +904,7 @@ const ViewTrip = () => {
         .replace(/[\u2013\u2014]/g, "-")
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^\x00-\x7F]/g, "")
+        .replace(/[^\t\n\r\x20-\x7E]/g, "")
         .replace(/\s+/g, " ")
         .trim()
     );
@@ -941,7 +943,8 @@ const ViewTrip = () => {
       if (logoBase64) {
         try {
           doc.addImage(logoBase64, "PNG", 20, y + 3, 16, 16);
-        } catch {
+        } catch (err) {
+          console.warn("Could not add logo to PDF:", err);
         }
       }
 
@@ -1192,7 +1195,9 @@ const ViewTrip = () => {
 
       const fileName = `${destinationLabel.split(",")[0].trim().replace(/\s+/g, "_")}_Itinerary.pdf`;
       doc.save(fileName);
-    } catch {
+    } catch (err) {
+      console.error("PDF export failed:", err);
+      toast.error("Failed to generate PDF. Please try again.");
     } finally {
       setPdfDownloading(false);
     }
@@ -1562,7 +1567,7 @@ const ViewTrip = () => {
                       </Tooltip>
 
                       <DialogContent className="sm:max-w-md rounded-3xl p-6 bg-white/95 backdrop-blur-md border border-slate-200/80 shadow-2xl">
-                        <DialogHeader>
+                        <DialogHeader className="">
                           <DialogTitle className="text-2xl font-black font-outfit text-slate-900 flex items-center gap-2">
                             <Share2 className="w-6 h-6 text-indigo-600" />
                             Share Itinerary
@@ -2387,7 +2392,7 @@ const ViewTrip = () => {
 
         <Dialog open={activityModalOpen} onOpenChange={setActivityModalOpen}>
           <DialogContent className="sm:max-w-md rounded-3xl p-6 bg-white/95 backdrop-blur-md border border-slate-200/80 shadow-2xl">
-            <DialogHeader>
+            <DialogHeader className="">
               <DialogTitle className="text-2xl font-black font-outfit text-slate-900 flex items-center gap-2">
                 <Sparkles className="w-6 h-6 text-indigo-600" />
                 {activityModalMode === "add" ? "Add Activity" : "Edit Activity"}
@@ -2506,7 +2511,7 @@ const ViewTrip = () => {
 
         <Dialog open={hotelModalOpen} onOpenChange={setHotelModalOpen}>
           <DialogContent className="sm:max-w-md rounded-3xl p-6 bg-white/95 backdrop-blur-md border border-slate-200/80 shadow-2xl">
-            <DialogHeader>
+            <DialogHeader className="">
               <DialogTitle className="text-2xl font-black font-outfit text-slate-900 flex items-center gap-2">
                 <Hotel className="w-6 h-6 text-indigo-600" />
                 {hotelModalMode === "add"

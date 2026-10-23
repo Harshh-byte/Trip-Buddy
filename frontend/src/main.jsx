@@ -9,7 +9,6 @@ if (import.meta.env.VITE_SENTRY_DSN) {
   Sentry.init({
     dsn: import.meta.env.VITE_SENTRY_DSN,
     ignoreErrors: [
-      // Ignore CefSharp / Outlook Safe Links automated crawler noise
       /Object Not Found Matching Id/i,
       /MethodName:update/i,
     ],
