@@ -74,7 +74,7 @@ const Hero = () => {
             <div className="flex flex-col sm:flex-row gap-4">
               <button
                 onClick={() => navigate("/v2/create-trip")}
-                className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-black text-lg px-8 py-4 rounded-2xl shadow-xl shadow-indigo-100 hover:shadow-indigo-200 transition-all duration-300 group flex items-center justify-center gap-2.5"
+                className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-black text-lg px-8 py-4 rounded-2xl shadow-xl shadow-indigo-100 hover:shadow-indigo-200 transition-all duration-300 group flex items-center justify-center gap-2.5 cursor-pointer"
               >
                 <span>Start Planning</span>
                 <MoveRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-2" />
