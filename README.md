@@ -34,8 +34,8 @@ Trip Buddy is a premium, modern web application designed to act as your personal
 - **Third-Party APIs:** Wikipedia REST API (summaries), Google Place details API (images/info)
 
 ### 🌐 Dual AI Generation Architecture
-* **Initial Trip Generation**: Handled asynchronously by a Firestore trigger Cloud Function (`backend/functions/index.js`) listening to new entries in `Trip_requests/{requestId}`. This uses the Gemini API (`gemini-2.5-flash-lite`) and integrates with Resend to email travelers when complete.
-* **Roamie Chat Assistant**: Runs directly on the client frontend utilizing Vite environment variables (`VITE_GEMINI_API_KEY`) to call `gemini-2.5-flash` directly for real-time response generation.
+* **Initial Trip Generation**: Handled asynchronously by a Firestore trigger Cloud Function (`backend/functions/index.js`) listening to new entries in `Trip_requests/{requestId}`. This uses the Gemini API (`gemini-3.8-flash`) and integrates with Resend to email travelers when complete.
+* **Roamie Chat Assistant**: Runs directly on the client frontend utilizing Vite environment variables (`VITE_GEMINI_API_KEY`) to call `gemini-3.8-flash` directly for real-time response generation.
 
 ### 🗄️ Firestore Database Schema
 * **`users/{uid}`**: Stores user profiles.
