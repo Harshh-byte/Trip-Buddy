@@ -134,7 +134,7 @@ export const onTripRequestCreated = onDocumentCreated(
       if (!tripData) {
         const ai = new GoogleGenAI({ apiKey: process.env.VITE_GEMINI_API_KEY });
         const chat = ai.chats.create({
-          model: "gemini-2.5-flash",
+          model: "gemini-3.8-flash",
         });
 
         const DYNAMIC_PROMPT = `
