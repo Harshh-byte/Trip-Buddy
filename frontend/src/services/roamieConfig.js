@@ -5,9 +5,9 @@ export const ROAMIE_CONFIG = {
   title: "Roamie",
   subtitle: "Trip Buddy Intelligence",
 
-  modelName: "gemini-3.8-flash",
+  modelName: "gemini-3.1-flash-lite",
   getApiUrl: (geminiApiKey) =>
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${geminiApiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent?key=${geminiApiKey}`,
 
   welcomeMessage:
     "Hello! I'm Roamie, your AI Travel Assistant. Ask me to customize your itinerary, add stops, swap hotels, or provide local tips!",
